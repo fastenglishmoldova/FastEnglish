@@ -3,10 +3,6 @@
     {
       "path": "/api/cron/notifications",
       "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/cron/security-cleanup",
-      "schedule": "0 */6 * * *"
     }
   ]
 }

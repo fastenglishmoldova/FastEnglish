@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { notifyMissedGroupSession, notifyMissedMakeup, notifyLowLessons } from '@/lib/telegram'
+import { cleanupExpiredSessions } from '@/lib/security/session.js'
+import { cleanupExpiredStepUpTokens } from '@/lib/security/step-up.js'
+import { cleanupExpiredBuckets } from '@/lib/security/rate-limit.js'
+import { cleanupCaptchaStates } from '@/lib/security/captcha.js'
+import { cleanupOldAuditLogs } from '@/lib/security/audit.js'
 
 // Map day index to Romanian day names (as stored in database)
 const DAY_MAP = {
@@ -409,10 +414,27 @@ export async function GET(request) {
       }
     })
 
+    // ============================================
+    // 7. SECURITY CLEANUP (sessions, tokens, rate limits, audit logs)
+    // ============================================
+    
+    const securityCleanup = {}
+    try {
+      securityCleanup.sessions = await cleanupExpiredSessions()
+      securityCleanup.stepUpTokens = await cleanupExpiredStepUpTokens()
+      securityCleanup.rateLimitBuckets = await cleanupExpiredBuckets()
+      securityCleanup.captchaStates = await cleanupCaptchaStates()
+      securityCleanup.auditLogs = await cleanupOldAuditLogs()
+    } catch (e) {
+      console.error('Security cleanup error:', e.message)
+      securityCleanup.error = e.message
+    }
+
     return NextResponse.json({ 
       success: true,
       notificationsCreated,
       count: notificationsCreated.length,
+      securityCleanup,
       timestamp: new Date().toISOString()
     })
 
