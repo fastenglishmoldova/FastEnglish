@@ -4,9 +4,9 @@
  */
 
 import { NextResponse } from 'next/server'
-import { getCurrentSession, deleteSession, clearSessionCookies } from '@/lib/security/session.js'
+import { getCurrentSession, deleteSession, clearSessionCookies, getDeviceIdFromCookies } from '@/lib/security/session.js'
 import { createAuditLog } from '@/lib/security/audit.js'
-import { getClientIP, getUserAgent, getDeviceIdFromCookies } from '@/lib/security/guards.js'
+import { getClientIP, getUserAgent } from '@/lib/security/guards.js'
 
 export async function POST(request) {
   try {
