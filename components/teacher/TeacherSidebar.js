@@ -14,7 +14,8 @@ import {
   HomeIcon,
   Bars3Icon,
   XMarkIcon,
-  BellIcon
+  BellIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline'
 
 // Spinner component for loading state
@@ -74,6 +75,11 @@ const navigation = [
     name: 'Recuperări', 
     href: '/teacher/makeup', 
     icon: ArrowPathIcon
+  },
+  { 
+    name: 'Securitate', 
+    href: '/teacher/security', 
+    icon: ShieldCheckIcon
   }
 ]
 

@@ -30,6 +30,12 @@ export async function POST() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
     
+    // Check if user can enable 2FA (admins always can, others need permission)
+    const isAdmin = user.role === 'ADMIN' || user.role === 'SUPERADMIN'
+    if (!isAdmin && !user.twoFactorAllowed) {
+      return NextResponse.json({ error: '2FA nu este activat pentru contul tău. Contactează un administrator.' }, { status: 403 })
+    }
+    
     if (user.twoFactorEnabled) {
       return NextResponse.json({ error: '2FA este deja activat' }, { status: 400 })
     }

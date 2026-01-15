@@ -24,7 +24,7 @@ export async function POST(request) {
     await requireAdmin()
     const body = await request.json()
 
-    const { name, email, password, active } = body
+    const { name, email, password, active, twoFactorAllowed } = body
 
     // Check if email exists
     const existingUser = await prisma.user.findUnique({ where: { email } })
@@ -40,7 +40,8 @@ export async function POST(request) {
         email,
         password: hashedPassword,
         role: 'TEACHER',
-        active: active ?? true
+        active: active ?? true,
+        twoFactorAllowed: twoFactorAllowed ?? false
       }
     })
 

@@ -25,6 +25,7 @@ model User {
   twoFactorEnabled  Boolean   @default(false)
   twoFactorSecret   String?   // Encrypted TOTP secret (AES-256-GCM)
   twoFactorSetupAt  DateTime? // When 2FA was enabled
+  twoFactorAllowed  Boolean   @default(false) // Admin must allow 2FA for non-admin users
   
   // Password reset
   passwordResetToken    String?

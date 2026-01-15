@@ -9,9 +9,9 @@ export async function PUT(request, { params }) {
     const { id } = await params
     const body = await request.json()
 
-    const { name, password, active } = body
+    const { name, password, active, twoFactorAllowed } = body
 
-    const updateData = { name, active }
+    const updateData = { name, active, twoFactorAllowed }
     
     if (password) {
       updateData.password = await bcrypt.hash(password, 10)

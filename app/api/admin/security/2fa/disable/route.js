@@ -24,19 +24,29 @@ export async function POST() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
     
+    // Check if user can manage 2FA (admins always can, others need permission)
+    const isAdmin = user.role === 'ADMIN' || user.role === 'SUPERADMIN'
+    if (!isAdmin && !user.twoFactorAllowed) {
+      return NextResponse.json({ error: '2FA nu este activat pentru contul tău' }, { status: 403 })
+    }
+    
     if (!user.twoFactorEnabled) {
       return NextResponse.json({ error: '2FA nu este activat' }, { status: 400 })
     }
     
-    // Disable 2FA
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        twoFactorEnabled: false,
-        twoFactorSecret: null,
-        twoFactorBackupCodes: []
-      }
-    })
+    // Disable 2FA and delete backup codes
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: user.id },
+        data: {
+          twoFactorEnabled: false,
+          twoFactorSecret: null
+        }
+      }),
+      prisma.backupCode.deleteMany({
+        where: { userId: user.id }
+      })
+    ])
     
     return NextResponse.json({
       success: true,

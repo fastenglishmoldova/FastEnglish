@@ -11,7 +11,8 @@ export default function TeacherForm({ teacher }) {
     name: teacher?.name || '',
     email: teacher?.email || '',
     password: '',
-    active: teacher?.active ?? true
+    active: teacher?.active ?? true,
+    twoFactorAllowed: teacher?.twoFactorAllowed ?? false
   })
 
   const handleChange = (e) => {
@@ -118,6 +119,22 @@ export default function TeacherForm({ teacher }) {
               className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
             />
             <span className="text-sm font-medium text-gray-700">Cont activ</span>
+          </label>
+        </div>
+
+        <div className="flex items-center">
+          <label className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              name="twoFactorAllowed"
+              checked={formData.twoFactorAllowed}
+              onChange={handleChange}
+              className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+            />
+            <div>
+              <span className="text-sm font-medium text-gray-700">Permite 2FA</span>
+              <p className="text-xs text-gray-500">Profesorul va putea activa autentificarea în doi pași</p>
+            </div>
           </label>
         </div>
       </div>

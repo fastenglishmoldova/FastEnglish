@@ -18,15 +18,21 @@ export async function GET() {
     
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { twoFactorEnabled: true }
+      select: { twoFactorEnabled: true, twoFactorAllowed: true, role: true }
     })
     
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
     
+    const isAdmin = user.role === 'ADMIN' || user.role === 'SUPERADMIN'
+    // Admins can always enable 2FA, others need explicit permission
+    const canEnable2FA = isAdmin || user.twoFactorAllowed
+    
     return NextResponse.json({
-      enabled: user.twoFactorEnabled
+      enabled: user.twoFactorEnabled,
+      canEnable2FA,
+      isAdmin
     })
   } catch (error) {
     console.error('2FA status error:', error)
