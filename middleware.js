@@ -33,9 +33,11 @@ export async function middleware(request) {
     return NextResponse.next()
   }
 
-  // Get session token from cookies
+  // Get session token from cookies (NextAuth uses different cookie names)
   const cookieStore = await cookies()
-  const sessionToken = cookieStore.get('session_token')?.value
+  // In production, NextAuth uses __Secure- prefix
+  const sessionToken = cookieStore.get('__Secure-next-auth.session-token')?.value 
+    || cookieStore.get('next-auth.session-token')?.value // Development fallback
   
   // Check if this is an auth page
   const isAuthRoute = authRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))
