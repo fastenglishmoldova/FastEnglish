@@ -158,10 +158,10 @@ export default function LoginPage() {
         return
       }
 
-      // Credentials validated! Now use NextAuth signIn
+      // Credentials validated (including 2FA if enabled)! Now use NextAuth signIn with preValidated flag
       const result = await signIn('credentials', {
         email: formData.email,
-        password: formData.password,
+        preValidated: 'true', // Skip password re-check, API already validated everything
         redirect: false
       })
 
