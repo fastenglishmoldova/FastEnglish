@@ -170,8 +170,8 @@ export default function LoginPage() {
         resetTurnstile()
       } else {
         toast.success('Autentificare reușită!')
-        router.push(callbackUrl)
-        router.refresh()
+        // Force navigation with window.location for reliable redirect
+        window.location.href = callbackUrl
       }
     } catch (error) {
       console.error('Login error:', error)
