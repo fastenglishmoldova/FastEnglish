@@ -115,14 +115,14 @@ export default function TeacherSidebar() {
           <div className="flex items-center h-16 px-6 border-b border-gray-200">
             <Link href="/teacher/groups" className="flex items-center gap-3">
               <Image
-                src="/bravito.png"
-                alt="Bravito"
+                src="/pi.png"
+                alt="PI School"
                 width={40}
                 height={40}
                 className="object-contain rounded-full"
               />
               <div>
-                <h1 className="text-lg font-bold text-gray-900">Bravito</h1>
+                <h1 className="text-lg font-bold text-gray-900">PI School</h1>
                 <p className="text-xs text-gray-500">Portal Profesor</p>
               </div>
             </Link>
@@ -230,14 +230,14 @@ export default function TeacherSidebar() {
             onClick={() => setMobileMenuOpen(false)}
           >
             <Image
-              src="/bravito.png"
-              alt="Bravito"
+              src="/pi.png"
+              alt="PI School"
               width={36}
               height={36}
               className="object-contain rounded-full"
             />
             <div>
-              <h1 className="text-base font-bold text-gray-900">Bravito</h1>
+              <h1 className="text-base font-bold text-gray-900">PI School</h1>
               <p className="text-xs text-gray-500">Portal Profesor</p>
             </div>
           </Link>

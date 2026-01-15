@@ -1,11 +1,11 @@
-// Script pentru a crea un favicon rotund din logo-ul Bravito
+// Script pentru a crea un favicon rotund din logo-ul PI School
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
 
 async function createRoundFavicon() {
   const rootDir = path.join(__dirname, '..');
-  const inputPath = path.join(rootDir, 'public', 'bravito.png');
+  const inputPath = path.join(rootDir, 'public', 'pi.png');
   const outputPath = path.join(rootDir, 'public', 'favicon.png');
   const output32 = path.join(rootDir, 'public', 'favicon-32.png');
   const output16 = path.join(rootDir, 'public', 'favicon-16.png');

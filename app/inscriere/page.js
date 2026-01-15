@@ -134,13 +134,13 @@ export default function InscrieriPage() {
             <Link href="/" className="flex items-center gap-1.5 xs:gap-2 md:gap-3 group">
               <div className="relative w-7 h-7 xs:w-8 xs:h-8 md:w-10 md:h-10 rounded-full overflow-hidden ring-2 ring-[#30919f]/50 group-hover:ring-[#f8b316] transition-all">
                 <Image
-                  src="/bravito.png"
-                  alt="Bravito After School"
+                  src="/pi.png"
+                  alt="PI School"
                   fill
                   className="object-cover"
                 />
               </div>
-              <span className="text-sm xs:text-base md:text-lg font-bold text-[var(--foreground)]">BRAVITO</span>
+              <span className="text-sm xs:text-base md:text-lg font-bold text-[var(--foreground)]">PI SCHOOL</span>
             </Link>
             <Link
               href="/"
@@ -165,7 +165,7 @@ export default function InscrieriPage() {
             Formular de <span className="text-[#30919f]">Înscriere</span>
           </h1>
           <p className="text-xs xs:text-sm md:text-base text-[var(--text-muted)] max-w-2xl mx-auto px-2">
-            Completați formularul de mai jos pentru a înscrie copilul dumneavoastră la cursurile Bravito After School.
+            Completați formularul de mai jos pentru a înscrie copilul dumneavoastră la cursurile PI School.
           </p>
         </div>
 

@@ -1,26 +1,13 @@
-import Navbar from '@/components/public/Navbar'
-import HeroSection from '@/components/public/HeroSection'
-import CoursesSection from '@/components/public/CoursesSection'
-import AboutSection from '@/components/public/AboutSection'
-import ContactSection from '@/components/public/ContactSection'
-import ReviewsSection from '@/components/public/ReviewsSection'
-import FAQSection from '@/components/public/FAQSection'
-import Footer from '@/components/public/Footer'
+import Link from "next/link"
 
 
 export default function Home() {
   return (
-    <>
-      <Navbar />
-      <main>
-        <HeroSection />
-        <CoursesSection />
-        <AboutSection />
-        <ContactSection />
-        <ReviewsSection />
-        <FAQSection />
-      </main>
-      <Footer />
-    </>
+    <div className="flex justify-center flex-col gap-2 items-center h-screen">
+      <h1 className="text-2xl font-bold">Design-ul il vom face curând ;)</h1>
+      <Link href="/admin">
+        <button className=" cursor-pointer hover:bg-green-900 hover:scale-110 active:scale-90 rounded-md px-5 py-3 bg-green-800 text-white">Admin :)</button>
+      </Link>
+    </div>
   )
 }

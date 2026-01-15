@@ -1,5 +1,5 @@
 export default function sitemap() {
-  const baseUrl = "https://bravitoafterschool.md"
+  const baseUrl = "https://pischool.md"
   
   return [
     {

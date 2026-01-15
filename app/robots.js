@@ -7,6 +7,6 @@ export default function robots() {
         disallow: ["/admin/", "/teacher/", "/api/", "/login"],
       },
     ],
-    sitemap: "https://bravitoafterschool.md/sitemap.xml",
+    sitemap: "https://pischool.md/sitemap.xml",
   }
 }

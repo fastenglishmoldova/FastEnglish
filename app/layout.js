@@ -16,10 +16,10 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: {
-    default: "Bravito After School - Cursuri pentru copii în Chișinău",
-    template: "%s | Bravito After School"
+    default: "PI School - Cursuri pentru copii în Chișinău",
+    template: "%s | PI School"
   },
-  description: "Bravito After School oferă cursuri de calitate pentru copii în Chișinău: limba germană, engleză, franceză, matematică și multe altele. Profesori calificați, curriculum național, grupe mici.",
+  description: "PI School oferă cursuri de calitate pentru copii în Chișinău: limba germană, engleză, franceză, matematică și multe altele. Profesori calificați, curriculum național, grupe mici.",
   keywords: [
     "cursuri copii Chișinău",
     "after school Chișinău", 
@@ -29,42 +29,42 @@ export const metadata = {
     "cursuri limba franceză copii",
     "educație copii Moldova",
     "after school Moldova",
-    "Bravito",
+    "PI School",
     "cursuri după școală"
   ],
-  authors: [{ name: "Bravito After School" }],
-  creator: "Bravito After School",
-  publisher: "Bravito After School",
+  authors: [{ name: "PI School" }],
+  creator: "PI School",
+  publisher: "PI School",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://bravitoafterschool.md"),
+  metadataBase: new URL("https://pischool.md"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Bravito After School - Cursuri pentru copii în Chișinău",
+    title: "PI School - Cursuri pentru copii în Chișinău",
     description: "Cursuri de calitate pentru copii: limba germană, engleză, franceză, matematică. Profesori calificați, curriculum național, grupe mici.",
-    url: "https://bravitoafterschool.md",
-    siteName: "Bravito After School",
+    url: "https://pischool.md",
+    siteName: "PI School",
     locale: "ro_RO",
     type: "website",
     images: [
       {
-        url: "/bravito.png",
+        url: "/pi.png",
         width: 512,
         height: 512,
-        alt: "Bravito After School Logo",
+        alt: "PI School Logo",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Bravito After School - Cursuri pentru copii în Chișinău",
+    title: "PI School - Cursuri pentru copii în Chișinău",
     description: "Cursuri de calitate pentru copii: limba germană, engleză, franceză, matematică. Profesori calificați, curriculum național.",
-    images: ["/bravito.png"],
+    images: ["/pi.png"],
   },
   robots: {
     index: true,

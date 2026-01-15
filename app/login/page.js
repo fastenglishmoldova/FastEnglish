@@ -221,15 +221,15 @@ export default function LoginPage() {
         <Link href="/" className="flex items-center justify-center space-x-2 xs:space-x-3 mb-5 xs:mb-8">
           <div className="relative w-10 h-10 xs:w-12 xs:h-12 rounded-full overflow-hidden ring-2 ring-[#30919f]/30">
             <Image
-              src="/bravito.png"
-              alt="Bravito After School"
+              src="/pi.png"
+              alt="PI School"
               fill
               className="object-cover"
             />
           </div>
           <div className="flex flex-col">
-            <span className="text-lg xs:text-xl font-bold text-gray-900">BRAVITO</span>
-            <span className="text-[9px] xs:text-[10px] font-medium text-[#30919f] tracking-[0.15em] uppercase -mt-1">After School</span>
+            <span className="text-lg xs:text-xl font-bold text-gray-900">PI SCHOOL</span>
+            <span className="text-[9px] xs:text-[10px] font-medium text-[#30919f] tracking-[0.15em] uppercase -mt-1">Educație</span>
           </div>
         </Link>
 
