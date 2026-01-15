@@ -166,12 +166,20 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
+        console.error('NextAuth signIn error:', result.error)
         toast.error(result.error)
         resetTurnstile()
+      } else if (result?.ok) {
+        toast.success('Autentificare reușită! Redirecționare...')
+        console.log('Login successful, redirecting to:', callbackUrl)
+        // Small delay to ensure session is saved before redirect
+        setTimeout(() => {
+          window.location.href = callbackUrl
+        }, 500)
       } else {
-        toast.success('Autentificare reușită!')
-        // Force navigation with window.location for reliable redirect
-        window.location.href = callbackUrl
+        console.error('Unexpected signIn result:', result)
+        toast.error('Eroare la autentificare')
+        resetTurnstile()
       }
     } catch (error) {
       console.error('Login error:', error)
