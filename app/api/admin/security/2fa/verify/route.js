@@ -55,14 +55,28 @@ export async function POST(request) {
     // Generate backup codes
     const { plainCodes, hashedCodes } = generateBackupCodes(10)
     
-    // Enable 2FA
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        twoFactorEnabled: true,
-        twoFactorBackupCodes: hashedCodes
-      }
-    })
+    // Enable 2FA and create backup codes in a transaction
+    await prisma.$transaction([
+      // Enable 2FA on user
+      prisma.user.update({
+        where: { id: user.id },
+        data: {
+          twoFactorEnabled: true,
+          twoFactorSetupAt: new Date()
+        }
+      }),
+      // Delete any existing backup codes
+      prisma.backupCode.deleteMany({
+        where: { userId: user.id }
+      }),
+      // Create new backup codes
+      prisma.backupCode.createMany({
+        data: hashedCodes.map(codeHash => ({
+          userId: user.id,
+          codeHash
+        }))
+      })
+    ])
     
     return NextResponse.json({
       success: true,
