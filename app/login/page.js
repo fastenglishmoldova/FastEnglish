@@ -134,10 +134,18 @@ export default function LoginPage() {
         return
       }
 
-      // Handle CAPTCHA requirement
+      // Handle CAPTCHA requirement - always reset widget when server asks for CAPTCHA
       if (validateData.requiresCaptcha) {
         setRequiresCaptcha(true)
         setSiteKey(validateData.siteKey)
+        // Reset widget to get a fresh token
+        resetTurnstile()
+        
+        // If this is just a CAPTCHA request (not other error), show appropriate message
+        if (validateRes.status === 400 && validateData.error?.includes('CAPTCHA')) {
+          toast.error('Completează verificarea CAPTCHA')
+          return
+        }
       }
 
       // Handle 2FA requirement

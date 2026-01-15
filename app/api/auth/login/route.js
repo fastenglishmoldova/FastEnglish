@@ -59,6 +59,7 @@ export async function POST(request) {
     
     if (needsCaptcha) {
       if (!captchaToken) {
+        console.log('CAPTCHA required but no token provided for:', normalizedEmail)
         return NextResponse.json(
           { 
             error: 'Verificarea CAPTCHA este necesară',
@@ -70,6 +71,7 @@ export async function POST(request) {
       }
       
       const captchaResult = await verifyCaptcha(captchaToken, ipAddress)
+      console.log('CAPTCHA verification result:', captchaResult.success, captchaResult.error || '')
       if (!captchaResult.success) {
         return NextResponse.json(
           { 
