@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 
 const SEVERITY_STYLES = {
@@ -34,6 +36,8 @@ const ACTION_LABELS = {
 }
 
 export default function AuditLogsPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
   const [pagination, setPagination] = useState({ total: 0, limit: 50, skip: 0 })
@@ -47,7 +51,17 @@ export default function AuditLogsPage() {
   const [availableActions, setAvailableActions] = useState([])
   const [selectedLog, setSelectedLog] = useState(null)
 
+  // Check if user is SUPERADMIN
+  useEffect(() => {
+    if (status === 'loading') return
+    if (!session || session.user.role !== 'SUPERADMIN') {
+      toast.error('Acces permis doar pentru Super Admin')
+      router.push('/admin')
+    }
+  }, [session, status, router])
+
   const fetchLogs = useCallback(async () => {
+    if (!session || session.user.role !== 'SUPERADMIN') return
     setLoading(true)
     try {
       const params = new URLSearchParams()

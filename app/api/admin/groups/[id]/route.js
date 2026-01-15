@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { requireAdmin } from '@/lib/session'
+import { requireAdmin, getSession } from '@/lib/session'
+import { require2FAToken } from '@/lib/security/action-tokens'
 
 export async function GET(request, { params }) {
   try {
@@ -42,8 +43,23 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     await requireAdmin()
+    const session = await getSession()
     const { id } = await params
     const body = await request.json()
+
+    // Verify 2FA if user has it enabled
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { twoFactorEnabled: true }
+    })
+    
+    const twoFACheck = require2FAToken(body.actionToken, session.user.email, currentUser?.twoFactorEnabled)
+    if (!twoFACheck.valid && !twoFACheck.skip) {
+      return NextResponse.json({ 
+        error: twoFACheck.error, 
+        requires2FA: true 
+      }, { status: 403 })
+    }
 
     const { name, courseId, teacherId, scheduleDays, scheduleTime,
             locationType, locationDetails, startDate, active } = body
@@ -76,7 +92,25 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await requireAdmin()
+    const session = await getSession()
     const { id } = await params
+
+    // Get action token from header
+    const actionToken = request.headers.get('x-action-token')
+
+    // Verify 2FA if user has it enabled
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { twoFactorEnabled: true }
+    })
+    
+    const twoFACheck = require2FAToken(actionToken, session.user.email, currentUser?.twoFactorEnabled)
+    if (!twoFACheck.valid && !twoFACheck.skip) {
+      return NextResponse.json({ 
+        error: twoFACheck.error, 
+        requires2FA: true 
+      }, { status: 403 })
+    }
 
     await prisma.group.delete({ where: { id } })
 

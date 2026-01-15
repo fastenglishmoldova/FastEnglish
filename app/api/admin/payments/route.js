@@ -2,12 +2,13 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { require2FAToken } from '@/lib/security/action-tokens'
 
 // GET all payments with filters
 export async function GET(request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !['ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (!session || !['ADMIN', 'MANAGER', 'SUPERADMIN'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -84,12 +85,26 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !['ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (!session || !['ADMIN', 'MANAGER', 'SUPERADMIN'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const data = await request.json()
-    const { groupStudentId, amount, paymentDate, paymentMethod, notes, lessonsAdded } = data
+    const { groupStudentId, amount, paymentDate, paymentMethod, notes, lessonsAdded, actionToken } = data
+
+    // Verify 2FA if user has it enabled
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { twoFactorEnabled: true }
+    })
+    
+    const twoFACheck = require2FAToken(actionToken, session.user.email, currentUser?.twoFactorEnabled)
+    if (!twoFACheck.valid && !twoFACheck.skip) {
+      return NextResponse.json({ 
+        error: twoFACheck.error, 
+        requires2FA: true 
+      }, { status: 403 })
+    }
 
     if (!groupStudentId || amount === undefined) {
       return NextResponse.json({ error: 'groupStudentId și amount sunt obligatorii' }, { status: 400 })

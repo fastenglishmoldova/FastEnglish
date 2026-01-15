@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 
 const SEVERITY_STYLES = {
@@ -37,6 +39,8 @@ const TYPE_ICONS = {
 }
 
 export default function SecurityAlertsPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [alerts, setAlerts] = useState([])
   const [loading, setLoading] = useState(true)
   const [acknowledging, setAcknowledging] = useState(null)
@@ -50,7 +54,17 @@ export default function SecurityAlertsPage() {
   const [selectedAlert, setSelectedAlert] = useState(null)
   const [stats, setStats] = useState({ unacknowledged: 0, critical: 0 })
 
+  // Check if user is SUPERADMIN
+  useEffect(() => {
+    if (status === 'loading') return
+    if (!session || session.user.role !== 'SUPERADMIN') {
+      toast.error('Acces permis doar pentru Super Admin')
+      router.push('/admin')
+    }
+  }, [session, status, router])
+
   const fetchAlerts = useCallback(async () => {
+    if (!session || session.user.role !== 'SUPERADMIN') return
     setLoading(true)
     try {
       const params = new URLSearchParams()

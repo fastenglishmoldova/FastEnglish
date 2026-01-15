@@ -13,6 +13,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/admin'
   const error = searchParams.get('error')
+  const reason = searchParams.get('reason')
 
   const [formData, setFormData] = useState({
     email: '',
@@ -27,9 +28,17 @@ export default function LoginPage() {
   const [turnstileLoaded, setTurnstileLoaded] = useState(false)
   const [blocked, setBlocked] = useState(false)
   const [retryAfter, setRetryAfter] = useState(0)
+  const [logoutReason, setLogoutReason] = useState(null)
   const turnstileRef = useRef(null)
   const turnstileWidgetId = useRef(null)
   const totpInputRef = useRef(null)
+
+  // Check for logout reason
+  useEffect(() => {
+    if (reason === '2fa_failed') {
+      setLogoutReason('Sesiunea a fost închisă automat din cauza prea multor încercări 2FA eșuate.')
+    }
+  }, [reason])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -251,6 +260,18 @@ export default function LoginPage() {
                 : error === 'AccessDenied'
                 ? 'Accesul a fost refuzat.'
                 : 'A apărut o eroare la autentificare.'}
+            </div>
+          )}
+
+          {/* 2FA logout warning */}
+          {logoutReason && (
+            <div className="mb-4 xs:mb-6 p-3 xs:p-4 bg-amber-50 border border-amber-200 rounded-lg xs:rounded-xl text-amber-700 text-xs xs:text-sm">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+                <span>{logoutReason}</span>
+              </div>
             </div>
           )}
 

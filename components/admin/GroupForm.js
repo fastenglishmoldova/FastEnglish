@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import TwoFactorModal from './TwoFactorModal'
 
 const days = ['Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă', 'Duminică']
 
@@ -26,6 +27,7 @@ const parseScheduleTime = (scheduleTime, scheduleDays) => {
 export default function GroupForm({ group, courses, teachers }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [show2FA, setShow2FA] = useState(false)
   const [formData, setFormData] = useState({
     name: group?.name || '',
     courseId: group?.courseId || '',
@@ -80,6 +82,10 @@ export default function GroupForm({ group, courses, teachers }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setShow2FA(true)
+  }
+
+  const executeSubmit = async (actionToken) => {
     setLoading(true)
 
     try {
@@ -91,28 +97,52 @@ export default function GroupForm({ group, courses, teachers }) {
         ? JSON.stringify(formData.scheduleTimes)
         : null
 
+      const payload = {
+        name: formData.name,
+        courseId: formData.courseId,
+        teacherId: formData.teacherId,
+        scheduleDays: formData.scheduleDays,
+        scheduleTime,
+        locationType: formData.locationType,
+        locationDetails: formData.locationDetails,
+        startDate: formData.startDate ? new Date(formData.startDate).toISOString() : null,
+        active: formData.active,
+        actionToken
+      }
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          courseId: formData.courseId,
-          teacherId: formData.teacherId,
-          scheduleDays: formData.scheduleDays,
-          scheduleTime,
-          locationType: formData.locationType,
-          locationDetails: formData.locationDetails,
-          startDate: formData.startDate ? new Date(formData.startDate).toISOString() : null,
-          active: formData.active
-        })
+        body: JSON.stringify(payload)
       })
+
+      const data = await res.json()
+
+      if (res.status === 403 && data.requires2FA) {
+        // User doesn't have 2FA set up - proceed without token
+        delete payload.actionToken
+        const retryRes = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        
+        if (retryRes.ok) {
+          toast.success(group ? 'Grupa a fost actualizată' : 'Grupa a fost creată')
+          router.push('/admin/groups')
+          router.refresh()
+        } else {
+          const retryData = await retryRes.json()
+          toast.error(retryData.error || 'A apărut o eroare')
+        }
+        return
+      }
 
       if (res.ok) {
         toast.success(group ? 'Grupa a fost actualizată' : 'Grupa a fost creată')
         router.push('/admin/groups')
         router.refresh()
       } else {
-        const data = await res.json()
         toast.error(data.error || 'A apărut o eroare')
       }
     } catch (error) {
@@ -123,61 +153,62 @@ export default function GroupForm({ group, courses, teachers }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 xs:space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 xs:gap-6">
-        <div>
-          <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1">Nume grupă *</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            className="w-full px-3 xs:px-4 py-2 text-sm xs:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-700"
-            placeholder="ex: Programare - Începători A"
-          />
-        </div>
+    <>
+      <form onSubmit={handleSubmit} className="space-y-4 xs:space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 xs:gap-6">
+          <div>
+            <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1">Nume grupă *</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="w-full px-3 xs:px-4 py-2 text-sm xs:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-700"
+              placeholder="ex: Programare - Începători A"
+            />
+          </div>
 
-        <div>
-          <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1">Curs *</label>
-          <select
-            name="courseId"
-            value={formData.courseId}
-            onChange={handleChange}
-            required
-            className="w-full px-3 xs:px-4 py-2 text-sm xs:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
-          >
-            <option value="">Selectează curs</option>
-            {courses.map(course => (
-              <option key={course.id} value={course.id}>{course.title}</option>
-            ))}
-          </select>
-        </div>
+          <div>
+            <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1">Curs *</label>
+            <select
+              name="courseId"
+              value={formData.courseId}
+              onChange={handleChange}
+              required
+              className="w-full px-3 xs:px-4 py-2 text-sm xs:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+            >
+              <option value="">Selectează curs</option>
+              {courses.map(course => (
+                <option key={course.id} value={course.id}>{course.title}</option>
+              ))}
+            </select>
+          </div>
 
-        <div>
-          <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1">Profesor *</label>
-          <select
-            name="teacherId"
-            value={formData.teacherId}
-            onChange={handleChange}
-            required
-            className="w-full px-3 xs:px-4 py-2 text-sm xs:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
-          >
-            <option value="">Selectează profesor</option>
-            {teachers.map(teacher => (
-              <option key={teacher.id} value={teacher.id}>
-                {teacher.name || teacher.email}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div>
+            <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1">Profesor *</label>
+            <select
+              name="teacherId"
+              value={formData.teacherId}
+              onChange={handleChange}
+              required
+              className="w-full px-3 xs:px-4 py-2 text-sm xs:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+            >
+              <option value="">Selectează profesor</option>
+              {teachers.map(teacher => (
+                <option key={teacher.id} value={teacher.id}>
+                  {teacher.name || teacher.email}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div className="md:col-span-2">
-          <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">Zile și ore program</label>
-          <div className="space-y-2 xs:space-y-3">
-            {/* Butoane zile */}
-            <div className="flex flex-wrap gap-1.5 xs:gap-2">
-              {days.map(day => (
+          <div className="md:col-span-2">
+            <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">Zile și ore program</label>
+            <div className="space-y-2 xs:space-y-3">
+              {/* Butoane zile */}
+              <div className="flex flex-wrap gap-1.5 xs:gap-2">
+                {days.map(day => (
                 <button
                   key={day}
                   type="button"
@@ -286,5 +317,14 @@ export default function GroupForm({ group, courses, teachers }) {
         </button>
       </div>
     </form>
+
+    <TwoFactorModal
+      isOpen={show2FA}
+      onClose={() => setShow2FA(false)}
+      onVerify={executeSubmit}
+      title="Verificare 2FA"
+      description={group ? 'Confirmă identitatea pentru a actualiza grupa.' : 'Confirmă identitatea pentru a crea grupa.'}
+    />
+  </>
   )
 }

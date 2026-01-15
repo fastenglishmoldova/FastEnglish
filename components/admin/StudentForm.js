@@ -3,10 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import TwoFactorModal from './TwoFactorModal'
 
 export default function StudentForm({ student }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [show2FA, setShow2FA] = useState(false)
+  const [pendingAction, setPendingAction] = useState(null)
   const [formData, setFormData] = useState({
     fullName: student?.fullName || '',
     age: student?.age || '',
@@ -23,6 +26,12 @@ export default function StudentForm({ student }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    // Store the action and show 2FA modal
+    setPendingAction({ type: 'submit' })
+    setShow2FA(true)
+  }
+
+  const executeSubmit = async (actionToken) => {
     setLoading(true)
 
     try {
@@ -34,114 +43,158 @@ export default function StudentForm({ student }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          age: formData.age ? parseInt(formData.age) : null
+          age: formData.age ? parseInt(formData.age) : null,
+          actionToken
         })
       })
+
+      const data = await res.json()
+
+      if (res.status === 403 && data.requires2FA) {
+        // User doesn't have 2FA set up - proceed without token
+        const retryRes = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...formData,
+            age: formData.age ? parseInt(formData.age) : null
+          })
+        })
+        
+        if (retryRes.ok) {
+          toast.success(student ? 'Elevul a fost actualizat' : 'Elevul a fost adăugat')
+          router.push('/admin/students')
+          router.refresh()
+        } else {
+          const retryData = await retryRes.json()
+          toast.error(retryData.error || 'A apărut o eroare')
+        }
+        return
+      }
 
       if (res.ok) {
         toast.success(student ? 'Elevul a fost actualizat' : 'Elevul a fost adăugat')
         router.push('/admin/students')
         router.refresh()
       } else {
-        const data = await res.json()
         toast.error(data.error || 'A apărut o eroare')
       }
     } catch (error) {
       toast.error('A apărut o eroare')
     } finally {
       setLoading(false)
+      setPendingAction(null)
+    }
+  }
+
+  const handle2FAVerify = (token) => {
+    if (pendingAction?.type === 'submit') {
+      executeSubmit(token)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Nume complet *</label>
-          <input
-            type="text"
-            name="fullName"
-            value={formData.fullName}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
-          />
+    <>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nume complet *</label>
+            <input
+              type="text"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Vârstă</label>
+            <input
+              type="number"
+              name="age"
+              value={formData.age}
+              onChange={handleChange}
+              min={3}
+              max={18}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nume părinte</label>
+            <input
+              type="text"
+              name="parentName"
+              value={formData.parentName}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Telefon părinte</label>
+            <input
+              type="tel"
+              name="parentPhone"
+              value={formData.parentPhone}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email părinte</label>
+            <input
+              type="email"
+              name="parentEmail"
+              value={formData.parentEmail}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Note</label>
+            <textarea
+              name="notes"
+              value={formData.notes}
+              onChange={handleChange}
+              rows={3}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+            />
+          </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Vârstă</label>
-          <input
-            type="number"
-            name="age"
-            value={formData.age}
-            onChange={handleChange}
-            min={3}
-            max={18}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
-          />
+        <div className="flex gap-4 pt-4 border-t">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50"
+          >
+            Anulează
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {loading ? 'Se salvează...' : (student ? 'Actualizează' : 'Adaugă elev')}
+          </button>
         </div>
+      </form>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Nume părinte</label>
-          <input
-            type="text"
-            name="parentName"
-            value={formData.parentName}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Telefon părinte</label>
-          <input
-            type="tel"
-            name="parentPhone"
-            value={formData.parentPhone}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email părinte</label>
-          <input
-            type="email"
-            name="parentEmail"
-            value={formData.parentEmail}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
-          />
-        </div>
-
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Note</label>
-          <textarea
-            name="notes"
-            value={formData.notes}
-            onChange={handleChange}
-            rows={3}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
-          />
-        </div>
-      </div>
-
-      <div className="flex gap-4 pt-4 border-t">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50"
-        >
-          Anulează
-        </button>
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50"
-        >
-          {loading ? 'Se salvează...' : (student ? 'Actualizează' : 'Adaugă elev')}
-        </button>
-      </div>
-    </form>
+      <TwoFactorModal
+        isOpen={show2FA}
+        onClose={() => {
+          setShow2FA(false)
+          setPendingAction(null)
+        }}
+        onVerify={handle2FAVerify}
+        title="Verificare 2FA"
+        description={student ? 'Confirmă identitatea pentru a actualiza elevul.' : 'Confirmă identitatea pentru a adăuga elevul.'}
+      />
+    </>
   )
 }

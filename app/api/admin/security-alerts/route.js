@@ -14,9 +14,9 @@ export async function GET(request) {
     const { user, error } = await requireAdmin()
     if (error) return error
     
-    // Only full admins can view security alerts
-    if (user.role !== 'ADMIN') {
-      return apiError('Insufficient permissions', 403)
+    // Only SUPERADMIN can view security alerts
+    if (user.role !== 'SUPERADMIN') {
+      return apiError('Acces permis doar pentru Super Admin', 403)
     }
     
     const { searchParams } = new URL(request.url)
@@ -54,8 +54,8 @@ export async function POST(request) {
     const { user, error } = await requireAdmin()
     if (error) return error
     
-    if (user.role !== 'ADMIN') {
-      return apiError('Insufficient permissions', 403)
+    if (user.role !== 'SUPERADMIN') {
+      return apiError('Acces permis doar pentru Super Admin', 403)
     }
     
     const body = await request.json()

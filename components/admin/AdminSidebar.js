@@ -39,7 +39,7 @@ const navigation = [
   { name: 'Înscrieri', href: '/admin/enrollments', icon: 'users' },
   { name: 'Mesaje Contact', href: '/admin/contact', icon: 'chat' },
   { name: 'Elevi', href: '/admin/students', icon: 'academic' },
-  { name: 'Profesori', href: '/admin/teachers', icon: 'user' },
+  { name: 'Personal', href: '/admin/teachers', icon: 'user' },
   { name: 'Grupe', href: '/admin/groups', icon: 'collection' },
   { name: 'Sesiuni', href: '/admin/sessions', icon: 'calendar' },
   { name: 'Lecții Ratate', href: '/admin/missed-sessions', icon: 'warning' },
@@ -47,8 +47,8 @@ const navigation = [
   { name: 'Plăți', href: '/admin/payments', icon: 'banknotes' },
   { name: 'Reviews', href: '/admin/reviews', icon: 'star' },
   { name: 'Securitate', href: '/admin/security', icon: 'shield' },
-  { name: 'Alerte Securitate', href: '/admin/security-alerts', icon: 'exclamation' },
-  { name: 'Audit Logs', href: '/admin/audit-logs', icon: 'document' }
+  { name: 'Alerte Securitate', href: '/admin/security-alerts', icon: 'exclamation', superadminOnly: true },
+  { name: 'Audit Logs', href: '/admin/audit-logs', icon: 'document', superadminOnly: true }
 ]
 
 const icons = {
@@ -191,7 +191,9 @@ export default function AdminSidebar({ user }) {
             <ul role="list" className="flex flex-1 flex-col gap-y-7">
               <li>
                 <ul role="list" className="-mx-2 space-y-1">
-                  {navigation.map((item) => {
+                  {navigation
+                    .filter(item => !item.superadminOnly || user?.role === 'SUPERADMIN')
+                    .map((item) => {
                     const isActive = pathname === item.href || 
                       (item.href !== '/admin' && pathname.startsWith(item.href))
                     const isLoading = isPending && pendingHref === item.href
@@ -305,7 +307,9 @@ export default function AdminSidebar({ user }) {
 
         {/* Navigation */}
         <nav className="flex-1 px-2 py-2 space-y-0.5 overflow-y-auto max-h-[calc(100vh-140px)]">
-          {navigation.map((item) => {
+          {navigation
+            .filter(item => !item.superadminOnly || user?.role === 'SUPERADMIN')
+            .map((item) => {
             const isActive = pathname === item.href || 
               (item.href !== '/admin' && pathname.startsWith(item.href))
             const isLoading = isPending && pendingHref === item.href

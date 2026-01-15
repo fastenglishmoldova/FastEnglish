@@ -40,8 +40,8 @@ export async function POST(request) {
       return apiError('Invalid role', 400)
     }
     
-    // Only ADMIN can create other ADMINs
-    if (role === 'ADMIN' && actor.role !== 'ADMIN') {
+    // Only ADMIN or SUPERADMIN can create other ADMINs
+    if (role === 'ADMIN' && actor.role !== 'ADMIN' && actor.role !== 'SUPERADMIN') {
       await auditUserAction({
         action: 'create',
         actorId: actor.id,

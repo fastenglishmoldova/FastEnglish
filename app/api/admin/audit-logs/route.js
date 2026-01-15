@@ -12,9 +12,9 @@ export async function GET(request) {
     const { user, error } = await requireAdmin()
     if (error) return error
     
-    // Only full admins can view audit logs
-    if (user.role !== 'ADMIN') {
-      return apiError('Insufficient permissions', 403)
+    // Only SUPERADMIN can view audit logs
+    if (user.role !== 'SUPERADMIN') {
+      return apiError('Acces permis doar pentru Super Admin', 403)
     }
     
     const { searchParams } = new URL(request.url)

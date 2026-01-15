@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { requireAdmin } from '@/lib/session'
+import { requireAdmin, getSession } from '@/lib/session'
+import { require2FAToken } from '@/lib/security/action-tokens'
 
 export async function GET() {
   try {
@@ -20,7 +21,22 @@ export async function GET() {
 export async function POST(request) {
   try {
     await requireAdmin()
+    const session = await getSession()
     const body = await request.json()
+
+    // Verify 2FA if user has it enabled
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { twoFactorEnabled: true }
+    })
+    
+    const twoFACheck = require2FAToken(body.actionToken, session.user.email, user?.twoFactorEnabled)
+    if (!twoFACheck.valid && !twoFACheck.skip) {
+      return NextResponse.json({ 
+        error: twoFACheck.error, 
+        requires2FA: true 
+      }, { status: 403 })
+    }
 
     const { fullName, age, parentName, parentPhone, parentEmail, notes } = body
 

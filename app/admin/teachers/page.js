@@ -3,13 +3,13 @@ export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import Image from 'next/image'
 import prisma from '@/lib/prisma'
-import { ChartBarIcon } from '@heroicons/react/24/outline'
+import { ChartBarIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
 import DeleteTeacherButton from '@/components/admin/DeleteTeacherButton'
 
 export default async function TeachersPage() {
   const teachers = await prisma.user.findMany({
-    where: { role: 'TEACHER' },
-    orderBy: { createdAt: 'desc' },
+    where: { role: { in: ['TEACHER', 'ADMIN', 'MANAGER'] } },
+    orderBy: [{ role: 'asc' }, { createdAt: 'desc' }],
     include: {
       teacherGroups: {
         include: { 
@@ -45,14 +45,14 @@ export default async function TeachersPage() {
       {/* Header */}
       <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2 xs:gap-3">
         <div>
-          <h1 className="text-lg xs:text-xl sm:text-2xl font-bold text-gray-900">Profesori</h1>
-          <p className="text-xs xs:text-sm sm:text-base text-gray-600">Gestionează conturile profesorilor</p>
+          <h1 className="text-lg xs:text-xl sm:text-2xl font-bold text-gray-900">Personal</h1>
+          <p className="text-xs xs:text-sm sm:text-base text-gray-600">Gestionează conturile profesorilor și administratorilor</p>
         </div>
         <Link
           href="/admin/teachers/new"
           className="px-2.5 xs:px-3 sm:px-4 py-1.5 xs:py-2 bg-indigo-600 text-white rounded-lg text-xs xs:text-sm sm:text-base font-medium hover:bg-indigo-700 transition-colors text-center"
         >
-          + Adaugă profesor
+          + Adaugă cont
         </Link>
       </div>
 
@@ -61,7 +61,8 @@ export default async function TeachersPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Profesor</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Personal</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Grupe</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Elevi</th>
@@ -72,8 +73,8 @@ export default async function TeachersPage() {
           <tbody className="bg-white divide-y divide-gray-200">
             {teachersWithStats.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                  Nu există profesori. Adaugă primul profesor!
+                <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                  Nu există personal. Adaugă primul cont!
                 </td>
               </tr>
             ) : (
@@ -84,20 +85,42 @@ export default async function TeachersPage() {
                       {teacher.image ? (
                         <Image
                           src={teacher.image}
-                          alt={teacher.name || 'Profesor'}
+                          alt={teacher.name || 'Personal'}
                           width={40}
                           height={40}
                           className="w-10 h-10 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          teacher.role === 'ADMIN' ? 'bg-gradient-to-br from-red-500 to-orange-600' :
+                          teacher.role === 'MANAGER' ? 'bg-gradient-to-br from-yellow-500 to-amber-600' :
+                          'bg-gradient-to-br from-indigo-500 to-purple-600'
+                        }`}>
                           <span className="text-white font-medium">
                             {teacher.name?.charAt(0) || teacher.email.charAt(0).toUpperCase()}
                           </span>
                         </div>
                       )}
-                      <p className="font-medium text-gray-900">{teacher.name || 'Fără nume'}</p>
+                      <div>
+                        <p className="font-medium text-gray-900">{teacher.name || 'Fără nume'}</p>
+                        {teacher.twoFactorEnabled && (
+                          <span className="inline-flex items-center gap-0.5 text-xs text-green-600">
+                            <ShieldCheckIcon className="w-3 h-3" />
+                            2FA
+                          </span>
+                        )}
+                      </div>
                     </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      teacher.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
+                      teacher.role === 'MANAGER' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-indigo-100 text-indigo-800'
+                    }`}>
+                      {teacher.role === 'ADMIN' ? 'Administrator' : 
+                       teacher.role === 'MANAGER' ? 'Manager' : 'Profesor'}
+                    </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">{teacher.email}</td>
                   <td className="px-6 py-4">
@@ -109,21 +132,25 @@ export default async function TeachersPage() {
                           </span>
                         ))
                       ) : (
-                        <span className="text-sm text-gray-500">Fără grupe</span>
+                        <span className="text-sm text-gray-500">{teacher.role === 'TEACHER' ? 'Fără grupe' : '-'}</span>
                       )}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        {teacher.activeStudents} activi
-                      </span>
-                      {teacher.leftStudents > 0 && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                          {teacher.leftStudents} plecați
+                    {teacher.role === 'TEACHER' ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          {teacher.activeStudents} activi
                         </span>
-                      )}
-                    </div>
+                        {teacher.leftStudents > 0 && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                            {teacher.leftStudents} plecați
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-sm text-gray-400">-</span>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
