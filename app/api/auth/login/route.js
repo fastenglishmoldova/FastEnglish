@@ -53,9 +53,13 @@ export async function POST(request) {
     
     const normalizedEmail = email.toLowerCase().trim()
     
-    // Check CAPTCHA requirement
-    const needsCaptcha = await shouldRequireCaptcha(normalizedEmail) || 
-                         await shouldRequireCaptcha(ipAddress)
+    // Check CAPTCHA requirement - but skip if this is a 2FA code submission
+    // (CAPTCHA was already verified in the first request)
+    const is2FASubmission = !!totpCode
+    const needsCaptcha = !is2FASubmission && (
+      await shouldRequireCaptcha(normalizedEmail) || 
+      await shouldRequireCaptcha(ipAddress)
+    )
     
     if (needsCaptcha) {
       if (!captchaToken) {
