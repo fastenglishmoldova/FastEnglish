@@ -159,17 +159,20 @@ export default function LoginPage() {
       }
 
       // Credentials validated (including 2FA if enabled)! Now use NextAuth signIn with preValidated flag
+      console.log('Calling NextAuth signIn...')
       const result = await signIn('credentials', {
         email: formData.email,
         preValidated: 'true', // Skip password re-check, API already validated everything
         redirect: false
       })
+      
+      console.log('NextAuth signIn result:', JSON.stringify(result))
 
       if (result?.error) {
         console.error('NextAuth signIn error:', result.error)
         toast.error(result.error)
         resetTurnstile()
-      } else if (result?.ok) {
+      } else if (result?.ok || result?.status === 200) {
         toast.success('Autentificare reușită! Redirecționare...')
         console.log('Login successful, redirecting to:', callbackUrl)
         // Small delay to ensure session is saved before redirect
