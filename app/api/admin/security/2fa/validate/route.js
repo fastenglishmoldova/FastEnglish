@@ -96,13 +96,14 @@ export async function POST(request) {
           data: {
             type: 'SUSPICIOUS_ACTIVITY',
             severity: 'HIGH',
+            title: 'Sesiune terminată - Încercări 2FA eșuate',
             message: `Sesiune terminată pentru utilizatorul ${user.email} - ${MAX_FAILED_ATTEMPTS} încercări 2FA eșuate consecutive`,
             userId: user.id,
-            metadata: {
+            ipAddress: ip,
+            details: {
               action: 'forced_logout',
               reason: 'max_failed_2fa_attempts',
-              attempts: attemptResult.totalAttempts,
-              ip: ip
+              attempts: attemptResult.totalAttempts
             }
           }
         })

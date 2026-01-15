@@ -34,20 +34,20 @@ async function main() {
     })
     
     if (existingUser) {
-      // Update existing user to ADMIN role and update password
+      // Update existing user to SUPERADMIN role and update password
       console.log(`  ⏳ Updating existing user...`)
       const passwordHash = await hashPassword(admin.password)
       
       await prisma.user.update({
         where: { id: existingUser.id },
         data: {
-          role: 'ADMIN',
+          role: 'SUPERADMIN',
           password: passwordHash,
           name: admin.name || existingUser.name,
           twoFactorEnabled: existingUser.twoFactorEnabled, // Keep 2FA status
         }
       })
-      console.log(`  ✅ Updated to ADMIN role`)
+      console.log(`  ✅ Updated to SUPERADMIN role`)
     } else {
       // Create new admin user
       console.log(`  ⏳ Creating new admin...`)
@@ -58,11 +58,11 @@ async function main() {
           email: admin.email.toLowerCase(),
           name: admin.name || 'Admin',
           password: passwordHash,
-          role: 'ADMIN',
+          role: 'SUPERADMIN',
           twoFactorEnabled: false,
         }
       })
-      console.log(`  ✅ Created as ADMIN`)
+      console.log(`  ✅ Created as SUPERADMIN`)
     }
   }
   
