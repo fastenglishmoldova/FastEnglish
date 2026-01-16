@@ -15,8 +15,13 @@ import crypto from 'crypto'
 
 export async function POST(request) {
   try {
-    // Rate limit: 10 attempts, then block for 15 minutes
+    // Get request info for logging
     const ip = getClientIP(request)
+    const userAgent = request.headers.get('user-agent') || 'unknown'
+    const referer = request.headers.get('referer') || 'unknown'
+    const endpoint = '/api/admin/security/2fa/validate'
+    
+    // Rate limit: 10 attempts, then block for 15 minutes
     const rateCheck = checkRateLimit(`2fa-validate:${ip}`, 10, 900000)
     
     if (!rateCheck.success) {
@@ -80,7 +85,12 @@ export async function POST(request) {
           action: 'FAILED_2FA_ATTEMPT',
           actorId: user.id,
           ipAddress: ip,
-          details: { message: `Încercare 2FA eșuată (${attemptResult.totalAttempts}/${MAX_FAILED_ATTEMPTS})` }
+          details: { 
+            message: `Încercare 2FA eșuată (${attemptResult.totalAttempts}/${MAX_FAILED_ATTEMPTS})`,
+            endpoint: endpoint,
+            userAgent: userAgent,
+            referer: referer
+          }
         }
       })
       
@@ -93,7 +103,12 @@ export async function POST(request) {
             actorId: user.id,
             ipAddress: ip,
             severity: 'critical',
-            details: { message: `Sesiune terminată automat - ${MAX_FAILED_ATTEMPTS} încercări 2FA eșuate consecutive` }
+            details: { 
+              message: `Sesiune terminată automat - ${MAX_FAILED_ATTEMPTS} încercări 2FA eșuate consecutive`,
+              endpoint: endpoint,
+              userAgent: userAgent,
+              referer: referer
+            }
           }
         })
         
@@ -109,7 +124,10 @@ export async function POST(request) {
             details: {
               action: 'forced_logout',
               reason: 'max_failed_2fa_attempts',
-              attempts: attemptResult.totalAttempts
+              attempts: attemptResult.totalAttempts,
+              endpoint: endpoint,
+              userAgent: userAgent,
+              referer: referer
             }
           }
         })
