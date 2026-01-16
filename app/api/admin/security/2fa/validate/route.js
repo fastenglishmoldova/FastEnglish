@@ -68,7 +68,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Eroare de securitate. Contactează administratorul.' }, { status: 500 })
     }
     
-    const isValid = verifyTOTP(secret, code)
+    const isValid = verifyTOTP(code, secret)
     
     if (!isValid) {
       // Record failed attempt
