@@ -391,37 +391,37 @@ export default function SecurityAlertsPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <div className="text-gray-500">Tip</div>
-                    <div className="font-medium">{TYPE_LABELS[selectedAlert.type] || selectedAlert.type}</div>
+                    <div className="font-medium text-gray-900">{TYPE_LABELS[selectedAlert.type] || selectedAlert.type}</div>
                   </div>
                   <div>
                     <div className="text-gray-500">Severitate</div>
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                      SEVERITY_STYLES[selectedAlert.severity] || 'bg-gray-100'
+                      SEVERITY_STYLES[selectedAlert.severity] || 'bg-gray-100 text-gray-800'
                     }`}>
                       {selectedAlert.severity}
                     </span>
                   </div>
                   <div>
                     <div className="text-gray-500">Data/Ora</div>
-                    <div className="font-medium">{formatDate(selectedAlert.createdAt)}</div>
+                    <div className="font-medium text-gray-900">{formatDate(selectedAlert.createdAt)}</div>
                   </div>
                   <div>
                     <div className="text-gray-500">IP Address</div>
-                    <div className="font-mono">{selectedAlert.ipAddress || '-'}</div>
+                    <div className="font-mono text-gray-700">{selectedAlert.ipAddress || '-'}</div>
                   </div>
                   <div>
                     <div className="text-gray-500">Trimis via</div>
-                    <div>{selectedAlert.sentVia?.join(', ') || 'Niciun canal'}</div>
+                    <div className="text-gray-700">{selectedAlert.sentVia?.join(', ') || 'Niciun canal'}</div>
                   </div>
                   <div>
                     <div className="text-gray-500">Status</div>
-                    <div>{selectedAlert.acknowledged ? '✓ Confirmat' : '○ Neconfirmat'}</div>
+                    <div className="text-gray-700">{selectedAlert.acknowledged ? '✓ Confirmat' : '○ Neconfirmat'}</div>
                   </div>
                 </div>
 
                 {selectedAlert.details && (
                   <div>
-                    <div className="text-sm text-gray-500 mb-1">Detalii suplimentare</div>
+                    <div className="text-sm font-medium text-gray-700 mb-1">Detalii suplimentare</div>
                     <pre className="bg-gray-900 text-green-400 rounded p-4 overflow-auto text-sm">
                       {JSON.stringify(selectedAlert.details, null, 2)}
                     </pre>

@@ -412,19 +412,19 @@ export default function AuditLogsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <div className="text-sm text-gray-500">Acțiune</div>
-                    <div className="font-medium">{ACTION_LABELS[selectedLog.action] || selectedLog.action}</div>
+                    <div className="font-medium text-gray-900">{ACTION_LABELS[selectedLog.action] || selectedLog.action}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-500">Data/Ora</div>
-                    <div className="font-medium">{formatDate(selectedLog.createdAt)}</div>
+                    <div className="font-medium text-gray-900">{formatDate(selectedLog.createdAt)}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-500">IP Address</div>
-                    <div className="font-mono">{selectedLog.ipAddress || '-'}</div>
+                    <div className="font-mono text-gray-700">{selectedLog.ipAddress || '-'}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-500">User Agent</div>
-                    <div className="text-xs truncate" title={selectedLog.userAgent}>
+                    <div className="text-xs truncate text-gray-700" title={selectedLog.userAgent}>
                       {selectedLog.userAgent || '-'}
                     </div>
                   </div>
@@ -432,9 +432,9 @@ export default function AuditLogsPage() {
 
                 {selectedLog.actor && (
                   <div>
-                    <div className="text-sm text-gray-500 mb-1">Utilizator</div>
+                    <div className="text-sm font-medium text-gray-700 mb-1">Utilizator</div>
                     <div className="bg-gray-50 rounded p-3">
-                      <div className="font-medium">{selectedLog.actor.name || selectedLog.actor.email}</div>
+                      <div className="font-medium text-gray-900">{selectedLog.actor.name || selectedLog.actor.email}</div>
                       <div className="text-sm text-gray-500">{selectedLog.actor.email}</div>
                     </div>
                   </div>
@@ -442,7 +442,7 @@ export default function AuditLogsPage() {
 
                 {selectedLog.details && (
                   <div>
-                    <div className="text-sm text-gray-500 mb-1">Detalii suplimentare</div>
+                    <div className="text-sm font-medium text-gray-700 mb-1">Detalii suplimentare</div>
                     <pre className="bg-gray-900 text-green-400 rounded p-4 overflow-auto text-sm">
                       {JSON.stringify(selectedLog.details, null, 2)}
                     </pre>
