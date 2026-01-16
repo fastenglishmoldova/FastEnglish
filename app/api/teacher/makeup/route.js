@@ -22,7 +22,7 @@ export async function GET(request) {
       }
       
       // Filter by teacher unless admin/manager
-      if (!['ADMIN', 'MANAGER'].includes(session.user.role)) {
+      if (!['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
         whereLesson.teacherId = session.user.id
       }
 
@@ -59,7 +59,7 @@ export async function GET(request) {
     }
 
     // Filter by teacher's groups unless admin/manager
-    if (!['ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (!['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       where.group = { teacherId: session.user.id }
     }
 
@@ -110,7 +110,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 })
     }
 
-    if (group.teacherId !== session.user.id && !['ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

@@ -29,7 +29,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 })
     }
 
-    if (group.teacherId !== session.user.id && !['ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -57,7 +57,7 @@ export async function POST(request) {
 
     // Verifică dacă profesorul poate porni lecția conform programului
     // Adminii și managerii pot porni oricând
-    if (!['ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (!['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       const scheduleCheck = canStartSession(group.scheduleDays, group.scheduleTime)
       
       if (!scheduleCheck.canStart) {
@@ -103,7 +103,7 @@ export async function GET(request) {
     }
 
     // Filter by teacher's groups unless admin
-    if (!['ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (!['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       where.group = { teacherId: session.user.id }
     }
 

@@ -60,7 +60,7 @@ export async function POST(request) {
     const expiresAt = new Date()
     expiresAt.setHours(expiresAt.getHours() + TOKEN_EXPIRATION_HOURS)
     
-    if (user && user.active && ['ADMIN', 'MANAGER'].includes(user.role)) {
+    if (user && user.active && ['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(user.role)) {
       // Store reset token
       await prisma.user.update({
         where: { id: user.id },

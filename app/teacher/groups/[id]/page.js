@@ -86,7 +86,7 @@ export default async function TeacherGroupDetailPage({ params }) {
   })
 
   // Verify teacher owns this group
-  if (group.teacherId !== session.user.id && !['ADMIN', 'MANAGER'].includes(session.user.role)) {
+  if (group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
     redirect('/teacher/groups')
   }
 

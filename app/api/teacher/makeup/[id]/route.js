@@ -50,7 +50,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Makeup lesson not found' }, { status: 404 })
     }
 
-    if (makeupLesson.teacherId !== session.user.id && !['ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (makeupLesson.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -90,7 +90,7 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'Makeup lesson not found' }, { status: 404 })
     }
 
-    if (makeupLesson.teacherId !== session.user.id && !['ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (makeupLesson.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -100,7 +100,7 @@ export async function PATCH(request, { params }) {
     const isExpired = hoursElapsed >= 24
     const allowedActions = ['cancel', 'start', 'complete', 'addStudent', 'removeStudent', 'updateAttendance']
     
-    if (isExpired && !allowedActions.includes(action) && !['ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (isExpired && !allowedActions.includes(action) && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ 
         error: 'Nu poți modifica notițele după 24 de ore de la creare. Contactează un administrator.' 
       }, { status: 403 })
@@ -150,7 +150,7 @@ export async function PATCH(request, { params }) {
       // Cancel the makeup lesson - notify admin
       const studentNames = makeupLesson.students.map(s => s.student.fullName).join(', ')
       const scheduledTime = new Date(makeupLesson.scheduledAt).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Bucharest' })
-      const isAdmin = ['ADMIN', 'MANAGER'].includes(session.user.role)
+      const isAdmin = ['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)
       const cancelledBy = isAdmin ? session.user.name : makeupLesson.group.teacher?.name || session.user.name
       
       // Trimite notificare Telegram (nu arunca eroare dacă nu merge)

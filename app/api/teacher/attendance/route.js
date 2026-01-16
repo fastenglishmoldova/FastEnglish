@@ -25,7 +25,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
-    if (lessonSession.group.teacherId !== session.user.id && !['ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (lessonSession.group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -37,7 +37,7 @@ export async function POST(request) {
     const hoursElapsed = (Date.now() - new Date(lessonSession.date).getTime()) / (1000 * 60 * 60)
     const isExpired = hoursElapsed >= 24
     
-    if (isExpired && notes !== undefined && !['ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (isExpired && notes !== undefined && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ 
         error: 'Nu poți modifica notițele după 24 de ore de la sesiune. Contactează un administrator.' 
       }, { status: 403 })

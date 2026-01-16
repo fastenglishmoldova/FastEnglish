@@ -31,7 +31,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
-    if (lessonSession.group.teacherId !== session.user.id && !['ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (lessonSession.group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

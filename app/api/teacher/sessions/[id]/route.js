@@ -31,7 +31,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
-    if (lessonSession.group.teacherId !== session.user.id && !['ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (lessonSession.group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -63,7 +63,7 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
-    if (lessonSession.group.teacherId !== session.user.id && !['ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (lessonSession.group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -71,7 +71,7 @@ export async function PATCH(request, { params }) {
     const hoursElapsed = (Date.now() - new Date(lessonSession.date).getTime()) / (1000 * 60 * 60)
     const isExpired = hoursElapsed >= 24
     
-    if (isExpired && !['ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (isExpired && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ 
         error: 'Nu poți modifica sesiunea după 24 de ore. Contactează un administrator.' 
       }, { status: 403 })
