@@ -5,14 +5,33 @@
  */
 
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { getSecurityAlerts, acknowledgeAlert } from '@/lib/security/alerts.js'
-import { requireAdmin, getRequestContext, apiError } from '@/lib/security/guards.js'
 import { createAuditLog } from '@/lib/security/audit.js'
+import prisma from '@/lib/prisma'
+
+function apiError(message, status) {
+  return NextResponse.json({ error: message }, { status })
+}
 
 export async function GET(request) {
   try {
-    const { user, error } = await requireAdmin()
-    if (error) return error
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.email) {
+      return apiError('Unauthorized', 401)
+    }
+    
+    // Get user from DB to check role
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { role: true, email: true, id: true }
+    })
+    
+    if (!user) {
+      return apiError('User not found', 404)
+    }
     
     // Only SUPERADMIN can view security alerts
     if (user.role !== 'SUPERADMIN') {
@@ -48,11 +67,22 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  const context = await getRequestContext()
-  
   try {
-    const { user, error } = await requireAdmin()
-    if (error) return error
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.email) {
+      return apiError('Unauthorized', 401)
+    }
+    
+    // Get user from DB to check role
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { role: true, email: true, id: true }
+    })
+    
+    if (!user) {
+      return apiError('User not found', 404)
+    }
     
     if (user.role !== 'SUPERADMIN') {
       return apiError('Acces permis doar pentru Super Admin', 403)
@@ -72,7 +102,6 @@ export async function POST(request) {
       actorId: user.id,
       targetId: alertId,
       targetType: 'security_alert',
-      ...context,
       success: true,
     })
     
