@@ -29,7 +29,10 @@ export async function POST(request) {
     
     const session = await getServerSession(authOptions)
     
+    console.log('2FA validate - session:', session?.user?.email, 'role:', session?.user?.role)
+    
     if (!session?.user?.email) {
+      console.log('2FA validate - No session found')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     

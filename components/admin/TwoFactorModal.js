@@ -75,6 +75,7 @@ export default function TwoFactorModal({
       const res = await fetch('/api/admin/security/2fa/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ code: fullCode })
       })
 
