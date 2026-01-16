@@ -187,7 +187,7 @@ export default function SecurityAlertsPage() {
             <select
               value={filters.type}
               onChange={(e) => handleFilterChange('type', e.target.value)}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-gray-700"
             >
               <option value="">Toate</option>
               {availableTypes.map(type => (
@@ -205,7 +205,7 @@ export default function SecurityAlertsPage() {
             <select
               value={filters.severity}
               onChange={(e) => handleFilterChange('severity', e.target.value)}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-gray-700"
             >
               <option value="">Toate</option>
               <option value="warning">Warning</option>
@@ -220,7 +220,7 @@ export default function SecurityAlertsPage() {
             <select
               value={filters.acknowledged}
               onChange={(e) => handleFilterChange('acknowledged', e.target.value)}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-gray-700"
             >
               <option value="">Toate</option>
               <option value="false">Neconfirmate</option>

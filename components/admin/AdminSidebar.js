@@ -195,7 +195,7 @@ export default function AdminSidebar({ user }) {
                     .filter(item => !item.superadminOnly || user?.role === 'SUPERADMIN')
                     .map((item) => {
                     const isActive = pathname === item.href || 
-                      (item.href !== '/admin' && pathname.startsWith(item.href))
+                      (item.href !== '/admin' && item.href !== '/admin/security' && pathname.startsWith(item.href))
                     const isLoading = isPending && pendingHref === item.href
                     
                     return (
@@ -311,7 +311,7 @@ export default function AdminSidebar({ user }) {
             .filter(item => !item.superadminOnly || user?.role === 'SUPERADMIN')
             .map((item) => {
             const isActive = pathname === item.href || 
-              (item.href !== '/admin' && pathname.startsWith(item.href))
+              (item.href !== '/admin' && item.href !== '/admin/security' && pathname.startsWith(item.href))
             const isLoading = isPending && pendingHref === item.href
             
             return (

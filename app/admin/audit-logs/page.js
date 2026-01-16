@@ -139,7 +139,7 @@ export default function AuditLogsPage() {
             <select
               value={filters.action}
               onChange={(e) => handleFilterChange('action', e.target.value)}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-gray-700"
             >
               <option value="">Toate</option>
               {availableActions.map(action => (
@@ -157,7 +157,7 @@ export default function AuditLogsPage() {
             <select
               value={filters.severity}
               onChange={(e) => handleFilterChange('severity', e.target.value)}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-gray-700"
             >
               <option value="">Toate</option>
               <option value="info">Info</option>
@@ -174,7 +174,7 @@ export default function AuditLogsPage() {
               type="date"
               value={filters.startDate}
               onChange={(e) => handleFilterChange('startDate', e.target.value)}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-gray-700"
             />
           </div>
 
@@ -186,7 +186,7 @@ export default function AuditLogsPage() {
               type="date"
               value={filters.endDate}
               onChange={(e) => handleFilterChange('endDate', e.target.value)}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-gray-700"
             />
           </div>
 
