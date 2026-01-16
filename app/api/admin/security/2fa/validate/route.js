@@ -75,8 +75,9 @@ export async function POST(request) {
       await prisma.auditLog.create({
         data: {
           action: 'FAILED_2FA_ATTEMPT',
-          userId: user.id,
-          details: `Încercare 2FA eșuată (${attemptResult.totalAttempts}/${MAX_FAILED_ATTEMPTS})`
+          actorId: user.id,
+          ipAddress: ip,
+          details: { message: `Încercare 2FA eșuată (${attemptResult.totalAttempts}/${MAX_FAILED_ATTEMPTS})` }
         }
       })
       
@@ -86,8 +87,10 @@ export async function POST(request) {
         await prisma.auditLog.create({
           data: {
             action: 'SESSION_TERMINATED',
-            userId: user.id,
-            details: `Sesiune terminată automat - ${MAX_FAILED_ATTEMPTS} încercări 2FA eșuate consecutive`
+            actorId: user.id,
+            ipAddress: ip,
+            severity: 'critical',
+            details: { message: `Sesiune terminată automat - ${MAX_FAILED_ATTEMPTS} încercări 2FA eșuate consecutive` }
           }
         })
         
@@ -95,7 +98,7 @@ export async function POST(request) {
         await prisma.securityAlert.create({
           data: {
             type: 'SUSPICIOUS_ACTIVITY',
-            severity: 'HIGH',
+            severity: 'critical',
             title: 'Sesiune terminată - Încercări 2FA eșuate',
             message: `Sesiune terminată pentru utilizatorul ${user.email} - ${MAX_FAILED_ATTEMPTS} încercări 2FA eșuate consecutive`,
             userId: user.id,
