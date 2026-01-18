@@ -15,7 +15,8 @@ import {
   PauseCircleIcon,
   CheckCircleIcon,
   ArrowRightStartOnRectangleIcon,
-  PlayCircleIcon
+  PlayCircleIcon,
+  ArrowsRightLeftIcon
 } from '@heroicons/react/24/outline'
 
 // Status configuration
@@ -26,7 +27,7 @@ const STATUS_CONFIG = {
   COMPLETED: { label: 'Terminat', color: 'blue', icon: CheckCircleIcon }
 }
 
-export default function GroupStudentsManager({ group, allStudents }) {
+export default function GroupStudentsManager({ group, allStudents, allGroups = [] }) {
   const router = useRouter()
   const [selectedStudentId, setSelectedStudentId] = useState('')
   const [lessonsRemaining, setLessonsRemaining] = useState(group.course?.lessonsCount || 12)
@@ -38,6 +39,9 @@ export default function GroupStudentsManager({ group, allStudents }) {
   const [expandedPayments, setExpandedPayments] = useState({})
   const [showPaymentModal, setShowPaymentModal] = useState(null)
   const [showStatusModal, setShowStatusModal] = useState(null)
+  const [showTransferModal, setShowTransferModal] = useState(null)
+  const [transferForm, setTransferForm] = useState({ targetGroupId: '', transferLessons: true, transferAbsences: false })
+  const [savingTransfer, setSavingTransfer] = useState(false)
   const [statusForm, setStatusForm] = useState({ status: '', statusNote: '' })
   const [savingStatus, setSavingStatus] = useState(false)
   const [paymentForm, setPaymentForm] = useState({
@@ -257,6 +261,51 @@ export default function GroupStudentsManager({ group, allStudents }) {
       toast.error('Eroare la actualizarea statusului')
     } finally {
       setSavingStatus(false)
+    }
+  }
+
+  // Transfer modal functions
+  const openTransferModal = (groupStudent) => {
+    setShowTransferModal(groupStudent)
+    setTransferForm({
+      targetGroupId: '',
+      transferLessons: true,
+      transferAbsences: false
+    })
+  }
+
+  const handleTransferStudent = async () => {
+    if (!transferForm.targetGroupId) {
+      toast.error('Selectează grupa destinație')
+      return
+    }
+
+    setSavingTransfer(true)
+
+    try {
+      const res = await fetch(`/api/admin/groups/${group.id}/students/${showTransferModal.id}/transfer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetGroupId: transferForm.targetGroupId,
+          transferLessons: transferForm.transferLessons,
+          transferAbsences: transferForm.transferAbsences
+        })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        toast.success(data.message || 'Elevul a fost transferat')
+        setShowTransferModal(null)
+        router.refresh()
+      } else {
+        toast.error(data.error || 'Eroare la transfer')
+      }
+    } catch (error) {
+      toast.error('Eroare la transfer')
+    } finally {
+      setSavingTransfer(false)
     }
   }
 
@@ -527,12 +576,20 @@ export default function GroupStudentsManager({ group, allStudents }) {
                       {new Date(gs.enrolledAt).toLocaleDateString('ro-RO')}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => handleRemoveStudent(gs.id)}
-                        className="text-red-600 hover:text-red-900 text-sm font-medium"
-                      >
-                        Elimină
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => openTransferModal(gs)}
+                          className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                        >
+                          Transfer
+                        </button>
+                        <button
+                          onClick={() => handleRemoveStudent(gs.id)}
+                          className="text-red-600 hover:text-red-900 text-sm font-medium"
+                        >
+                          Elimină
+                        </button>
+                      </div>
                     </td>
                   </tr>
                   {/* Expanded Payments Row */}
@@ -773,17 +830,25 @@ export default function GroupStudentsManager({ group, allStudents }) {
                     )}
                   </div>
 
-                  {/* Footer: Date + Remove */}
+                  {/* Footer: Date + Transfer + Remove */}
                   <div className="flex items-center justify-between pt-2 border-t border-gray-200">
                     <span className="text-[10px] xs:text-xs text-gray-500">
                       Înscris: {new Date(gs.enrolledAt).toLocaleDateString('ro-RO')}
                     </span>
-                    <button
-                      onClick={() => handleRemoveStudent(gs.id)}
-                      className="text-red-600 hover:text-red-900 text-[10px] xs:text-xs font-medium"
-                    >
-                      Elimină
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => openTransferModal(gs)}
+                        className="text-indigo-600 hover:text-indigo-900 text-[10px] xs:text-xs font-medium"
+                      >
+                        Transfer
+                      </button>
+                      <button
+                        onClick={() => handleRemoveStudent(gs.id)}
+                        className="text-red-600 hover:text-red-900 text-[10px] xs:text-xs font-medium"
+                      >
+                        Elimină
+                      </button>
+                    </div>
                   </div>
                 </div>
               )
@@ -1147,6 +1212,136 @@ export default function GroupStudentsManager({ group, allStudents }) {
                   </span>
                 ) : (
                   'Salvează'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Transfer Modal */}
+      {showTransferModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-indigo-500 to-blue-600 px-6 py-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/20 rounded-xl">
+                    <ArrowsRightLeftIcon className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white">Transfer Elev</h3>
+                    <p className="text-indigo-100 text-sm">{showTransferModal.student.fullName}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowTransferModal(null)}
+                  className="p-2 hover:bg-white/20 rounded-xl transition-colors"
+                >
+                  <XMarkIcon className="w-5 h-5 text-white" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {/* Current info */}
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-sm text-gray-600 mb-2">Transferă din:</p>
+                <p className="font-semibold text-gray-900">{group.name}</p>
+                <div className="flex items-center gap-4 mt-2 text-sm">
+                  <span className="text-green-600">{showTransferModal.lessonsRemaining} lecții rămase</span>
+                  <span className="text-orange-600">{showTransferModal.absences || 0} absențe</span>
+                </div>
+              </div>
+
+              {/* Target Group Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Selectează grupa destinație *
+                </label>
+                <select
+                  value={transferForm.targetGroupId}
+                  onChange={(e) => setTransferForm(prev => ({ ...prev, targetGroupId: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                >
+                  <option value="">Selectează grupa</option>
+                  {allGroups.map(g => (
+                    <option key={g.id} value={g.id}>
+                      {g.name} {g.course?.title ? `(${g.course.title})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Transfer Options */}
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-gray-700">
+                  Ce se transferă:
+                </label>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
+                    <input
+                      type="checkbox"
+                      checked={transferForm.transferLessons}
+                      onChange={(e) => setTransferForm(prev => ({ ...prev, transferLessons: e.target.checked }))}
+                      className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-gray-900">Lecțiile rămase</span>
+                      <p className="text-xs text-gray-500">{showTransferModal.lessonsRemaining} lecții vor fi transferate</p>
+                    </div>
+                  </label>
+                  <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
+                    <input
+                      type="checkbox"
+                      checked={transferForm.transferAbsences}
+                      onChange={(e) => setTransferForm(prev => ({ ...prev, transferAbsences: e.target.checked }))}
+                      className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-gray-900">Absențele</span>
+                      <p className="text-xs text-gray-500">{showTransferModal.absences || 0} absențe vor fi transferate</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Info */}
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-start gap-2">
+                <span className="text-blue-500 text-lg">ℹ️</span>
+                <p className="text-sm text-blue-700">
+                  Elevul va fi marcat ca &quot;plecat&quot; din grupa curentă și adăugat în grupa nouă. Istoricul plăților rămâne în grupa veche.
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+              <button
+                onClick={() => setShowTransferModal(null)}
+                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-100 transition-colors"
+              >
+                Anulează
+              </button>
+              <button
+                onClick={handleTransferStudent}
+                disabled={savingTransfer || !transferForm.targetGroupId}
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-xl font-semibold hover:from-indigo-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-500/25"
+              >
+                {savingTransfer ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Se transferă...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <ArrowsRightLeftIcon className="w-5 h-5" />
+                    Transferă
+                  </span>
                 )}
               </button>
             </div>

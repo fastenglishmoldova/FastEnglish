@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { require2FAToken } from '@/lib/security/action-tokens'
+import { checkPermission } from '@/lib/permissions'
 
 // GET all payments with filters
 export async function GET(request) {
@@ -10,6 +11,12 @@ export async function GET(request) {
     const session = await getServerSession(authOptions)
     if (!session || !['ADMIN', 'MANAGER', 'SUPERADMIN'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    // Check permission
+    const permCheck = await checkPermission('payments.view')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să vezi plățile' }, { status: 403 })
     }
 
     const { searchParams } = new URL(request.url)
@@ -87,6 +94,12 @@ export async function POST(request) {
     const session = await getServerSession(authOptions)
     if (!session || !['ADMIN', 'MANAGER', 'SUPERADMIN'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    // Check permission
+    const permCheck = await checkPermission('payments.create')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să adaugi plăți' }, { status: 403 })
     }
 
     const data = await request.json()

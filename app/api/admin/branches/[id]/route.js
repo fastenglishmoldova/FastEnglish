@@ -2,10 +2,18 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireAdmin, getCurrentUser } from '@/lib/session'
 import { require2FAToken } from '@/lib/security/action-tokens'
+import { checkPermission } from '@/lib/permissions'
 
 export async function GET(request, { params }) {
   try {
     await requireAdmin()
+    
+    // Check permission
+    const permCheck = await checkPermission('branches.view')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să vezi filialele' }, { status: 403 })
+    }
+    
     const { id } = await params
     
     const branch = await prisma.branch.findUnique({
@@ -36,6 +44,13 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     await requireAdmin()
+    
+    // Check permission
+    const permCheck = await checkPermission('branches.edit')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să editezi filiale' }, { status: 403 })
+    }
+    
     const sessionUser = await getCurrentUser()
     const { id } = await params
     const body = await request.json()
@@ -93,6 +108,13 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await requireAdmin()
+    
+    // Check permission
+    const permCheck = await checkPermission('branches.delete')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să ștergi filiale' }, { status: 403 })
+    }
+    
     const sessionUser = await getCurrentUser()
     const { id } = await params
 

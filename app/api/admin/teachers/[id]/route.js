@@ -14,7 +14,7 @@ export async function PUT(request, { params }) {
     // Verify 2FA if user has it enabled
     const currentUser = await prisma.user.findUnique({
       where: { email: sessionUser.email },
-      select: { twoFactorEnabled: true }
+      select: { twoFactorEnabled: true, role: true }
     })
     
     const twoFACheck = require2FAToken(body.actionToken, sessionUser.email, currentUser?.twoFactorEnabled)
@@ -25,12 +25,23 @@ export async function PUT(request, { params }) {
       }, { status: 403 })
     }
 
-    const { name, password, active, twoFactorAllowed } = body
+    const { name, phone, password, active, twoFactorAllowed, role, permissions } = body
 
-    const updateData = { name, active, twoFactorAllowed }
+    const updateData = { name, phone: phone || null, active, twoFactorAllowed }
     
     if (password) {
       updateData.password = await hashPassword(password)
+    }
+
+    // Only SUPERADMIN can change role and permissions
+    if (currentUser?.role === 'SUPERADMIN') {
+      if (role && ['TEACHER', 'MANAGER', 'ADMIN'].includes(role)) {
+        updateData.role = role
+      }
+      if (Array.isArray(permissions)) {
+        // Only store permissions for ADMIN/MANAGER
+        updateData.permissions = (role === 'TEACHER') ? [] : permissions
+      }
     }
 
     const teacher = await prisma.user.update({

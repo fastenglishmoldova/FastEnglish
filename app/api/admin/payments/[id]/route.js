@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { checkPermission } from '@/lib/permissions'
 
 // GET single payment
 export async function GET(request, { params }) {
@@ -9,6 +10,12 @@ export async function GET(request, { params }) {
     const session = await getServerSession(authOptions)
     if (!session || !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    // Check permission
+    const permCheck = await checkPermission('payments.view')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să vezi plățile' }, { status: 403 })
     }
 
     const { id } = await params
@@ -47,6 +54,12 @@ export async function PATCH(request, { params }) {
     if (!session || !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    
+    // Check permission
+    const permCheck = await checkPermission('payments.edit')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să editezi plăți' }, { status: 403 })
+    }
 
     const { id } = await params
     const data = await request.json()
@@ -83,6 +96,12 @@ export async function DELETE(request, { params }) {
     const session = await getServerSession(authOptions)
     if (!session || !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    // Check permission
+    const permCheck = await checkPermission('payments.delete')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să ștergi plăți' }, { status: 403 })
     }
 
     const { id } = await params

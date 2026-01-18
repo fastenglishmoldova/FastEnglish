@@ -2,12 +2,19 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { checkPermission } from '@/lib/permissions'
 
 export async function GET(request, { params }) {
   try {
     const session = await getServerSession(authOptions)
     if (!session || !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    // Check permission
+    const permCheck = await checkPermission('contact.view')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să vezi mesajele de contact' }, { status: 403 })
     }
 
     const { id } = await params
@@ -32,6 +39,12 @@ export async function PATCH(request, { params }) {
     const session = await getServerSession(authOptions)
     if (!session || !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    // Check permission
+    const permCheck = await checkPermission('contact.edit')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să editezi mesajele de contact' }, { status: 403 })
     }
 
     const { id } = await params
@@ -58,6 +71,12 @@ export async function DELETE(request, { params }) {
     const session = await getServerSession(authOptions)
     if (!session || !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    // Check permission
+    const permCheck = await checkPermission('contact.delete')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să ștergi mesajele de contact' }, { status: 403 })
     }
 
     const { id } = await params

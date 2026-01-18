@@ -16,8 +16,10 @@ model User {
   email             String    @unique
   password          String?   // null for Google-only users (Argon2id hash)
   name              String?
+  phone             String?   // Număr de telefon (opțional)
   image             String?
   role              Role      @default(TEACHER)
+  permissions       String[]  @default([]) // Granular permissions for ADMIN/MANAGER
   emailVerified     DateTime?
   active            Boolean   @default(true)
   

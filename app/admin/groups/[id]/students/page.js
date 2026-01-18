@@ -7,7 +7,7 @@ import GroupStudentsManager from '@/components/admin/GroupStudentsManager'
 export default async function GroupStudentsPage({ params }) {
   const { id } = await params
   
-  const [group, allStudents] = await Promise.all([
+  const [group, allStudents, allGroups] = await Promise.all([
     prisma.group.findUnique({
       where: { id },
       include: {
@@ -22,12 +22,20 @@ export default async function GroupStudentsPage({ params }) {
         }
       }
     }),
-    prisma.student.findMany({ orderBy: { fullName: 'asc' } })
+    prisma.student.findMany({ orderBy: { fullName: 'asc' } }),
+    prisma.group.findMany({
+      where: { active: true },
+      include: { course: true },
+      orderBy: { name: 'asc' }
+    })
   ])
 
   if (!group) {
     notFound()
   }
+
+  // Excludem grupa curentă din lista de grupe pentru transfer
+  const otherGroups = allGroups.filter(g => g.id !== id)
 
   return (
     <div className="space-y-3 xs:space-y-4 sm:space-y-6">
@@ -39,6 +47,7 @@ export default async function GroupStudentsPage({ params }) {
       <GroupStudentsManager 
         group={JSON.parse(JSON.stringify(group))}
         allStudents={JSON.parse(JSON.stringify(allStudents))}
+        allGroups={JSON.parse(JSON.stringify(otherGroups))}
       />
     </div>
   )

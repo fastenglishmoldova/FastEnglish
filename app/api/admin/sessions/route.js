@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { checkPermission } from '@/lib/permissions'
 
 // GET - Fetch all lesson sessions for admin
 export async function GET(request) {
@@ -9,6 +10,12 @@ export async function GET(request) {
   
   if (!session || !['MANAGER', 'ADMIN'].includes(session.user.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  
+  // Check permission
+  const permCheck = await checkPermission('sessions.view')
+  if (!permCheck.allowed) {
+    return NextResponse.json({ error: 'Nu ai permisiunea să vezi sesiunile' }, { status: 403 })
   }
 
   try {

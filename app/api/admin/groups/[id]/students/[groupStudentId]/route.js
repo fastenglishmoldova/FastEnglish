@@ -1,10 +1,18 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/session'
+import { checkPermission } from '@/lib/permissions'
 
 export async function DELETE(request, { params }) {
   try {
     await requireAdmin()
+    
+    // Check permission
+    const permCheck = await checkPermission('groups.students.remove')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să elimini elevi din grupă' }, { status: 403 })
+    }
+    
     const { groupStudentId } = await params
 
     await prisma.groupStudent.delete({ where: { id: groupStudentId } })
@@ -24,6 +32,28 @@ export async function PATCH(request, { params }) {
     const { groupStudentId } = await params
     const body = await request.json()
     const { addLessons, addAbsences, status, statusNote } = body
+
+    // Check permissions based on what's being updated
+    if (addLessons !== undefined) {
+      const permCheck = await checkPermission('groups.students.lessons')
+      if (!permCheck.allowed) {
+        return NextResponse.json({ error: 'Nu ai permisiunea să modifici lecțiile' }, { status: 403 })
+      }
+    }
+    
+    if (addAbsences !== undefined) {
+      const permCheck = await checkPermission('groups.students.absences')
+      if (!permCheck.allowed) {
+        return NextResponse.json({ error: 'Nu ai permisiunea să modifici absențele' }, { status: 403 })
+      }
+    }
+    
+    if (status !== undefined) {
+      const permCheck = await checkPermission('groups.students.status')
+      if (!permCheck.allowed) {
+        return NextResponse.json({ error: 'Nu ai permisiunea să schimbi statusul elevului' }, { status: 403 })
+      }
+    }
 
     // Get current groupStudent
     const groupStudent = await prisma.groupStudent.findUnique({

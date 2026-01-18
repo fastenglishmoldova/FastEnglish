@@ -2,17 +2,30 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireAdmin, getCurrentUser } from '@/lib/session'
 import { require2FAToken } from '@/lib/security/action-tokens'
+import { checkPermission } from '@/lib/permissions'
 
 export async function GET() {
   try {
     await requireAdmin()
+    
+    const canView = await checkPermission('groups.view')
+    if (!canView) {
+      return NextResponse.json({ error: 'Nu ai permisiunea de a vedea grupele' }, { status: 403 })
+    }
     
     const [groups, teachers, branches] = await Promise.all([
       prisma.group.findMany({
         orderBy: { createdAt: 'desc' },
         include: { 
           course: true, 
-          teacher: true,
+          teacher: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true
+            }
+          },
           branch: true,
           groupStudents: {
             include: {
@@ -44,6 +57,12 @@ export async function GET() {
 export async function POST(request) {
   try {
     await requireAdmin()
+    
+    const canCreate = await checkPermission('groups.create')
+    if (!canCreate) {
+      return NextResponse.json({ error: 'Nu ai permisiunea de a crea grupe' }, { status: 403 })
+    }
+    
     const sessionUser = await getCurrentUser()
     const body = await request.json()
 

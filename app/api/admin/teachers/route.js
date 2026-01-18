@@ -40,9 +40,9 @@ export async function POST(request) {
       }, { status: 403 })
     }
 
-    const { name, email, password, active, twoFactorAllowed, role } = body
+    const { name, email, phone, password, active, twoFactorAllowed, role, permissions } = body
 
-    // Doar SUPERADMIN poate crea ADMIN
+    // Doar SUPERADMIN poate crea ADMIN/MANAGER
     const allowedRoles = ['TEACHER']
     if (currentUser?.role === 'SUPERADMIN') {
       allowedRoles.push('ADMIN', 'MANAGER')
@@ -58,12 +58,17 @@ export async function POST(request) {
 
     const hashedPassword = password ? await hashPassword(password) : null
 
+    // Only store permissions for ADMIN/MANAGER
+    const finalPermissions = (finalRole === 'TEACHER') ? [] : (Array.isArray(permissions) ? permissions : [])
+
     const teacher = await prisma.user.create({
       data: {
         name,
         email,
+        phone: phone || null,
         password: hashedPassword,
         role: finalRole,
+        permissions: finalPermissions,
         active: active ?? true,
         twoFactorAllowed: twoFactorAllowed ?? false
       }

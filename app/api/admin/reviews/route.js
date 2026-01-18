@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAdmin } from '@/lib/session'
+import { checkPermission } from '@/lib/permissions'
 
 export async function GET() {
   const session = await requireAdmin()
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  
+  // Check permission
+  const permCheck = await checkPermission('reviews.view')
+  if (!permCheck.allowed) {
+    return NextResponse.json({ error: 'Nu ai permisiunea să vezi recenziile' }, { status: 403 })
   }
 
   try {
@@ -25,6 +32,12 @@ export async function POST(request) {
   const session = await requireAdmin()
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  
+  // Check permission
+  const permCheck = await checkPermission('reviews.create')
+  if (!permCheck.allowed) {
+    return NextResponse.json({ error: 'Nu ai permisiunea să adaugi recenzii' }, { status: 403 })
   }
 
   try {

@@ -1,8 +1,8 @@
 export const dynamic = 'force-dynamic'
 
-import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import StudentsTable from '@/components/admin/StudentsTable'
+import AddStudentButton from '@/components/admin/AddStudentButton'
 
 export default async function StudentsPage() {
   const [students, groups] = await Promise.all([
@@ -28,12 +28,7 @@ export default async function StudentsPage() {
           <h1 className="text-xl xs:text-2xl font-bold text-gray-900">Elevi</h1>
           <p className="text-sm xs:text-base text-gray-600">Gestionează elevii înregistrați</p>
         </div>
-        <Link
-          href="/admin/students/new"
-          className="px-3 xs:px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm xs:text-base font-medium hover:bg-indigo-700 transition-colors text-center"
-        >
-          + Adaugă elev
-        </Link>
+        <AddStudentButton />
       </div>
 
       <StudentsTable 

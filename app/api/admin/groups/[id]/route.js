@@ -2,10 +2,17 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireAdmin, getCurrentUser } from '@/lib/session'
 import { require2FAToken } from '@/lib/security/action-tokens'
+import { checkPermission } from '@/lib/permissions'
 
 export async function GET(request, { params }) {
   try {
     await requireAdmin()
+    
+    const canView = await checkPermission('groups.view')
+    if (!canView) {
+      return NextResponse.json({ error: 'Nu ai permisiunea de a vedea grupele' }, { status: 403 })
+    }
+    
     const { id } = await params
 
     const group = await prisma.group.findUnique({
@@ -44,6 +51,12 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     await requireAdmin()
+    
+    const canEdit = await checkPermission('groups.edit')
+    if (!canEdit) {
+      return NextResponse.json({ error: 'Nu ai permisiunea de a edita grupele' }, { status: 403 })
+    }
+    
     const sessionUser = await getCurrentUser()
     const { id } = await params
     const body = await request.json()
@@ -94,6 +107,12 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await requireAdmin()
+    
+    const canDelete = await checkPermission('groups.delete')
+    if (!canDelete) {
+      return NextResponse.json({ error: 'Nu ai permisiunea de a șterge grupele' }, { status: 403 })
+    }
+    
     const sessionUser = await getCurrentUser()
     const { id } = await params
 

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { usePermissions } from '@/hooks/usePermissions'
 
 // Spinner component for loading state
 function LoadingSpinner({ className = "w-5 h-5" }) {
@@ -34,21 +35,21 @@ function LoadingSpinner({ className = "w-5 h-5" }) {
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: 'home' },
-  { name: 'Notificări', href: '/admin/notifications', icon: 'bell' },
-  { name: 'Orar', href: '/admin/orar', icon: 'clock' },
-  { name: 'Cursuri', href: '/admin/courses', icon: 'book' },
-  { name: 'Înscrieri', href: '/admin/enrollments', icon: 'users' },
-  { name: 'Mesaje Contact', href: '/admin/contact', icon: 'chat' },
-  { name: 'Elevi', href: '/admin/students', icon: 'academic' },
-  { name: 'Personal', href: '/admin/teachers', icon: 'user' },
-  { name: 'Grupe', href: '/admin/groups', icon: 'collection' },
-  { name: 'Filiale', href: '/admin/branches', icon: 'building' },
-  { name: 'Sesiuni', href: '/admin/sessions', icon: 'calendar' },
-  { name: 'Lecții Ratate', href: '/admin/missed-sessions', icon: 'warning' },
-  { name: 'Recuperări', href: '/admin/makeup', icon: 'refresh' },
-  { name: 'Plăți', href: '/admin/payments', icon: 'banknotes' },
-  { name: 'Reviews', href: '/admin/reviews', icon: 'star' },
-  { name: 'Securitate', href: '/admin/security', icon: 'shield' },
+  { name: 'Notificări', href: '/admin/notifications', icon: 'bell', permission: 'notifications.view' },
+  { name: 'Orar', href: '/admin/orar', icon: 'clock', permission: 'schedule.view' },
+  { name: 'Cursuri', href: '/admin/courses', icon: 'book', permission: 'courses.view' },
+  { name: 'Înscrieri', href: '/admin/enrollments', icon: 'users', permission: 'inscrieri.view' },
+  { name: 'Mesaje Contact', href: '/admin/contact', icon: 'chat', permission: 'contact.view' },
+  { name: 'Elevi', href: '/admin/students', icon: 'academic', permission: 'students.view' },
+  { name: 'Personal', href: '/admin/teachers', icon: 'user', permission: 'teachers.view' },
+  { name: 'Grupe', href: '/admin/groups', icon: 'collection', permission: 'groups.view' },
+  { name: 'Filiale', href: '/admin/branches', icon: 'building', permission: 'branches.view' },
+  { name: 'Sesiuni', href: '/admin/sessions', icon: 'calendar', permission: 'sessions.view' },
+  { name: 'Lecții Ratate', href: '/admin/missed-sessions', icon: 'warning', permission: 'sessions.view' },
+  { name: 'Recuperări', href: '/admin/makeup', icon: 'refresh', permission: 'makeup.view' },
+  { name: 'Plăți', href: '/admin/payments', icon: 'banknotes', permission: 'payments.view' },
+  { name: 'Reviews', href: '/admin/reviews', icon: 'star', permission: 'reviews.view' },
+  { name: 'Securitate', href: '/admin/security', icon: 'shield', permission: 'security.view' },
   { name: 'Alerte Securitate', href: '/admin/security-alerts', icon: 'exclamation', superadminOnly: true },
   { name: 'Audit Logs', href: '/admin/audit-logs', icon: 'document', superadminOnly: true }
 ]
@@ -159,6 +160,17 @@ export default function AdminSidebar({ user }) {
   const [isPending, startTransition] = useTransition()
   const [pendingHref, setPendingHref] = useState(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { hasPermission, isSuperAdmin } = usePermissions()
+
+  // Filtrează navigația în funcție de permisiuni
+  const filteredNavigation = navigation.filter(item => {
+    // Dashboard e vizibil pentru toți
+    if (!item.permission && !item.superadminOnly) return true
+    // Itemele superadminOnly sunt vizibile doar pentru SUPERADMIN
+    if (item.superadminOnly) return isSuperAdmin
+    // Verifică permisiunea
+    return hasPermission(item.permission)
+  })
 
   // Handler pentru navigare cu loading state
   const handleNavigation = (href, closeMobile = false) => {
@@ -203,9 +215,7 @@ export default function AdminSidebar({ user }) {
             <ul role="list" className="flex flex-1 flex-col gap-y-7">
               <li>
                 <ul role="list" className="-mx-2 space-y-1">
-                  {navigation
-                    .filter(item => !item.superadminOnly || user?.role === 'SUPERADMIN')
-                    .map((item) => {
+                  {filteredNavigation.map((item) => {
                     const isActive = pathname === item.href || 
                       (item.href !== '/admin' && item.href !== '/admin/security' && pathname.startsWith(item.href))
                     const isLoading = isPending && pendingHref === item.href
@@ -319,9 +329,7 @@ export default function AdminSidebar({ user }) {
 
         {/* Navigation */}
         <nav className="flex-1 px-2 py-2 space-y-0.5 overflow-y-auto max-h-[calc(100vh-140px)]">
-          {navigation
-            .filter(item => !item.superadminOnly || user?.role === 'SUPERADMIN')
-            .map((item) => {
+          {filteredNavigation.map((item) => {
             const isActive = pathname === item.href || 
               (item.href !== '/admin' && item.href !== '/admin/security' && pathname.startsWith(item.href))
             const isLoading = isPending && pendingHref === item.href

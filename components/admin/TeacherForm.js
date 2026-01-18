@@ -1,33 +1,93 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import toast from 'react-hot-toast'
 import TwoFactorModal from './TwoFactorModal'
+import { PERMISSIONS, getPermissionsByCategory, PERMISSION_CATEGORIES } from '@/config/permissions'
+import { ChevronDownIcon, ChevronUpIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
 
 export default function TeacherForm({ teacher }) {
   const router = useRouter()
   const { data: session } = useSession()
   const [loading, setLoading] = useState(false)
   const [show2FA, setShow2FA] = useState(false)
+  const [expandedCategories, setExpandedCategories] = useState({})
   const [formData, setFormData] = useState({
     name: teacher?.name || '',
     email: teacher?.email || '',
+    phone: teacher?.phone || '',
     password: '',
     role: teacher?.role || 'TEACHER',
     active: teacher?.active ?? true,
-    twoFactorAllowed: teacher?.twoFactorAllowed ?? false
+    twoFactorAllowed: teacher?.twoFactorAllowed ?? false,
+    permissions: teacher?.permissions || []
   })
 
-  // Only SUPERADMIN can create ADMINs
-  const canCreateAdmin = session?.user?.role === 'SUPERADMIN' || session?.user?.role === 'ADMIN'
+  const isSuperAdmin = session?.user?.role === 'SUPERADMIN'
+  const canChangeRole = isSuperAdmin
+  const showPermissions = isSuperAdmin && (formData.role === 'ADMIN' || formData.role === 'MANAGER')
+
+  const permissionsByCategory = useMemo(() => getPermissionsByCategory(), [])
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
+    }))
+  }
+
+  const handleRoleChange = (e) => {
+    const newRole = e.target.value
+    setFormData(prev => ({
+      ...prev,
+      role: newRole,
+      // Reset permissions when changing to TEACHER
+      permissions: newRole === 'TEACHER' ? [] : prev.permissions
+    }))
+  }
+
+  const toggleCategory = (category) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }))
+  }
+
+  const handlePermissionChange = (permKey) => {
+    setFormData(prev => {
+      const newPermissions = prev.permissions.includes(permKey)
+        ? prev.permissions.filter(p => p !== permKey)
+        : [...prev.permissions, permKey]
+      return { ...prev, permissions: newPermissions }
+    })
+  }
+
+  const selectAllInCategory = (category) => {
+    const categoryPerms = permissionsByCategory[category]?.map(p => p.key) || []
+    setFormData(prev => {
+      const hasAll = categoryPerms.every(p => prev.permissions.includes(p))
+      if (hasAll) {
+        // Deselect all
+        return {
+          ...prev,
+          permissions: prev.permissions.filter(p => !categoryPerms.includes(p))
+        }
+      } else {
+        // Select all
+        const newPerms = [...new Set([...prev.permissions, ...categoryPerms])]
+        return { ...prev, permissions: newPerms }
+      }
+    })
+  }
+
+  const selectAll = () => {
+    const allPerms = Object.keys(PERMISSIONS)
+    setFormData(prev => ({
+      ...prev,
+      permissions: prev.permissions.length === allPerms.length ? [] : allPerms
     }))
   }
 
@@ -57,7 +117,6 @@ export default function TeacherForm({ teacher }) {
       const data = await res.json()
 
       if (res.status === 403 && data.requires2FA) {
-        // User doesn't have 2FA set up - proceed without token
         delete payload.actionToken
         const retryRes = await fetch(url, {
           method,
@@ -90,6 +149,15 @@ export default function TeacherForm({ teacher }) {
     }
   }
 
+  const getRoleDescription = (role) => {
+    switch(role) {
+      case 'TEACHER': return 'Acces doar la portalul de profesor - vedere grupe proprii, prezențe, etc.'
+      case 'MANAGER': return 'Acces la panoul admin cu permisiuni limitate definite mai jos.'
+      case 'ADMIN': return 'Acces la panoul admin cu permisiuni definite mai jos.'
+      default: return ''
+    }
+  }
+
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -105,23 +173,22 @@ export default function TeacherForm({ teacher }) {
             />
           </div>
 
-          {/* Role selector - only for SUPERADMIN/ADMIN */}
-          {canCreateAdmin && !teacher && (
+          {/* Role selector - only for SUPERADMIN */}
+          {canChangeRole && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Rol *</label>
               <select
                 name="role"
                 value={formData.role}
-                onChange={handleChange}
+                onChange={handleRoleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
               >
                 <option value="TEACHER">Profesor</option>
+                <option value="MANAGER">Manager</option>
                 <option value="ADMIN">Administrator</option>
               </select>
               <p className="mt-1 text-xs text-gray-500">
-                {formData.role === 'ADMIN' 
-                  ? '⚠️ Administratorul va avea acces complet la panoul de administrare'
-                  : 'Profesorul va avea acces doar la portalul de profesor'}
+                {getRoleDescription(formData.role)}
               </p>
             </div>
           )}
@@ -139,9 +206,21 @@ export default function TeacherForm({ teacher }) {
             />
             {!teacher && (
               <p className="mt-1 text-xs text-green-600 font-medium">
-                ✓ Profesorul se va putea conecta cu Google folosind acest email
+                ✓ Se va putea conecta cu Google folosind acest email
               </p>
             )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Telefon (opțional)</label>
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+              placeholder="ex: 069123456"
+            />
           </div>
 
           <div>
@@ -157,11 +236,6 @@ export default function TeacherForm({ teacher }) {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-700"
               placeholder={teacher ? 'Lasă gol pentru a păstra parola curentă' : 'Opțional - pentru login cu email/parolă'}
             />
-            <p className="mt-1 text-xs text-gray-500">
-              {teacher 
-                ? 'Lasă gol pentru a păstra parola curentă' 
-                : 'Dacă nu setezi parolă, profesorul va folosi doar Google pentru autentificare'}
-            </p>
           </div>
 
           <div className="flex items-center">
@@ -194,6 +268,129 @@ export default function TeacherForm({ teacher }) {
           </div>
         </div>
 
+        {/* Permissions Section - Only for ADMIN/MANAGER and only SUPERADMIN can edit */}
+        {showPermissions && (
+          <div className="border-t pt-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-indigo-100 rounded-lg">
+                  <ShieldCheckIcon className="w-6 h-6 text-indigo-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Permisiuni</h3>
+                  <p className="text-sm text-gray-500">
+                    Selectează ce poate face acest {formData.role === 'ADMIN' ? 'administrator' : 'manager'} în sistem
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={selectAll}
+                className="px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors"
+              >
+                {formData.permissions.length === Object.keys(PERMISSIONS).length ? 'Deselectează tot' : 'Selectează tot'}
+              </button>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-sm text-amber-800">
+                <strong>Atenție:</strong> Dacă nu selectezi nicio permisiune, acest utilizator va avea acces la panoul admin 
+                dar nu va putea vedea sau face nimic.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              {PERMISSION_CATEGORIES.map(category => {
+                const categoryPerms = permissionsByCategory[category] || []
+                if (categoryPerms.length === 0) return null
+
+                const selectedCount = categoryPerms.filter(p => formData.permissions.includes(p.key)).length
+                const isExpanded = expandedCategories[category]
+                const allSelected = selectedCount === categoryPerms.length
+
+                return (
+                  <div key={category} className="border border-gray-200 rounded-lg overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => toggleCategory(category)}
+                      className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="font-medium text-gray-900">{category}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          selectedCount === 0 
+                            ? 'bg-gray-200 text-gray-600' 
+                            : allSelected 
+                              ? 'bg-green-100 text-green-700' 
+                              : 'bg-indigo-100 text-indigo-700'
+                        }`}>
+                          {selectedCount}/{categoryPerms.length}
+                        </span>
+                      </div>
+                      {isExpanded ? (
+                        <ChevronUpIcon className="w-5 h-5 text-gray-400" />
+                      ) : (
+                        <ChevronDownIcon className="w-5 h-5 text-gray-400" />
+                      )}
+                    </button>
+
+                    {isExpanded && (
+                      <div className="p-4 border-t border-gray-200 space-y-3">
+                        <button
+                          type="button"
+                          onClick={() => selectAllInCategory(category)}
+                          className="text-xs font-medium text-indigo-600 hover:text-indigo-700"
+                        >
+                          {allSelected ? 'Deselectează toate din categorie' : 'Selectează toate din categorie'}
+                        </button>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {categoryPerms.map(perm => (
+                            <label
+                              key={perm.key}
+                              className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                                formData.permissions.includes(perm.key)
+                                  ? 'bg-indigo-50 border-indigo-300'
+                                  : 'bg-white border-gray-200 hover:border-gray-300'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={formData.permissions.includes(perm.key)}
+                                onChange={() => handlePermissionChange(perm.key)}
+                                className="mt-0.5 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <span className="text-sm font-medium text-gray-900 block">{perm.label}</span>
+                                <span className="text-xs text-gray-500">{perm.description}</span>
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+
+            {formData.permissions.length > 0 && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm font-medium text-gray-700 mb-2">
+                  Permisiuni selectate ({formData.permissions.length}):
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {formData.permissions.map(perm => (
+                    <span key={perm} className="px-2 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-full">
+                      {PERMISSIONS[perm]?.label || perm}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex gap-4 pt-4 border-t">
           <button
             type="button"
@@ -208,10 +405,15 @@ export default function TeacherForm({ teacher }) {
             className={`px-6 py-2 text-white rounded-lg font-medium disabled:opacity-50 ${
               formData.role === 'ADMIN' 
                 ? 'bg-red-600 hover:bg-red-700' 
-                : 'bg-indigo-600 hover:bg-indigo-700'
+                : formData.role === 'MANAGER'
+                  ? 'bg-amber-600 hover:bg-amber-700'
+                  : 'bg-indigo-600 hover:bg-indigo-700'
             }`}
           >
-            {loading ? 'Se salvează...' : (teacher ? 'Actualizează' : `Creează ${formData.role === 'ADMIN' ? 'administrator' : 'profesor'}`)}
+            {loading ? 'Se salvează...' : (teacher ? 'Actualizează' : `Creează ${
+              formData.role === 'ADMIN' ? 'administrator' : 
+              formData.role === 'MANAGER' ? 'manager' : 'profesor'
+            }`)}
           </button>
         </div>
       </form>
@@ -221,7 +423,7 @@ export default function TeacherForm({ teacher }) {
         onClose={() => setShow2FA(false)}
         onVerify={executeSubmit}
         title="Verificare 2FA"
-        description={teacher ? 'Confirmă identitatea pentru a actualiza contul.' : `Confirmă identitatea pentru a crea ${formData.role === 'ADMIN' ? 'administratorul' : 'profesorul'}.`}
+        description={teacher ? 'Confirmă identitatea pentru a actualiza contul.' : `Confirmă identitatea pentru a crea contul.`}
       />
     </>
   )

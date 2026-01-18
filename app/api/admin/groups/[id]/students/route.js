@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/session'
+import { checkPermission } from '@/lib/permissions'
 
 export async function POST(request, { params }) {
   try {
     await requireAdmin()
+    
+    const canAdd = await checkPermission('groups.students.add')
+    if (!canAdd) {
+      return NextResponse.json({ error: 'Nu ai permisiunea de a adăuga elevi în grupe' }, { status: 403 })
+    }
+    
     const { id } = await params
     const body = await request.json()
 

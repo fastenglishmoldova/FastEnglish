@@ -2,10 +2,18 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireAdmin, getCurrentUser } from '@/lib/session'
 import { require2FAToken } from '@/lib/security/action-tokens'
+import { checkPermission } from '@/lib/permissions'
 
 export async function GET() {
   try {
     await requireAdmin()
+    
+    // Verifică permisiunea de vizualizare elevi
+    const canView = await checkPermission('students.view')
+    if (!canView) {
+      return NextResponse.json({ error: 'Nu ai permisiunea de a vedea elevii' }, { status: 403 })
+    }
+    
     const students = await prisma.student.findMany({
       orderBy: { createdAt: 'desc' }
     })
@@ -21,6 +29,13 @@ export async function GET() {
 export async function POST(request) {
   try {
     await requireAdmin()
+    
+    // Verifică permisiunea de creare elevi
+    const canCreate = await checkPermission('students.create')
+    if (!canCreate) {
+      return NextResponse.json({ error: 'Nu ai permisiunea de a crea elevi' }, { status: 403 })
+    }
+    
     const sessionUser = await getCurrentUser()
     const body = await request.json()
 

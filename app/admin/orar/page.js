@@ -95,7 +95,9 @@ export default function OrarPage() {
             name: group.name,
             time: time || '-',
             branch: group.branch?.name || '-',
-            teacher: group.teacher?.name || group.teacher?.email || '-',
+            teacherName: group.teacher?.name || '-',
+            teacherEmail: group.teacher?.email || '-',
+            teacherPhone: group.teacher?.phone || null,
             room: group.locationDetails || '-',
             locationType: group.locationType,
             course: group.course?.title || '-'
@@ -153,8 +155,8 @@ export default function OrarPage() {
       </div>
 
       {/* Orar pe zile */}
-      <div className="space-y-4">
-        {schedule.sortedDays.map((day, index) => {
+      <div className="space-y-6">
+        {schedule.sortedDays.map((day) => {
           const daySchedule = schedule.scheduleByDay[day]
           const isToday = day === schedule.todayName
           const isTomorrow = day === schedule.tomorrowName
@@ -162,111 +164,98 @@ export default function OrarPage() {
           if (daySchedule.length === 0) return null
           
           return (
-            <div 
-              key={day} 
-              className={`bg-white rounded-xl xs:rounded-2xl shadow-sm border overflow-hidden ${
-                isToday ? 'border-indigo-300 ring-2 ring-indigo-100' : 'border-gray-100'
-              }`}
-            >
+            <div key={day} className="space-y-3">
               {/* Header zi */}
-              <div className={`px-4 xs:px-6 py-3 border-b ${
-                isToday 
-                  ? 'bg-indigo-50 border-indigo-100' 
-                  : isTomorrow 
-                    ? 'bg-amber-50 border-amber-100' 
-                    : 'bg-gray-50 border-gray-100'
-              }`}>
-                <div className="flex items-center gap-2">
-                  <h2 className={`text-base xs:text-lg font-semibold ${
-                    isToday ? 'text-indigo-900' : isTomorrow ? 'text-amber-900' : 'text-gray-900'
-                  }`}>
-                    {day}
-                  </h2>
-                  {isToday && (
-                    <span className="px-2 py-0.5 bg-indigo-600 text-white text-xs font-medium rounded-full">
-                      Azi
-                    </span>
-                  )}
-                  {isTomorrow && (
-                    <span className="px-2 py-0.5 bg-amber-500 text-white text-xs font-medium rounded-full">
-                      Mâine
-                    </span>
-                  )}
-                  <span className="text-sm text-gray-500">
-                    ({daySchedule.length} {daySchedule.length === 1 ? 'grupă' : 'grupe'})
+              <div className="flex items-center gap-2">
+                <h2 className={`text-lg font-semibold ${
+                  isToday ? 'text-indigo-700' : isTomorrow ? 'text-amber-700' : 'text-gray-800'
+                }`}>
+                  {day}
+                </h2>
+                {isToday && (
+                  <span className="px-2 py-0.5 bg-indigo-600 text-white text-xs font-medium rounded-full">
+                    Azi
                   </span>
-                </div>
+                )}
+                {isTomorrow && (
+                  <span className="px-2 py-0.5 bg-amber-500 text-white text-xs font-medium rounded-full">
+                    Mâine
+                  </span>
+                )}
+                <span className="text-sm text-gray-500">
+                  ({daySchedule.length} {daySchedule.length === 1 ? 'grupă' : 'grupe'})
+                </span>
               </div>
-              
-              {/* Tabel orar */}
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-100">
-                    <tr>
-                      <th className="px-4 xs:px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-                        Ora
-                      </th>
-                      <th className="px-4 xs:px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Grupă
-                      </th>
-                      <th className="px-4 xs:px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
-                        Filială
-                      </th>
-                      <th className="px-4 xs:px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
-                        Profesor
-                      </th>
-                      <th className="px-4 xs:px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
-                        Sală/Link
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {daySchedule.map((item, idx) => (
-                      <tr key={`${item.id}-${idx}`} className="hover:bg-gray-50">
-                        <td className="px-4 xs:px-6 py-3 whitespace-nowrap">
-                          <span className="text-sm font-semibold text-indigo-600">
-                            {item.time}
-                          </span>
-                        </td>
-                        <td className="px-4 xs:px-6 py-3">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">{item.name}</div>
-                            <div className="text-xs text-gray-500 sm:hidden">
-                              {item.branch} • {item.teacher}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 xs:px-6 py-3 whitespace-nowrap hidden sm:table-cell">
-                          {item.branch !== '-' ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                              {item.branch}
-                            </span>
-                          ) : (
-                            <span className="text-sm text-gray-400">-</span>
-                          )}
-                        </td>
-                        <td className="px-4 xs:px-6 py-3 whitespace-nowrap text-sm text-gray-600 hidden md:table-cell">
-                          {item.teacher}
-                        </td>
-                        <td className="px-4 xs:px-6 py-3 whitespace-nowrap hidden lg:table-cell">
-                          <div className="flex items-center gap-1.5">
-                            {item.locationType === 'online' ? (
-                              <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                              </svg>
-                            ) : (
-                              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                              </svg>
-                            )}
-                            <span className="text-sm text-gray-600">{item.room}</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+
+              {/* Card-uri */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {daySchedule.map((item, idx) => (
+                  <div 
+                    key={`${item.id}-${idx}`} 
+                    className={`bg-white rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow ${
+                      isToday ? 'border-indigo-200' : 'border-gray-100'
+                    }`}
+                  >
+                    {/* Header card - oră și filială */}
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xl font-bold text-indigo-600">
+                        {item.time}
+                      </span>
+                      {item.branch !== '-' && (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                          {item.branch}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Numele grupei */}
+                    <h3 className="font-semibold text-gray-900 mb-1">{item.name}</h3>
+                    <p className="text-xs text-gray-500 mb-3">{item.course}</p>
+
+                    {/* Profesor - cu telefon și email */}
+                    <div className="space-y-1.5 mb-3 p-2 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span className="text-sm font-medium text-gray-700">{item.teacherName}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <a href={`mailto:${item.teacherEmail}`} className="text-xs text-indigo-600 hover:underline truncate">
+                          {item.teacherEmail}
+                        </a>
+                      </div>
+                      {item.teacherPhone && (
+                        <div className="flex items-center gap-2">
+                          <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                          <a href={`tel:${item.teacherPhone}`} className="text-xs text-indigo-600 hover:underline">
+                            {item.teacherPhone}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Locație */}
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      {item.locationType === 'online' ? (
+                        <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      )}
+                      <span className="truncate">{item.room}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )
@@ -274,7 +263,7 @@ export default function OrarPage() {
         
         {/* Mesaj dacă nu sunt grupe */}
         {schedule.sortedDays.every(day => schedule.scheduleByDay[day].length === 0) && (
-          <div className="bg-white rounded-xl xs:rounded-2xl shadow-sm border border-gray-100 p-8 xs:p-12 text-center text-gray-500">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 xs:p-12 text-center text-gray-500">
             Nu există grupe programate{selectedBranch ? ' pentru această filială' : ''}.
           </div>
         )}

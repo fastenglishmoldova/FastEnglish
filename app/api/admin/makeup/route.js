@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { checkPermission } from '@/lib/permissions'
 
 // POST - Create a new makeup lesson (admin)
 export async function POST(request) {
@@ -9,6 +10,12 @@ export async function POST(request) {
   
   if (!session || !['MANAGER', 'ADMIN'].includes(session.user.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  
+  // Check permission
+  const permCheck = await checkPermission('makeup.create')
+  if (!permCheck.allowed) {
+    return NextResponse.json({ error: 'Nu ai permisiunea să creezi recuperări' }, { status: 403 })
   }
 
   try {
@@ -77,6 +84,12 @@ export async function GET(request) {
   
   if (!session || !['MANAGER', 'ADMIN'].includes(session.user.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  
+  // Check permission
+  const permCheck = await checkPermission('makeup.view')
+  if (!permCheck.allowed) {
+    return NextResponse.json({ error: 'Nu ai permisiunea să vezi recuperările' }, { status: 403 })
   }
 
   try {

@@ -1,10 +1,18 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/session'
+import { checkPermission } from '@/lib/permissions'
 
 export async function GET(request, { params }) {
   try {
     await requireAdmin()
+    
+    // Check permission
+    const permCheck = await checkPermission('courses.view')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să vezi cursurile' }, { status: 403 })
+    }
+    
     const { id } = await params
 
     const course = await prisma.course.findUnique({ where: { id } })
@@ -24,6 +32,13 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     await requireAdmin()
+    
+    // Check permission
+    const permCheck = await checkPermission('courses.edit')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să editezi cursuri' }, { status: 403 })
+    }
+    
     const { id } = await params
     const body = await request.json()
 
@@ -74,6 +89,13 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await requireAdmin()
+    
+    // Check permission
+    const permCheck = await checkPermission('courses.delete')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să ștergi cursuri' }, { status: 403 })
+    }
+    
     const { id } = await params
 
     await prisma.course.delete({ where: { id } })

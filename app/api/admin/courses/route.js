@@ -1,10 +1,18 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/session'
+import { checkPermission } from '@/lib/permissions'
 
 export async function GET() {
   try {
     await requireAdmin()
+    
+    // Check permission
+    const permCheck = await checkPermission('courses.view')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să vezi cursurile' }, { status: 403 })
+    }
+    
     const courses = await prisma.course.findMany({
       orderBy: { createdAt: 'desc' }
     })
@@ -20,6 +28,13 @@ export async function GET() {
 export async function POST(request) {
   try {
     await requireAdmin()
+    
+    // Check permission
+    const permCheck = await checkPermission('courses.create')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să creezi cursuri' }, { status: 403 })
+    }
+    
     const body = await request.json()
 
     const { title, slug, descriptionShort, descriptionLong, category, level, 

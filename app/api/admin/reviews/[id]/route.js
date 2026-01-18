@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireAdmin } from '@/lib/session'
+import { checkPermission } from '@/lib/permissions'
 
 export async function GET(request, { params }) {
   const session = await requireAdmin()
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  
+  // Check permission
+  const permCheck = await checkPermission('reviews.view')
+  if (!permCheck.allowed) {
+    return NextResponse.json({ error: 'Nu ai permisiunea să vezi recenziile' }, { status: 403 })
   }
 
   const { id } = await params
@@ -31,6 +38,12 @@ export async function PUT(request, { params }) {
   const session = await requireAdmin()
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  
+  // Check permission
+  const permCheck = await checkPermission('reviews.edit')
+  if (!permCheck.allowed) {
+    return NextResponse.json({ error: 'Nu ai permisiunea să editezi recenziile' }, { status: 403 })
   }
 
   const { id } = await params
@@ -62,6 +75,12 @@ export async function DELETE(request, { params }) {
   const session = await requireAdmin()
   if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  
+  // Check permission
+  const permCheck = await checkPermission('reviews.delete')
+  if (!permCheck.allowed) {
+    return NextResponse.json({ error: 'Nu ai permisiunea să ștergi recenziile' }, { status: 403 })
   }
 
   const { id } = await params
