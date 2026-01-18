@@ -7,10 +7,11 @@ import GroupForm from '@/components/admin/GroupForm'
 export default async function EditGroupPage({ params }) {
   const { id } = await params
   
-  const [group, courses, teachers] = await Promise.all([
+  const [group, courses, teachers, branches] = await Promise.all([
     prisma.group.findUnique({ where: { id } }),
     prisma.course.findMany({ where: { active: true } }),
-    prisma.user.findMany({ where: { role: 'TEACHER', active: true } })
+    prisma.user.findMany({ where: { role: 'TEACHER', active: true } }),
+    prisma.branch.findMany({ where: { active: true }, orderBy: { name: 'asc' } })
   ])
 
   if (!group) {
@@ -29,6 +30,7 @@ export default async function EditGroupPage({ params }) {
           group={JSON.parse(JSON.stringify(group))}
           courses={JSON.parse(JSON.stringify(courses))}
           teachers={JSON.parse(JSON.stringify(teachers))}
+          branches={JSON.parse(JSON.stringify(branches))}
         />
       </div>
     </div>

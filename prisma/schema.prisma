@@ -295,6 +295,22 @@ model Student {
   @@map("students")
 }
 
+// ==================== BRANCHES (FILIALE) ====================
+
+model Branch {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   @unique // "Centru", "Ciocana", "Botanica", etc.
+  address   String?  // Adresa filialei (opțional)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  groups    Group[]
+
+  @@map("branches")
+}
+
 // ==================== GROUPS ====================
 
 model Group {
@@ -302,6 +318,7 @@ model Group {
   name            String
   courseId        String   @db.ObjectId
   teacherId       String   @db.ObjectId
+  branchId        String?  @db.ObjectId // Filiala (opțional)
   scheduleDays    String[] // ["Mon", "Wed"]
   scheduleTime    String?  // "18:00"
   locationType    String?  // "offline" / "online"
@@ -314,6 +331,7 @@ model Group {
   // Relations
   course              Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
   teacher             User                @relation("TeacherGroups", fields: [teacherId], references: [id], onDelete: Cascade)
+  branch              Branch?             @relation(fields: [branchId], references: [id], onDelete: SetNull)
   groupStudents       GroupStudent[]
   lessonSessions      LessonSession[]
   lessonTransactions  LessonTransaction[]

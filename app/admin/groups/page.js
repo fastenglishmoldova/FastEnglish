@@ -48,12 +48,14 @@ const allDays = ['Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă', 'D
 export default function GroupsPage() {
   const [groups, setGroups] = useState([])
   const [teachers, setTeachers] = useState([])
+  const [branches, setBranches] = useState([])
   const [loading, setLoading] = useState(true)
   
   // Filtre
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedTeacher, setSelectedTeacher] = useState('')
   const [selectedDay, setSelectedDay] = useState('')
+  const [selectedBranch, setSelectedBranch] = useState('')
   const [dateFilter, setDateFilter] = useState('all') // 'all', 'today', 'custom'
   const [customDate, setCustomDate] = useState('')
 
@@ -67,6 +69,7 @@ export default function GroupsPage() {
       const data = await res.json()
       setGroups(data.groups || [])
       setTeachers(data.teachers || [])
+      setBranches(data.branches || [])
     } catch (error) {
       console.error('Error fetching groups:', error)
     } finally {
@@ -80,6 +83,15 @@ export default function GroupsPage() {
       // Filtru profesor
       if (selectedTeacher && group.teacherId !== selectedTeacher) {
         return false
+      }
+
+      // Filtru filială
+      if (selectedBranch) {
+        if (selectedBranch === 'none' && group.branchId) {
+          return false
+        } else if (selectedBranch !== 'none' && group.branchId !== selectedBranch) {
+          return false
+        }
       }
 
       // Filtru zi
@@ -101,12 +113,13 @@ export default function GroupsPage() {
         }
       }
 
-      // Filtru search (elev, profesor, zi, nume grupă, curs)
+      // Filtru search (elev, profesor, zi, nume grupă, curs, filială)
       if (searchQuery) {
         const query = searchQuery.toLowerCase()
         const teacherName = (group.teacher?.name || group.teacher?.email || '').toLowerCase()
         const groupName = group.name.toLowerCase()
         const courseName = (group.course?.title || '').toLowerCase()
+        const branchName = (group.branch?.name || '').toLowerCase()
         const days = (group.scheduleDays || []).join(' ').toLowerCase()
         
         // Caută și în elevii grupei
@@ -117,6 +130,7 @@ export default function GroupsPage() {
         if (!teacherName.includes(query) && 
             !groupName.includes(query) && 
             !courseName.includes(query) &&
+            !branchName.includes(query) &&
             !days.includes(query) &&
             !studentNames.includes(query)) {
           return false
@@ -125,17 +139,18 @@ export default function GroupsPage() {
 
       return true
     })
-  }, [groups, selectedTeacher, selectedDay, dateFilter, customDate, searchQuery])
+  }, [groups, selectedTeacher, selectedBranch, selectedDay, dateFilter, customDate, searchQuery])
 
   const resetFilters = () => {
     setSearchQuery('')
     setSelectedTeacher('')
+    setSelectedBranch('')
     setSelectedDay('')
     setDateFilter('all')
     setCustomDate('')
   }
 
-  const hasActiveFilters = searchQuery || selectedTeacher || selectedDay || dateFilter !== 'all'
+  const hasActiveFilters = searchQuery || selectedTeacher || selectedBranch || selectedDay || dateFilter !== 'all'
 
   if (loading) {
     return (
@@ -170,7 +185,7 @@ export default function GroupsPage() {
             </svg>
             <input
               type="text"
-              placeholder="Caută după elev, profesor, grupă, curs, zi..."
+              placeholder="Caută după elev, profesor, grupă, curs, filială, zi..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -179,6 +194,26 @@ export default function GroupsPage() {
 
           {/* Filtre dropdown */}
           <div className="flex flex-wrap gap-2 xs:gap-3">
+            {/* Filială */}
+            {branches.length > 0 && (
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Filială</label>
+                <select
+                  value={selectedBranch}
+                  onChange={(e) => setSelectedBranch(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-w-[130px]"
+                >
+                  <option value="">Toate filialele</option>
+                  <option value="none">Fără filială</option>
+                  {branches.map(branch => (
+                    <option key={branch.id} value={branch.id}>
+                      {branch.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             {/* Profesor */}
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Profesor</label>
@@ -281,11 +316,18 @@ export default function GroupsPage() {
                     <h3 className="text-sm xs:text-base md:text-lg font-semibold text-gray-900 truncate">{group.name}</h3>
                     <p className="text-xs xs:text-sm text-indigo-600 truncate">{group.course?.title}</p>
                   </div>
-                  <span className={`inline-flex items-center px-2 xs:px-2.5 py-0.5 rounded-full text-[10px] xs:text-xs font-medium flex-shrink-0 ${
-                    group.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {group.active ? 'Activ' : 'Inactiv'}
-                  </span>
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    <span className={`inline-flex items-center px-2 xs:px-2.5 py-0.5 rounded-full text-[10px] xs:text-xs font-medium ${
+                      group.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {group.active ? 'Activ' : 'Inactiv'}
+                    </span>
+                    {group.branch && (
+                      <span className="inline-flex items-center px-2 xs:px-2.5 py-0.5 rounded-full text-[10px] xs:text-xs font-medium bg-purple-100 text-purple-800">
+                        {group.branch.name}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-1.5 xs:space-y-2 text-xs xs:text-sm">

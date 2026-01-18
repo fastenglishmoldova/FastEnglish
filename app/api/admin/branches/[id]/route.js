@@ -7,37 +7,29 @@ export async function GET(request, { params }) {
   try {
     await requireAdmin()
     const { id } = await params
-
-    const group = await prisma.group.findUnique({
+    
+    const branch = await prisma.branch.findUnique({
       where: { id },
       include: {
-        course: true,
-        teacher: {
-          select: { id: true, name: true, email: true }
-        },
-        branch: true,
-        groupStudents: {
+        groups: {
           include: {
-            student: true
-          },
-          orderBy: {
-            student: { fullName: 'asc' }
+            course: true,
+            teacher: true
           }
         }
       }
     })
 
-    if (!group) {
-      return NextResponse.json({ error: 'Group not found' }, { status: 404 })
+    if (!branch) {
+      return NextResponse.json({ error: 'Filiala nu a fost găsită' }, { status: 404 })
     }
 
-    return NextResponse.json(group)
+    return NextResponse.json(branch)
   } catch (error) {
-    console.error('Error fetching group:', error)
     if (error.message === 'Unauthorized' || error.message === 'Forbidden') {
       return NextResponse.json({ error: error.message }, { status: 401 })
     }
-    return NextResponse.json({ error: 'Failed to fetch group' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to fetch branch' }, { status: 500 })
   }
 }
 
@@ -62,32 +54,39 @@ export async function PUT(request, { params }) {
       }, { status: 403 })
     }
 
-    const { name, courseId, teacherId, branchId, scheduleDays, scheduleTime,
-            locationType, locationDetails, startDate, active } = body
+    const { name, address, active } = body
 
-    const group = await prisma.group.update({
-      where: { id },
-      data: {
+    // Check if another branch with same name exists
+    const existingBranch = await prisma.branch.findFirst({
+      where: { 
         name,
-        courseId,
-        teacherId,
-        branchId: branchId || null,
-        scheduleDays,
-        scheduleTime,
-        locationType,
-        locationDetails,
-        startDate: startDate ? new Date(startDate) : null,
-        active
+        id: { not: id }
       }
     })
 
-    return NextResponse.json(group)
+    if (existingBranch) {
+      return NextResponse.json({ error: 'O altă filială cu acest nume există deja' }, { status: 400 })
+    }
+
+    const branch = await prisma.branch.update({
+      where: { id },
+      data: {
+        name,
+        address: address || null,
+        active: active ?? true
+      }
+    })
+
+    return NextResponse.json(branch)
   } catch (error) {
-    console.error('Error updating group:', error)
+    console.error('Error updating branch:', error)
     if (error.message === 'Unauthorized' || error.message === 'Forbidden') {
       return NextResponse.json({ error: error.message }, { status: 401 })
     }
-    return NextResponse.json({ error: 'Failed to update group' }, { status: 500 })
+    if (error.code === 'P2025') {
+      return NextResponse.json({ error: 'Filiala nu a fost găsită' }, { status: 404 })
+    }
+    return NextResponse.json({ error: 'Failed to update branch' }, { status: 500 })
   }
 }
 
@@ -97,8 +96,9 @@ export async function DELETE(request, { params }) {
     const sessionUser = await getCurrentUser()
     const { id } = await params
 
-    // Get action token from header
-    const actionToken = request.headers.get('x-action-token')
+    // Check for action token in query params or body
+    const { searchParams } = new URL(request.url)
+    const actionToken = searchParams.get('actionToken')
 
     // Verify 2FA if user has it enabled
     const currentUser = await prisma.user.findUnique({
@@ -114,13 +114,34 @@ export async function DELETE(request, { params }) {
       }, { status: 403 })
     }
 
-    await prisma.group.delete({ where: { id } })
+    // Check if branch has groups
+    const branch = await prisma.branch.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { groups: true }
+        }
+      }
+    })
+
+    if (!branch) {
+      return NextResponse.json({ error: 'Filiala nu a fost găsită' }, { status: 404 })
+    }
+
+    if (branch._count.groups > 0) {
+      return NextResponse.json({ 
+        error: `Nu poți șterge filiala deoarece are ${branch._count.groups} grupe asociate. Mută mai întâi grupele la altă filială.` 
+      }, { status: 400 })
+    }
+
+    await prisma.branch.delete({ where: { id } })
 
     return NextResponse.json({ success: true })
   } catch (error) {
+    console.error('Error deleting branch:', error)
     if (error.message === 'Unauthorized' || error.message === 'Forbidden') {
       return NextResponse.json({ error: error.message }, { status: 401 })
     }
-    return NextResponse.json({ error: 'Failed to delete group' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to delete branch' }, { status: 500 })
   }
 }

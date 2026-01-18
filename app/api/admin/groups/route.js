@@ -7,12 +7,13 @@ export async function GET() {
   try {
     await requireAdmin()
     
-    const [groups, teachers] = await Promise.all([
+    const [groups, teachers, branches] = await Promise.all([
       prisma.group.findMany({
         orderBy: { createdAt: 'desc' },
         include: { 
           course: true, 
           teacher: true,
+          branch: true,
           groupStudents: {
             include: {
               student: true
@@ -24,10 +25,14 @@ export async function GET() {
         where: { role: { in: ['TEACHER', 'ADMIN', 'MANAGER'] } },
         select: { id: true, name: true, email: true },
         orderBy: { name: 'asc' }
+      }),
+      prisma.branch.findMany({
+        where: { active: true },
+        orderBy: { name: 'asc' }
       })
     ])
     
-    return NextResponse.json({ groups, teachers })
+    return NextResponse.json({ groups, teachers, branches })
   } catch (error) {
     if (error.message === 'Unauthorized' || error.message === 'Forbidden') {
       return NextResponse.json({ error: error.message }, { status: 401 })
@@ -56,7 +61,7 @@ export async function POST(request) {
       }, { status: 403 })
     }
 
-    const { name, courseId, teacherId, scheduleDays, scheduleTime, 
+    const { name, courseId, teacherId, branchId, scheduleDays, scheduleTime, 
             locationType, locationDetails, startDate, active } = body
 
     const group = await prisma.group.create({
@@ -64,6 +69,7 @@ export async function POST(request) {
         name,
         courseId,
         teacherId,
+        branchId: branchId || null,
         scheduleDays,
         scheduleTime,
         locationType,

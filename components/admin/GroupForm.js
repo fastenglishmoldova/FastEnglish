@@ -24,7 +24,7 @@ const parseScheduleTime = (scheduleTime, scheduleDays) => {
   return {}
 }
 
-export default function GroupForm({ group, courses, teachers }) {
+export default function GroupForm({ group, courses, teachers, branches = [] }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [show2FA, setShow2FA] = useState(false)
@@ -32,6 +32,7 @@ export default function GroupForm({ group, courses, teachers }) {
     name: group?.name || '',
     courseId: group?.courseId || '',
     teacherId: group?.teacherId || '',
+    branchId: group?.branchId || '',
     scheduleDays: group?.scheduleDays || [],
     scheduleTimes: parseScheduleTime(group?.scheduleTime, group?.scheduleDays),
     locationType: group?.locationType || 'offline',
@@ -101,6 +102,7 @@ export default function GroupForm({ group, courses, teachers }) {
         name: formData.name,
         courseId: formData.courseId,
         teacherId: formData.teacherId,
+        branchId: formData.branchId || null,
         scheduleDays: formData.scheduleDays,
         scheduleTime,
         locationType: formData.locationType,
@@ -199,6 +201,21 @@ export default function GroupForm({ group, courses, teachers }) {
                 <option key={teacher.id} value={teacher.id}>
                   {teacher.name || teacher.email}
                 </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1">Filială</label>
+            <select
+              name="branchId"
+              value={formData.branchId}
+              onChange={handleChange}
+              className="w-full px-3 xs:px-4 py-2 text-sm xs:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+            >
+              <option value="">Selectează filială (opțional)</option>
+              {branches.filter(b => b.active).map(branch => (
+                <option key={branch.id} value={branch.id}>{branch.name}</option>
               ))}
             </select>
           </div>

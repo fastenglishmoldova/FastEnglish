@@ -15,7 +15,8 @@ import {
   Bars3Icon,
   XMarkIcon,
   BellIcon,
-  ShieldCheckIcon
+  ShieldCheckIcon,
+  ClockIcon
 } from '@heroicons/react/24/outline'
 
 // Spinner component for loading state
@@ -55,6 +56,11 @@ const navigation = [
     name: 'Notificări', 
     href: '/teacher/notifications', 
     icon: BellIcon
+  },
+  { 
+    name: 'Orar', 
+    href: '/teacher/orar', 
+    icon: ClockIcon
   },
   { 
     name: 'Grupele Mele', 

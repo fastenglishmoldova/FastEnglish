@@ -4,9 +4,10 @@ import prisma from '@/lib/prisma'
 import GroupForm from '@/components/admin/GroupForm'
 
 export default async function NewGroupPage() {
-  const [courses, teachers] = await Promise.all([
+  const [courses, teachers, branches] = await Promise.all([
     prisma.course.findMany({ where: { active: true } }),
-    prisma.user.findMany({ where: { role: 'TEACHER', active: true } })
+    prisma.user.findMany({ where: { role: 'TEACHER', active: true } }),
+    prisma.branch.findMany({ where: { active: true }, orderBy: { name: 'asc' } })
   ])
 
   return (
@@ -20,6 +21,7 @@ export default async function NewGroupPage() {
         <GroupForm 
           courses={JSON.parse(JSON.stringify(courses))}
           teachers={JSON.parse(JSON.stringify(teachers))}
+          branches={JSON.parse(JSON.stringify(branches))}
         />
       </div>
     </div>
