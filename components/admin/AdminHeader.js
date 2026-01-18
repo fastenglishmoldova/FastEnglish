@@ -3,12 +3,28 @@
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import NotificationBell from '@/components/NotificationBell'
-import { GlobeAltIcon } from '@heroicons/react/24/outline'
+import { GlobeAltIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline'
 
 export default function AdminHeader({ user }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuRef = useRef(null)
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: '/login' })
+  }
 
   return (
     <header className="sticky top-0 z-40 flex h-14 xs:h-16 shrink-0 items-center gap-x-2 xs:gap-x-4 border-b border-gray-200 bg-white px-3 xs:px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
@@ -43,8 +59,18 @@ export default function AdminHeader({ user }) {
           {/* Separator */}
           <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200" aria-hidden="true" />
 
+          {/* Direct Logout Button - always visible */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs xs:text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+            title="Deconectare"
+          >
+            <ArrowRightOnRectangleIcon className="w-4 h-4 xs:w-5 xs:h-5" />
+            <span className="hidden sm:inline">Ieșire</span>
+          </button>
+
           {/* Profile dropdown */}
-          <div className="relative">
+          <div className="relative" ref={menuRef}>
             <button
               type="button"
               className="flex items-center gap-x-2 xs:gap-x-3"
@@ -82,12 +108,13 @@ export default function AdminHeader({ user }) {
                 <div className="px-3 xs:px-4 py-2 border-b">
                   <p className="text-xs xs:text-sm text-gray-900 font-medium truncate">{user?.name}</p>
                   <p className="text-[10px] xs:text-xs text-gray-500 truncate">{user?.email}</p>
+                  <p className="text-[10px] xs:text-xs text-indigo-600 font-medium mt-1">{user?.role}</p>
                 </div>
                 <button
-                  onClick={() => signOut({ callbackUrl: '/login' })}
-                  className="block w-full px-3 xs:px-4 py-2 text-left text-xs xs:text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={handleLogout}
+                  className="block w-full px-3 xs:px-4 py-2 text-left text-xs xs:text-sm text-red-600 hover:bg-red-50 font-medium"
                 >
-                  Deconectare
+                  🚪 Deconectare
                 </button>
               </div>
             )}

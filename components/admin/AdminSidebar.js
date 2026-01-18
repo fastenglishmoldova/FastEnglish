@@ -162,12 +162,17 @@ export default function AdminSidebar({ user }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { hasPermission, isSuperAdmin } = usePermissions()
 
+  // SUPERADMIN vede tot - verificăm și din prop-ul user (server-side) și din hook (client-side)
+  const userIsSuperAdmin = user?.role === 'SUPERADMIN' || isSuperAdmin
+
   // Filtrează navigația în funcție de permisiuni
   const filteredNavigation = navigation.filter(item => {
+    // SUPERADMIN vede tot
+    if (userIsSuperAdmin) return true
     // Dashboard e vizibil pentru toți
     if (!item.permission && !item.superadminOnly) return true
     // Itemele superadminOnly sunt vizibile doar pentru SUPERADMIN
-    if (item.superadminOnly) return isSuperAdmin
+    if (item.superadminOnly) return false
     // Verifică permisiunea
     return hasPermission(item.permission)
   })

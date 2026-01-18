@@ -13,7 +13,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'Nu ai permisiunea să transferi elevi' }, { status: 403 })
     }
     
-    const { id: groupId, studentId: groupStudentId } = await params
+    const { id: groupId, groupStudentId } = await params
     const { targetGroupId, transferLessons, transferAbsences } = await request.json()
 
     if (!targetGroupId) {
