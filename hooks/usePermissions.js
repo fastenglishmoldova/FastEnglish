@@ -7,8 +7,13 @@ import { PERMISSIONS } from '@/config/permissions'
  * Hook pentru verificarea permisiunilor în componente client
  */
 export function usePermissions() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const user = session?.user
+
+  // Debug logging in development
+  if (process.env.NODE_ENV === 'development' && status === 'authenticated') {
+    console.log('[usePermissions] User:', user?.email, 'Role:', user?.role, 'Permissions:', user?.permissions?.length || 0)
+  }
 
   /**
    * Verifică dacă utilizatorul are o permisiune specifică
