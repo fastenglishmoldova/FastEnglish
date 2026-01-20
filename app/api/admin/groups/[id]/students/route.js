@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/session'
 import { checkPermission } from '@/lib/permissions'
+import { notifyTeacherNewStudent } from '@/lib/telegram'
 
 export async function POST(request, { params }) {
   try {
@@ -26,6 +27,21 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'Elevul este deja în această grupă' }, { status: 400 })
     }
 
+    // Get group details with teacher for notification
+    const group = await prisma.group.findUnique({
+      where: { id },
+      include: {
+        teacher: { select: { telegramChatId: true } },
+        course: { select: { title: true } }
+      }
+    })
+
+    // Get student details
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      select: { name: true }
+    })
+
     const groupStudent = await prisma.groupStudent.create({
       data: {
         groupId: id,
@@ -33,6 +49,16 @@ export async function POST(request, { params }) {
         lessonsRemaining: lessonsRemaining || 0
       }
     })
+
+    // Notify teacher via Telegram
+    if (group?.teacher?.telegramChatId && student) {
+      await notifyTeacherNewStudent(
+        group.teacher.telegramChatId,
+        student.name,
+        group.name,
+        group.course?.title || 'Curs'
+      )
+    }
 
     return NextResponse.json(groupStudent, { status: 201 })
   } catch (error) {

@@ -43,9 +43,9 @@ export async function PUT(request, { params }) {
       }, { status: 403 })
     }
 
-    const { name, phone, password, active, twoFactorAllowed, role, permissions } = body
+    const { name, phone, telegramChatId, password, active, twoFactorAllowed, role, permissions } = body
 
-    const updateData = { name, phone: phone || null, active, twoFactorAllowed }
+    const updateData = { name, phone: phone || null, telegramChatId: telegramChatId || null, active, twoFactorAllowed }
     
     if (password) {
       updateData.password = await hashPassword(password)

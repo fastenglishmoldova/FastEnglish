@@ -18,6 +18,7 @@ export default function TeacherForm({ teacher }) {
     name: teacher?.name || '',
     email: teacher?.email || '',
     phone: teacher?.phone || '',
+    telegramChatId: teacher?.telegramChatId || '',
     password: '',
     role: teacher?.role || 'TEACHER',
     active: teacher?.active ?? true,
@@ -221,6 +222,21 @@ export default function TeacherForm({ teacher }) {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
               placeholder="ex: 069123456"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Telegram Chat ID (opțional)</label>
+            <input
+              type="text"
+              name="telegramChatId"
+              value={formData.telegramChatId}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+              placeholder="ex: 123456789"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              ID-ul de chat pentru notificări Telegram (lecții zilnice, elevi noi)
+            </p>
           </div>
 
           <div>

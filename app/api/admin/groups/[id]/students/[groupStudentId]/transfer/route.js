@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireAdmin } from '@/lib/session'
 import { checkPermission } from '@/lib/permissions'
+import { notifyTeacherNewStudent, notifyTeacherStudentRemoved } from '@/lib/telegram'
 
 export async function POST(request, { params }) {
   try {
@@ -20,9 +21,12 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'Grupa destinație este obligatorie' }, { status: 400 })
     }
 
-    // Verifică că grupă sursă există
+    // Verifică că grupă sursă există cu detalii teacher
     const sourceGroup = await prisma.group.findUnique({
-      where: { id: groupId }
+      where: { id: groupId },
+      include: {
+        teacher: { select: { telegramChatId: true } }
+      }
     })
 
     if (!sourceGroup) {
@@ -41,7 +45,11 @@ export async function POST(request, { params }) {
 
     // Verifică că grupa destinație există și este activă
     const targetGroup = await prisma.group.findUnique({
-      where: { id: targetGroupId }
+      where: { id: targetGroupId },
+      include: {
+        teacher: { select: { telegramChatId: true } },
+        course: { select: { title: true } }
+      }
     })
 
     if (!targetGroup) {
@@ -81,6 +89,26 @@ export async function POST(request, { params }) {
         statusNote: `Transferat din ${sourceGroup.name} la ${new Date().toLocaleDateString('ro-RO')}`
       }
     })
+
+    // Notify source group teacher that student left
+    if (sourceGroup.teacher?.telegramChatId) {
+      await notifyTeacherStudentRemoved(
+        sourceGroup.teacher.telegramChatId,
+        groupStudent.student.fullName || groupStudent.student.name,
+        sourceGroup.name
+      )
+    }
+
+    // Notify target group teacher that student was added
+    if (targetGroup.teacher?.telegramChatId) {
+      await notifyTeacherNewStudent(
+        targetGroup.teacher.telegramChatId,
+        groupStudent.student.fullName || groupStudent.student.name,
+        targetGroup.name,
+        targetGroup.course?.title || 'Curs',
+        'transferat'
+      )
+    }
 
     return NextResponse.json({ 
       success: true, 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { notifyMissedGroupSession, notifyMissedMakeup, notifyLowLessons } from '@/lib/telegram'
+import { notifyMissedGroupSession, notifyMissedMakeup, notifyLowLessons, notifyTeacherDailySchedule } from '@/lib/telegram'
 import { cleanupExpiredSessions } from '@/lib/security/session.js'
 import { cleanupExpiredStepUpTokens } from '@/lib/security/step-up.js'
 import { cleanupExpiredBuckets } from '@/lib/security/rate-limit.js'
@@ -121,6 +121,17 @@ export async function GET(request) {
           }
         })
         notificationsCreated.push(`Teacher schedule: ${data.teacher.name}`)
+        
+        // Send direct Telegram message to teacher if they have telegramChatId
+        if (data.teacher.telegramChatId) {
+          await notifyTeacherDailySchedule(
+            data.teacher.telegramChatId,
+            data.teacher.name,
+            data.lessons,
+            dayOfWeek
+          )
+          notificationsCreated.push(`Telegram direct: ${data.teacher.name}`)
+        }
       }
     }
 
