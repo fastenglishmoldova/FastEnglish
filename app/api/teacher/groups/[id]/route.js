@@ -7,6 +7,7 @@ import prisma from '@/lib/prisma'
 async function notifyGroupUpdate(groupName, teacherName, updates) {
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_LESSONS_BOT_TOKEN
   const CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID
+  const THREAD_ID = process.env.TELEGRAM_ADMIN_THREAD_ID
   
   if (!TELEGRAM_BOT_TOKEN || !CHAT_ID) return
   
@@ -34,14 +35,21 @@ ${updatesList}
 📝 Actualizare făcută de profesor`
 
   try {
+    const body = {
+      chat_id: CHAT_ID,
+      text: message,
+      parse_mode: 'HTML'
+    }
+    
+    // Add thread_id only if specified (for topic groups)
+    if (THREAD_ID) {
+      body.message_thread_id = parseInt(THREAD_ID)
+    }
+    
     await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: CHAT_ID,
-        text: message,
-        parse_mode: 'HTML'
-      })
+      body: JSON.stringify(body)
     })
   } catch (error) {
     console.error('Failed to send Telegram notification:', error)

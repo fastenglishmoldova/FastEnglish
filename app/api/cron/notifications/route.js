@@ -409,6 +409,15 @@ export async function GET(request) {
             }
           }
         })
+        
+        // Trimite pe Telegram (Thread 2 - Ore Rămase)
+        await notifyLowLessons(
+          gs.student.fullName,
+          gs.group.name,
+          gs.group.course.title,
+          lessons
+        )
+        
         notificationsCreated.push(`${type}: ${gs.student.fullName} (${lessons} lecții)`)
       }
     }
