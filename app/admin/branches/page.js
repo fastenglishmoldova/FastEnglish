@@ -177,12 +177,14 @@ export default function BranchesPage() {
     }
   }
 
-  const handle2FAVerify = (token) => {
+  const handle2FAVerify = async (token) => {
+    // Închide modalul 2FA imediat
     setShow2FA(false)
+    
     if (pendingAction?.type === 'save') {
-      executeSave(token)
+      await executeSave(token)
     } else if (pendingAction?.type === 'delete') {
-      executeDelete(token)
+      await executeDelete(token)
     }
     setPendingAction(null)
   }
