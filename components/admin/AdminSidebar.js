@@ -45,7 +45,7 @@ const navigation = [
   { name: 'Grupe', href: '/admin/groups', icon: 'collection', permission: 'groups.view' },
   { name: 'Filiale', href: '/admin/branches', icon: 'building', permission: 'branches.view' },
   { name: 'Sesiuni', href: '/admin/sessions', icon: 'calendar', permission: 'sessions.view' },
-  { name: 'Lecții Ratate', href: '/admin/missed-sessions', icon: 'warning', permission: 'sessions.view' },
+  { name: 'Lecții Ratate', href: '/admin/missed-sessions', icon: 'warning', permission: 'missed-sessions.view' },
   { name: 'Recuperări', href: '/admin/makeup', icon: 'refresh', permission: 'makeup.view' },
   { name: 'Plăți', href: '/admin/payments', icon: 'banknotes', permission: 'payments.view' },
   { name: 'Reviews', href: '/admin/reviews', icon: 'star', permission: 'reviews.view' },
