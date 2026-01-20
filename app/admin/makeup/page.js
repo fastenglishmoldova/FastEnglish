@@ -48,6 +48,17 @@ export default function AdminMakeupPage() {
   const [daySchedule, setDaySchedule] = useState(null)
   const [loadingSchedule, setLoadingSchedule] = useState(false)
   
+  // Helper pentru a extrage ora din scheduleTime JSON pentru o anumită zi
+  const getTimeForDay = (scheduleTime, dayOfWeek) => {
+    if (!scheduleTime) return '—'
+    try {
+      const parsed = typeof scheduleTime === 'string' ? JSON.parse(scheduleTime) : scheduleTime
+      return parsed[dayOfWeek] || '—'
+    } catch {
+      return scheduleTime // dacă nu e JSON, returnează ca atare
+    }
+  }
+  
   // Verifică permisiunea
   useEffect(() => {
     if (!hasPermission('makeup.view') && !isSuperAdmin) {
@@ -917,7 +928,7 @@ export default function AdminMakeupPage() {
                       {daySchedule.groups?.map(group => (
                         <div key={group.id} className="flex items-center justify-between text-xs bg-white rounded px-2 py-1.5 border border-blue-100">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-gray-700">{group.scheduleTime || '—'}</span>
+                            <span className="font-medium text-gray-700">{getTimeForDay(group.scheduleTime, daySchedule.dayOfWeek)}</span>
                             <span className="text-gray-600">{group.name}</span>
                           </div>
                           <span className="text-gray-500">{group.locationDetails || ''}</span>
@@ -1278,7 +1289,7 @@ export default function AdminMakeupPage() {
                       {daySchedule.groups?.map(group => (
                         <div key={group.id} className="flex items-center justify-between text-xs bg-white rounded px-2 py-1.5 border border-blue-100">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-gray-700">{group.scheduleTime || '—'}</span>
+                            <span className="font-medium text-gray-700">{getTimeForDay(group.scheduleTime, daySchedule.dayOfWeek)}</span>
                             <span className="text-gray-600">{group.name}</span>
                           </div>
                           <span className="text-gray-500">{group.locationDetails || ''}</span>
