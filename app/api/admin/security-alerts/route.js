@@ -5,11 +5,10 @@
  */
 
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { getSecurityAlerts, acknowledgeAlert } from '@/lib/security/alerts.js'
 import { createAuditLog } from '@/lib/security/audit.js'
-import prisma from '@/lib/prisma'
+import { checkPermission } from '@/lib/permissions'
+import { requireAdmin } from '@/lib/session'
 
 function apiError(message, status) {
   return NextResponse.json({ error: message }, { status })
@@ -17,25 +16,15 @@ function apiError(message, status) {
 
 export async function GET(request) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.email) {
+    const session = await requireAdmin()
+    if (!session) {
       return apiError('Unauthorized', 401)
     }
     
-    // Get user from DB to check role
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { role: true, email: true, id: true }
-    })
-    
-    if (!user) {
-      return apiError('User not found', 404)
-    }
-    
-    // Only SUPERADMIN can view security alerts
-    if (user.role !== 'SUPERADMIN') {
-      return apiError('Acces permis doar pentru Super Admin', 403)
+    // Check permission
+    const permCheck = await checkPermission('security.view')
+    if (!permCheck.allowed) {
+      return apiError('Nu ai permisiunea să vezi alertele de securitate', 403)
     }
     
     const { searchParams } = new URL(request.url)
@@ -68,24 +57,15 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.email) {
+    const session = await requireAdmin()
+    if (!session) {
       return apiError('Unauthorized', 401)
     }
     
-    // Get user from DB to check role
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { role: true, email: true, id: true }
-    })
-    
-    if (!user) {
-      return apiError('User not found', 404)
-    }
-    
-    if (user.role !== 'SUPERADMIN') {
-      return apiError('Acces permis doar pentru Super Admin', 403)
+    // Check permission - security.manage for acknowledging alerts
+    const permCheck = await checkPermission('security.manage')
+    if (!permCheck.allowed) {
+      return apiError('Nu ai permisiunea să gestionezi alertele de securitate', 403)
     }
     
     const body = await request.json()
@@ -95,11 +75,11 @@ export async function POST(request) {
       return apiError('Alert ID is required', 400)
     }
     
-    const alert = await acknowledgeAlert(alertId, user.id)
+    const alert = await acknowledgeAlert(alertId, session.user.id)
     
     await createAuditLog({
       action: 'security_alert_acknowledged',
-      actorId: user.id,
+      actorId: session.user.id,
       targetId: alertId,
       targetType: 'security_alert',
       success: true,

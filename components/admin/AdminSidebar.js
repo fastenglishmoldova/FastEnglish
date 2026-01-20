@@ -50,8 +50,8 @@ const navigation = [
   { name: 'Plăți', href: '/admin/payments', icon: 'banknotes', permission: 'payments.view' },
   { name: 'Reviews', href: '/admin/reviews', icon: 'star', permission: 'reviews.view' },
   { name: 'Securitate', href: '/admin/security', icon: 'shield', permission: 'security.view' },
-  { name: 'Alerte Securitate', href: '/admin/security-alerts', icon: 'exclamation', superadminOnly: true },
-  { name: 'Audit Logs', href: '/admin/audit-logs', icon: 'document', superadminOnly: true }
+  { name: 'Alerte Securitate', href: '/admin/security-alerts', icon: 'exclamation', permission: 'security.view' },
+  { name: 'Audit Logs', href: '/admin/audit-logs', icon: 'document', permission: 'audit.view' }
 ]
 
 const icons = {

@@ -4,10 +4,9 @@
  */
 
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { getAuditLogs } from '@/lib/security/audit.js'
-import prisma from '@/lib/prisma'
+import { checkPermission } from '@/lib/permissions'
+import { requireAdmin } from '@/lib/session'
 
 function apiError(message, status) {
   return NextResponse.json({ error: message }, { status })
@@ -15,25 +14,15 @@ function apiError(message, status) {
 
 export async function GET(request) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.email) {
+    const session = await requireAdmin()
+    if (!session) {
       return apiError('Unauthorized', 401)
     }
     
-    // Get user from DB to check role
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { role: true, email: true, id: true }
-    })
-    
-    if (!user) {
-      return apiError('User not found', 404)
-    }
-    
-    // Only SUPERADMIN can view audit logs
-    if (user.role !== 'SUPERADMIN') {
-      return apiError('Acces permis doar pentru Super Admin', 403)
+    // Check permission
+    const permCheck = await checkPermission('audit.view')
+    if (!permCheck.allowed) {
+      return apiError('Nu ai permisiunea să vezi audit logs', 403)
     }
     
     const { searchParams } = new URL(request.url)

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import { usePermissions } from '@/hooks/usePermissions'
 
 const SEVERITY_STYLES = {
   warning: 'bg-yellow-100 text-yellow-800 border-yellow-300',
@@ -41,6 +42,7 @@ const TYPE_ICONS = {
 export default function SecurityAlertsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { hasPermission, isSuperAdmin } = usePermissions()
   const [alerts, setAlerts] = useState([])
   const [loading, setLoading] = useState(true)
   const [acknowledging, setAcknowledging] = useState(null)
@@ -54,17 +56,17 @@ export default function SecurityAlertsPage() {
   const [selectedAlert, setSelectedAlert] = useState(null)
   const [stats, setStats] = useState({ unacknowledged: 0, critical: 0 })
 
-  // Check if user is SUPERADMIN
+  // Verifică permisiunea
   useEffect(() => {
     if (status === 'loading') return
-    if (!session || session.user.role !== 'SUPERADMIN') {
-      toast.error('Acces permis doar pentru Super Admin')
+    if (!hasPermission('security.view') && !isSuperAdmin) {
+      toast.error('Nu ai permisiunea să vezi alertele de securitate')
       router.push('/admin')
     }
-  }, [session, status, router])
+  }, [hasPermission, isSuperAdmin, router, status])
 
   const fetchAlerts = useCallback(async () => {
-    if (!session || session.user.role !== 'SUPERADMIN') return
+    if (!hasPermission('security.view') && !isSuperAdmin) return
     setLoading(true)
     try {
       const params = new URLSearchParams()
