@@ -69,9 +69,14 @@ export default function PaymentsPage() {
     toast.success('Acces acordat')
   }
   
-  // Handler pentru închiderea modalului fără verificare
+  // Handler pentru închiderea modalului fără verificare (când apasă X sau în afară)
   const handle2FAClose = () => {
-    router.push('/admin')
+    // Doar dacă nu s-a acordat acces, redirecționează
+    if (!accessGranted) {
+      router.push('/admin')
+    } else {
+      setShow2FAModal(false)
+    }
   }
   
   const [year, setYear] = useState(new Date().getFullYear())

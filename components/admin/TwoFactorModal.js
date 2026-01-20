@@ -83,7 +83,7 @@ export default function TwoFactorModal({
 
       if (res.ok && data.valid) {
         onVerify(data.token) // Pass verification token to callback
-        onClose()
+        // Nu mai apelăm onClose() aici - componenta părinte decide ce face
       } else {
         // Check if forced logout is required
         if (data.forceLogout) {
