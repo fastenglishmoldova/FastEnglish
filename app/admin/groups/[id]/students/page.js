@@ -19,6 +19,7 @@ export default async function GroupStudentsPage({ params }) {
     canModifyAbsences,
     canViewPayments,
     canAddPayments,
+    canEditPayments,
     canDeletePayments
   ] = await Promise.all([
     checkPermission('groups.students.view'),
@@ -28,9 +29,10 @@ export default async function GroupStudentsPage({ params }) {
     checkPermission('groups.students.status'),
     checkPermission('groups.students.lessons'),
     checkPermission('groups.students.absences'),
-    checkPermission('payments.view'),
-    checkPermission('payments.create'),
-    checkPermission('payments.delete')
+    checkPermission('groups.students.payments.view'),
+    checkPermission('groups.students.payments.create'),
+    checkPermission('groups.students.payments.edit'),
+    checkPermission('groups.students.payments.delete')
   ])
 
   const permissions = {
@@ -43,6 +45,7 @@ export default async function GroupStudentsPage({ params }) {
     canModifyAbsences: canModifyAbsences.allowed,
     canViewPayments: canViewPayments.allowed,
     canAddPayments: canAddPayments.allowed,
+    canEditPayments: canEditPayments.allowed,
     canDeletePayments: canDeletePayments.allowed
   }
   

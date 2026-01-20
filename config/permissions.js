@@ -127,26 +127,31 @@ export const PERMISSIONS = {
     description: 'Poate modifica absențele elevilor',
     category: 'Elevi în Grupe'
   },
-
-  // Plăți
-  'payments.view': {
+  'groups.students.payments.view': {
     label: 'Vezi plățile',
-    description: 'Poate vedea istoricul plăților',
-    category: 'Plăți'
+    description: 'Poate vedea istoricul plăților elevilor din grupe',
+    category: 'Elevi în Grupe'
   },
-  'payments.create': {
+  'groups.students.payments.create': {
     label: 'Adaugă plăți',
-    description: 'Poate înregistra plăți noi',
-    category: 'Plăți'
+    description: 'Poate înregistra plăți noi pentru elevi',
+    category: 'Elevi în Grupe'
   },
-  'payments.edit': {
+  'groups.students.payments.edit': {
     label: 'Editează plăți',
     description: 'Poate modifica plățile existente',
-    category: 'Plăți'
+    category: 'Elevi în Grupe'
   },
-  'payments.delete': {
+  'groups.students.payments.delete': {
     label: 'Șterge plăți',
     description: 'Poate șterge plăți',
+    category: 'Elevi în Grupe'
+  },
+
+  // Plăți (statistici generale)
+  'payments.view': {
+    label: 'Vezi statistici plăți',
+    description: 'Poate vedea statisticile generale de plăți',
     category: 'Plăți'
   },
 
