@@ -4,6 +4,7 @@ import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import DeleteCourseButton from '@/components/admin/DeleteCourseButton'
 import PermissionGuard from '@/components/admin/PermissionGuard'
+import { checkPermission } from '@/lib/permissions'
 
 export default async function CoursesPage() {
   return (
@@ -14,6 +15,12 @@ export default async function CoursesPage() {
 }
 
 async function CoursesPageContent() {
+  const [canCreate, canEdit, canDelete] = await Promise.all([
+    checkPermission('courses.create'),
+    checkPermission('courses.edit'),
+    checkPermission('courses.delete')
+  ])
+  
   const courses = await prisma.course.findMany({
     orderBy: { createdAt: 'desc' }
   })
@@ -25,12 +32,14 @@ async function CoursesPageContent() {
           <h1 className="text-xl xs:text-2xl font-bold text-gray-900">Cursuri</h1>
           <p className="text-sm xs:text-base text-gray-600">Gestionează cursurile disponibile</p>
         </div>
-        <Link
-          href="/admin/courses/new"
-          className="px-3 xs:px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm xs:text-base font-medium hover:bg-indigo-700 transition-colors text-center whitespace-nowrap"
-        >
-          + Adaugă curs
-        </Link>
+        {canCreate.allowed && (
+          <Link
+            href="/admin/courses/new"
+            className="px-3 xs:px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm xs:text-base font-medium hover:bg-indigo-700 transition-colors text-center whitespace-nowrap"
+          >
+            + Adaugă curs
+          </Link>
+        )}
       </div>
 
       {/* Desktop Table View */}
@@ -81,13 +90,17 @@ async function CoursesPageContent() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right space-x-2">
-                    <Link
-                      href={`/admin/courses/${course.id}`}
-                      className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-                    >
-                      Editează
-                    </Link>
-                    <DeleteCourseButton id={course.id} title={course.title} />
+                    {canEdit.allowed && (
+                      <Link
+                        href={`/admin/courses/${course.id}`}
+                        className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                      >
+                        Editează
+                      </Link>
+                    )}
+                    {canDelete.allowed && (
+                      <DeleteCourseButton id={course.id} title={course.title} />
+                    )}
                   </td>
                 </tr>
               ))
@@ -139,15 +152,19 @@ async function CoursesPageContent() {
 
                 {/* Acțiuni */}
                 <div className="flex gap-2 pt-2 border-t border-gray-100">
-                  <Link
-                    href={`/admin/courses/${course.id}`}
-                    className="flex-1 px-3 xs:px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs xs:text-sm font-medium hover:bg-indigo-700 transition-colors text-center"
-                  >
-                    Editează
-                  </Link>
-                  <div className="flex-shrink-0">
-                    <DeleteCourseButton id={course.id} title={course.title} />
-                  </div>
+                  {canEdit.allowed && (
+                    <Link
+                      href={`/admin/courses/${course.id}`}
+                      className="flex-1 px-3 xs:px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs xs:text-sm font-medium hover:bg-indigo-700 transition-colors text-center"
+                    >
+                      Editează
+                    </Link>
+                  )}
+                  {canDelete.allowed && (
+                    <div className="flex-shrink-0">
+                      <DeleteCourseButton id={course.id} title={course.title} />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
