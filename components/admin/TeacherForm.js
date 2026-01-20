@@ -203,11 +203,6 @@ export default function TeacherForm({ teacher }) {
               disabled={!!teacher}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 text-gray-900"
             />
-            {!teacher && (
-              <p className="mt-1 text-xs text-green-600 font-medium">
-                ✓ Se va putea conecta cu Google folosind acest email
-              </p>
-            )}
           </div>
 
           <div>
@@ -239,13 +234,14 @@ export default function TeacherForm({ teacher }) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {teacher ? 'Parolă nouă (opțional)' : 'Parolă (opțional)'}
+              {teacher ? 'Parolă nouă (opțional)' : 'Parolă *'}
             </label>
             <input
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
+              required={!teacher}
               minLength={6}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-700"
               placeholder={teacher ? 'Lasă gol pentru a păstra parola curentă' : 'Opțional - pentru login cu email/parolă'}

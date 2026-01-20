@@ -108,7 +108,12 @@ export default function EditGroupDetailsButton({ group, branches }) {
             if (!groupBranchId && selectedBranchId) return false
             if (groupBranchId !== selectedBranchId) return false
             
-            // Check if any selected day overlaps
+            // Pentru grupele profesorului curent: arată toate de la aceeași filială
+            if (g.teacherId === data.currentUserId) {
+              return true
+            }
+            
+            // Pentru alte grupe: arată doar cele care se suprapun cu zilele selectate
             const hasOverlap = formData.scheduleDays.some(day => 
               g.scheduleDays?.includes(day)
             )

@@ -49,6 +49,11 @@ export async function PUT(request, { params }) {
     
     if (password) {
       updateData.password = await hashPassword(password)
+      
+      // Invalidate all sessions when password is changed
+      await prisma.authSession.deleteMany({
+        where: { userId: id }
+      })
     }
 
     // Only SUPERADMIN can change role and permissions
@@ -116,6 +121,11 @@ export async function DELETE(request, { params }) {
         requires2FA: true 
       }, { status: 403 })
     }
+
+    // Invalidate all sessions before deleting user
+    await prisma.authSession.deleteMany({
+      where: { userId: id }
+    })
 
     await prisma.user.delete({ where: { id } })
 

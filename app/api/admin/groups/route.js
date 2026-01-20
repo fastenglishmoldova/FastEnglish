@@ -106,8 +106,24 @@ export async function POST(request) {
 
     // Trimite notificare pe Telegram către profesor
     if (group.teacher?.telegramChatId && teacherId) {
+      // Parse scheduleTime - poate fi JSON sau string simplu
+      let timeDisplay = scheduleTime || 'Neprecizat'
+      if (scheduleTime && scheduleTime.startsWith('{')) {
+        try {
+          const times = JSON.parse(scheduleTime)
+          // Formatează ca: Luni la 12:00, Vineri la 19:00
+          const days = scheduleDays || Object.keys(times)
+          timeDisplay = days
+            .filter(day => times[day])
+            .map(day => `${day} la ${times[day]}`)
+            .join(', ')
+        } catch {
+          // Lasă ca string simplu
+        }
+      }
+      
       const scheduleInfo = scheduleDays?.length > 0 
-        ? `📅 ${scheduleDays.join(', ')}${scheduleTime ? ` la ${scheduleTime}` : ''}`
+        ? `📅 ${timeDisplay}`
         : 'Program nestabilit'
       
       const message = `🎉 <b>Grupă Nouă Atribuită!</b>
