@@ -3,10 +3,18 @@ import prisma from '@/lib/prisma'
 import { hashPassword } from '@/lib/security/argon2'
 import { requireAdmin, getCurrentUser } from '@/lib/session'
 import { require2FAToken } from '@/lib/security/action-tokens'
+import { checkPermission } from '@/lib/permissions'
 
 export async function PUT(request, { params }) {
   try {
     await requireAdmin()
+    
+    // Check permission
+    const permCheck = await checkPermission('teachers.edit')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să editezi conturi' }, { status: 403 })
+    }
+    
     const sessionUser = await getCurrentUser()
     const { id } = await params
     const body = await request.json()
@@ -62,6 +70,13 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await requireAdmin()
+    
+    // Check permission
+    const permCheck = await checkPermission('teachers.delete')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să ștergi conturi' }, { status: 403 })
+    }
+    
     const sessionUser = await getCurrentUser()
     const { id } = await params
 

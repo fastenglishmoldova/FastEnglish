@@ -6,6 +6,7 @@ import prisma from '@/lib/prisma'
 import { ChartBarIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
 import DeleteTeacherButton from '@/components/admin/DeleteTeacherButton'
 import PermissionGuard from '@/components/admin/PermissionGuard'
+import { checkPermission } from '@/lib/permissions'
 
 export default async function TeachersPage() {
   return (
@@ -16,6 +17,11 @@ export default async function TeachersPage() {
 }
 
 async function TeachersPageContent() {
+  const [canCreate, canDelete] = await Promise.all([
+    checkPermission('teachers.create'),
+    checkPermission('teachers.delete')
+  ])
+  
   const teachers = await prisma.user.findMany({
     where: { role: { in: ['TEACHER', 'ADMIN', 'MANAGER'] } },
     orderBy: [{ role: 'asc' }, { createdAt: 'desc' }],
@@ -57,12 +63,14 @@ async function TeachersPageContent() {
           <h1 className="text-lg xs:text-xl sm:text-2xl font-bold text-gray-900">Personal</h1>
           <p className="text-xs xs:text-sm sm:text-base text-gray-600">Gestionează conturile profesorilor și administratorilor</p>
         </div>
-        <Link
-          href="/admin/teachers/new"
-          className="px-2.5 xs:px-3 sm:px-4 py-1.5 xs:py-2 bg-indigo-600 text-white rounded-lg text-xs xs:text-sm sm:text-base font-medium hover:bg-indigo-700 transition-colors text-center"
-        >
-          + Adaugă cont
-        </Link>
+        {canCreate.allowed && (
+          <Link
+            href="/admin/teachers/new"
+            className="px-2.5 xs:px-3 sm:px-4 py-1.5 xs:py-2 bg-indigo-600 text-white rounded-lg text-xs xs:text-sm sm:text-base font-medium hover:bg-indigo-700 transition-colors text-center"
+          >
+            + Adaugă cont
+          </Link>
+        )}
       </div>
 
       {/* Desktop Table */}
@@ -177,7 +185,9 @@ async function TeachersPageContent() {
                         <ChartBarIcon className="w-4 h-4" />
                         Statistici
                       </Link>
-                      <DeleteTeacherButton id={teacher.id} name={teacher.name || teacher.email} />
+                      {canDelete.allowed && (
+                        <DeleteTeacherButton id={teacher.id} name={teacher.name || teacher.email} />
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -262,11 +272,13 @@ async function TeachersPageContent() {
                   <ChartBarIcon className="w-3 h-3 xs:w-4 xs:h-4" />
                   <span>Statistici</span>
                 </Link>
-                <DeleteTeacherButton 
-                  id={teacher.id} 
-                  name={teacher.name || teacher.email}
-                  className="px-2 xs:px-3 sm:px-4 py-1.5 xs:py-2 bg-red-600 text-white rounded-lg text-[10px] xs:text-xs sm:text-sm font-medium hover:bg-red-700 transition-colors"
-                />
+                {canDelete.allowed && (
+                  <DeleteTeacherButton 
+                    id={teacher.id} 
+                    name={teacher.name || teacher.email}
+                    className="px-2 xs:px-3 sm:px-4 py-1.5 xs:py-2 bg-red-600 text-white rounded-lg text-[10px] xs:text-xs sm:text-sm font-medium hover:bg-red-700 transition-colors"
+                  />
+                )}
               </div>
             </div>
           ))

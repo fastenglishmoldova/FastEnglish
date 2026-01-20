@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma'
 import { hashPassword } from '@/lib/security/argon2'
 import { requireAdmin, getCurrentUser } from '@/lib/session'
 import { require2FAToken } from '@/lib/security/action-tokens'
+import { checkPermission } from '@/lib/permissions'
 
 export async function GET() {
   try {
@@ -23,6 +24,13 @@ export async function GET() {
 export async function POST(request) {
   try {
     await requireAdmin()
+    
+    // Check permission
+    const permCheck = await checkPermission('teachers.create')
+    if (!permCheck.allowed) {
+      return NextResponse.json({ error: 'Nu ai permisiunea să creezi conturi' }, { status: 403 })
+    }
+    
     const sessionUser = await getCurrentUser()
     const body = await request.json()
 

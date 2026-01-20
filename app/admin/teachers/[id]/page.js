@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import prisma from '@/lib/prisma'
 import TeacherForm from '@/components/admin/TeacherForm'
+import { checkPermission } from '@/lib/permissions'
 import { 
   AcademicCapIcon, 
   UserGroupIcon, 
@@ -51,6 +52,8 @@ export default async function TeacherDetailPage({ params }) {
   if (!teacher || !['TEACHER', 'MANAGER', 'ADMIN'].includes(teacher.role)) {
     notFound()
   }
+
+  const canEdit = await checkPermission('teachers.edit')
 
   // Calculate statistics
   const stats = {
@@ -567,10 +570,12 @@ export default async function TeacherDetailPage({ params }) {
       </div>
 
       {/* Edit Form */}
-      <div className="bg-white rounded-xl xs:rounded-2xl shadow-sm border border-gray-100 p-3 xs:p-6">
-        <h2 className="text-base xs:text-lg font-semibold text-gray-900 mb-3 xs:mb-4">Editează Informații</h2>
-        <TeacherForm teacher={teacher} />
-      </div>
+      {canEdit.allowed && (
+        <div className="bg-white rounded-xl xs:rounded-2xl shadow-sm border border-gray-100 p-3 xs:p-6">
+          <h2 className="text-base xs:text-lg font-semibold text-gray-900 mb-3 xs:mb-4">Editează Informații</h2>
+          <TeacherForm teacher={teacher} />
+        </div>
+      )}
     </div>
   )
 }
