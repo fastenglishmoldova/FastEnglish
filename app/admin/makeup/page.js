@@ -106,10 +106,10 @@ export default function AdminMakeupPage() {
       return
     }
     
-    // Get day of week from date
+    // Get day of week from date - folosim format românesc pentru că așa sunt salvate în DB
     const dateObj = new Date(date)
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-    const dayOfWeek = dayNames[dateObj.getDay()]
+    const dayNamesRo = ['Duminică', 'Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă']
+    const dayOfWeek = dayNamesRo[dateObj.getDay()]
     
     console.log('fetchDaySchedule:', { date, branchId, dayOfWeek, groupsCount: groups.length })
     
