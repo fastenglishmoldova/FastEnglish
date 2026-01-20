@@ -318,18 +318,6 @@ export const PERMISSIONS = {
     category: 'Securitate'
   },
 
-  // Înrolări (enrollments)
-  'enrollments.view': {
-    label: 'Vezi înrolările',
-    description: 'Poate vedea înrolările elevilor',
-    category: 'Înrolări'
-  },
-  'enrollments.manage': {
-    label: 'Gestionează înrolările',
-    description: 'Poate modifica înrolările',
-    category: 'Înrolări'
-  },
-
   // Absențe ratate
   'missed-sessions.view': {
     label: 'Vezi sesiunile ratate',
@@ -397,7 +385,6 @@ export const PERMISSION_CATEGORIES = [
   'Notificări',
   'Recenzii',
   'Orar',
-  'Înrolări',
   'Securitate'
 ]
 

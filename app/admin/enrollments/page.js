@@ -6,7 +6,7 @@ import PermissionGuard from '@/components/admin/PermissionGuard'
 
 export default async function EnrollmentsPage() {
   return (
-    <PermissionGuard permission="enrollments.view">
+    <PermissionGuard permission="inscrieri.view">
       <EnrollmentsPageContent />
     </PermissionGuard>
   )

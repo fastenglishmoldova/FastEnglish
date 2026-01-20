@@ -25,6 +25,16 @@ export async function PUT(request, { params }) {
       select: { twoFactorEnabled: true, role: true }
     })
     
+    // Check if trying to edit an admin/manager - only SUPERADMIN can do that
+    const targetUser = await prisma.user.findUnique({
+      where: { id },
+      select: { role: true }
+    })
+    
+    if (targetUser && ['ADMIN', 'MANAGER'].includes(targetUser.role) && currentUser?.role !== 'SUPERADMIN') {
+      return NextResponse.json({ error: 'Doar superadmin poate modifica alți administratori' }, { status: 403 })
+    }
+    
     const twoFACheck = require2FAToken(body.actionToken, sessionUser.email, currentUser?.twoFactorEnabled)
     if (!twoFACheck.valid && !twoFACheck.skip) {
       return NextResponse.json({ 
@@ -86,8 +96,18 @@ export async function DELETE(request, { params }) {
     // Verify 2FA if user has it enabled
     const currentUser = await prisma.user.findUnique({
       where: { email: sessionUser.email },
-      select: { twoFactorEnabled: true }
+      select: { twoFactorEnabled: true, role: true }
     })
+    
+    // Check if trying to delete an admin/manager - only SUPERADMIN can do that
+    const targetUser = await prisma.user.findUnique({
+      where: { id },
+      select: { role: true }
+    })
+    
+    if (targetUser && ['ADMIN', 'MANAGER'].includes(targetUser.role) && currentUser?.role !== 'SUPERADMIN') {
+      return NextResponse.json({ error: 'Doar superadmin poate șterge alți administratori' }, { status: 403 })
+    }
     
     const twoFACheck = require2FAToken(actionToken, sessionUser.email, currentUser?.twoFactorEnabled)
     if (!twoFACheck.valid && !twoFACheck.skip) {

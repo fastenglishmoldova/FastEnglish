@@ -178,11 +178,13 @@ export default function BranchesPage() {
   }
 
   const handle2FAVerify = (token) => {
+    setShow2FA(false)
     if (pendingAction?.type === 'save') {
       executeSave(token)
     } else if (pendingAction?.type === 'delete') {
       executeDelete(token)
     }
+    setPendingAction(null)
   }
 
   if (loading) {

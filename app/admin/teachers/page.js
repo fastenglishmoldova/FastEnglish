@@ -7,6 +7,8 @@ import { ChartBarIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
 import DeleteTeacherButton from '@/components/admin/DeleteTeacherButton'
 import PermissionGuard from '@/components/admin/PermissionGuard'
 import { checkPermission } from '@/lib/permissions'
+import { getCurrentUser } from '@/lib/session'
+import { isSuperAdmin } from '@/config/superadmins'
 
 export default async function TeachersPage() {
   return (
@@ -17,13 +19,21 @@ export default async function TeachersPage() {
 }
 
 async function TeachersPageContent() {
+  const currentUser = await getCurrentUser()
+  const userIsSuperAdmin = isSuperAdmin(currentUser?.email)
+  
   const [canCreate, canDelete] = await Promise.all([
     checkPermission('teachers.create'),
     checkPermission('teachers.delete')
   ])
   
+  // Administratorii văd doar profesorii, superadmin vede pe toți
+  const roleFilter = userIsSuperAdmin 
+    ? { in: ['TEACHER', 'ADMIN', 'MANAGER'] }
+    : { equals: 'TEACHER' }
+  
   const teachers = await prisma.user.findMany({
-    where: { role: { in: ['TEACHER', 'ADMIN', 'MANAGER'] } },
+    where: { role: roleFilter },
     orderBy: [{ role: 'asc' }, { createdAt: 'desc' }],
     include: {
       teacherGroups: {
@@ -185,7 +195,7 @@ async function TeachersPageContent() {
                         <ChartBarIcon className="w-4 h-4" />
                         Statistici
                       </Link>
-                      {canDelete.allowed && (
+                      {canDelete.allowed && (userIsSuperAdmin || teacher.role === 'TEACHER') && (
                         <DeleteTeacherButton id={teacher.id} name={teacher.name || teacher.email} />
                       )}
                     </div>
@@ -272,7 +282,7 @@ async function TeachersPageContent() {
                   <ChartBarIcon className="w-3 h-3 xs:w-4 xs:h-4" />
                   <span>Statistici</span>
                 </Link>
-                {canDelete.allowed && (
+                {canDelete.allowed && (userIsSuperAdmin || teacher.role === 'TEACHER') && (
                   <DeleteTeacherButton 
                     id={teacher.id} 
                     name={teacher.name || teacher.email}

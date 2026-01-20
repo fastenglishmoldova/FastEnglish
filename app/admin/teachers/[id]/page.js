@@ -6,6 +6,8 @@ import Image from 'next/image'
 import prisma from '@/lib/prisma'
 import TeacherForm from '@/components/admin/TeacherForm'
 import { checkPermission } from '@/lib/permissions'
+import { getCurrentUser } from '@/lib/session'
+import { isSuperAdmin } from '@/config/superadmins'
 import { 
   AcademicCapIcon, 
   UserGroupIcon, 
@@ -53,7 +55,13 @@ export default async function TeacherDetailPage({ params }) {
     notFound()
   }
 
+  const currentUser = await getCurrentUser()
+  const userIsSuperAdmin = isSuperAdmin(currentUser?.email)
+  
   const canEdit = await checkPermission('teachers.edit')
+  
+  // Only superadmin can edit other admins
+  const canEditThisUser = canEdit.allowed && (userIsSuperAdmin || teacher.role === 'TEACHER')
 
   // Calculate statistics
   const stats = {
@@ -570,7 +578,7 @@ export default async function TeacherDetailPage({ params }) {
       </div>
 
       {/* Edit Form */}
-      {canEdit.allowed && (
+      {canEditThisUser && (
         <div className="bg-white rounded-xl xs:rounded-2xl shadow-sm border border-gray-100 p-3 xs:p-6">
           <h2 className="text-base xs:text-lg font-semibold text-gray-900 mb-3 xs:mb-4">Editează Informații</h2>
           <TeacherForm teacher={teacher} />
