@@ -61,6 +61,9 @@ export default async function TeacherGroupDetailPage({ params }) {
       course: true,
       teacher: true,
       groupStudents: {
+        where: {
+          status: { not: 'LEFT' }  // Exclude elevii plecați
+        },
         include: {
           student: true
         }
@@ -91,8 +94,9 @@ export default async function TeacherGroupDetailPage({ params }) {
   }
 
   // Count students with low/zero lessons (only active students)
+  // Elevii LEFT sunt deja excluși din query
   const activeStudents = group.groupStudents.filter(gs => gs.status === 'ACTIVE' || !gs.status)
-  const inactiveStudents = group.groupStudents.filter(gs => gs.status && gs.status !== 'ACTIVE')
+  const pausedStudents = group.groupStudents.filter(gs => gs.status === 'PAUSED')
   const studentsWithZeroLessons = activeStudents.filter(gs => gs.lessonsRemaining === 0)
   const studentsWithLowLessons = activeStudents.filter(gs => gs.lessonsRemaining > 0 && gs.lessonsRemaining <= 2)
 

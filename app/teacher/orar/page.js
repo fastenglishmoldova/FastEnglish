@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import Link from 'next/link'
 
 // Mapare zi săptămână JS -> română
 const dayMapping = {
@@ -17,11 +18,9 @@ const allDays = ['Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă', 'D
 
 // Sortează zilele începând de la ziua curentă
 const getSortedDays = () => {
-  const today = new Date().getDay() // 0 = Duminică, 1 = Luni, etc.
+  const today = new Date().getDay()
   const todayName = dayMapping[today]
   const todayIndex = allDays.indexOf(todayName)
-  
-  // Reordonează zilele să înceapă cu azi
   return [...allDays.slice(todayIndex), ...allDays.slice(0, todayIndex)]
 }
 
@@ -32,7 +31,6 @@ const getTimeForDay = (scheduleTime, day) => {
     const parsed = JSON.parse(scheduleTime)
     if (typeof parsed === 'object') return parsed[day] || null
   } catch {
-    // E string simplu - aceeași oră pentru toate zilele
     return scheduleTime
   }
   return null
@@ -40,7 +38,16 @@ const getTimeForDay = (scheduleTime, day) => {
 
 export default function TeacherOrarPage() {
   const [groups, setGroups] = useState([])
+  const [teachers, setTeachers] = useState([])
+  const [branches, setBranches] = useState([])
+  const [currentUserId, setCurrentUserId] = useState(null)
   const [loading, setLoading] = useState(true)
+  
+  // Filtre
+  const [selectedTeacher, setSelectedTeacher] = useState('')
+  const [selectedBranch, setSelectedBranch] = useState('')
+  const [selectedDay, setSelectedDay] = useState('')
+  const [showOnlyMine, setShowOnlyMine] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -48,17 +55,51 @@ export default function TeacherOrarPage() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch('/api/teacher/groups')
+      // Fetch all groups (using admin endpoint for full data)
+      const res = await fetch('/api/admin/groups')
       const data = await res.json()
       setGroups(data.groups || [])
+      setTeachers(data.teachers || [])
+      setBranches(data.branches || [])
+      
+      // Get current user ID
+      const sessionRes = await fetch('/api/auth/session')
+      const sessionData = await sessionRes.json()
+      setCurrentUserId(sessionData?.user?.id)
     } catch (error) {
-      console.error('Error fetching groups:', error)
+      console.error('Error fetching data:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  // Generează orarul sortat pe zile (azi, mâine, etc.)
+  // Filtrare grupe
+  const filteredGroups = useMemo(() => {
+    return groups.filter(group => {
+      if (!group.active) return false
+      
+      // Filtru "doar ale mele"
+      if (showOnlyMine && group.teacherId !== currentUserId) return false
+      
+      // Filtru profesor
+      if (selectedTeacher && group.teacherId !== selectedTeacher) return false
+      
+      // Filtru filială
+      if (selectedBranch) {
+        if (selectedBranch === 'none' && group.branchId) return false
+        if (selectedBranch !== 'none' && group.branchId !== selectedBranch) return false
+      }
+      
+      // Filtru zi
+      if (selectedDay && (!group.scheduleDays || !group.scheduleDays.includes(selectedDay))) {
+        return false
+      }
+      
+      return true
+    })
+  }, [groups, selectedTeacher, selectedBranch, selectedDay, showOnlyMine, currentUserId])
+
+  // Generează orarul sortat pe zile
   const schedule = useMemo(() => {
     const sortedDays = getSortedDays()
     const todayName = dayMapping[new Date().getDay()]
@@ -66,19 +107,17 @@ export default function TeacherOrarPage() {
     const tomorrowName = dayMapping[tomorrowIndex]
     
     const scheduleByDay = {}
-    
     sortedDays.forEach(day => {
       scheduleByDay[day] = []
     })
     
-    // Filtrăm grupele active
-    const activeGroups = groups.filter(g => g.active)
-    
-    // Populăm orarul
-    activeGroups.forEach(group => {
+    filteredGroups.forEach(group => {
       if (!group.scheduleDays) return
       
       group.scheduleDays.forEach(day => {
+        // Dacă e selectată o zi specifică, arătăm doar acea zi
+        if (selectedDay && day !== selectedDay) return
+        
         if (scheduleByDay[day]) {
           const time = getTimeForDay(group.scheduleTime, day)
           scheduleByDay[day].push({
@@ -86,10 +125,14 @@ export default function TeacherOrarPage() {
             name: group.name,
             time: time || '-',
             branch: group.branch?.name || '-',
+            branchId: group.branchId,
             room: group.locationDetails || '-',
             locationType: group.locationType,
             course: group.course?.title || '-',
-            studentsCount: group.groupStudents?.filter(gs => gs.status === 'ACTIVE')?.length || 0
+            teacher: group.teacher?.name || group.teacher?.email || '-',
+            teacherId: group.teacherId,
+            studentsCount: group.groupStudents?.filter(gs => gs.status === 'ACTIVE' || !gs.status)?.length || 0,
+            isMyGroup: group.teacherId === currentUserId
           })
         }
       })
@@ -105,7 +148,16 @@ export default function TeacherOrarPage() {
     })
     
     return { scheduleByDay, todayName, tomorrowName, sortedDays }
-  }, [groups])
+  }, [filteredGroups, selectedDay, currentUserId])
+
+  const resetFilters = () => {
+    setSelectedTeacher('')
+    setSelectedBranch('')
+    setSelectedDay('')
+    setShowOnlyMine(false)
+  }
+
+  const hasActiveFilters = selectedTeacher || selectedBranch || selectedDay || showOnlyMine
 
   if (loading) {
     return (
@@ -115,11 +167,95 @@ export default function TeacherOrarPage() {
     )
   }
 
+  const totalLessons = schedule.sortedDays.reduce((sum, day) => sum + schedule.scheduleByDay[day].length, 0)
+
   return (
     <div className="space-y-4 xs:space-y-6">
       <div>
-        <h1 className="text-xl xs:text-2xl font-bold text-gray-900">Orarul Meu</h1>
-        <p className="text-sm xs:text-base text-gray-600">Vizualizează orarul grupelor tale</p>
+        <h1 className="text-xl xs:text-2xl font-bold text-gray-900">Orar Complet</h1>
+        <p className="text-sm xs:text-base text-gray-600">Vizualizează orarul tuturor grupelor</p>
+      </div>
+
+      {/* Filtre */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 xs:p-4">
+        <div className="flex flex-wrap gap-3 items-end">
+          {/* Toggle "Doar grupele mele" */}
+          <div className="flex items-center">
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showOnlyMine}
+                onChange={(e) => setShowOnlyMine(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+              <span className="ml-2 text-sm font-medium text-gray-700">Doar ale mele</span>
+            </label>
+          </div>
+
+          {/* Filtru zi */}
+          <div className="flex-1 min-w-[120px]">
+            <label className="block text-xs font-medium text-gray-500 mb-1">Zi</label>
+            <select
+              value={selectedDay}
+              onChange={(e) => setSelectedDay(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="">Toate zilele</option>
+              {allDays.map(day => (
+                <option key={day} value={day}>{day}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Filtru profesor */}
+          <div className="flex-1 min-w-[150px]">
+            <label className="block text-xs font-medium text-gray-500 mb-1">Profesor</label>
+            <select
+              value={selectedTeacher}
+              onChange={(e) => setSelectedTeacher(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="">Toți profesorii</option>
+              {teachers.map(t => (
+                <option key={t.id} value={t.id}>{t.name || t.email}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Filtru filială */}
+          <div className="flex-1 min-w-[140px]">
+            <label className="block text-xs font-medium text-gray-500 mb-1">Filiala</label>
+            <select
+              value={selectedBranch}
+              onChange={(e) => setSelectedBranch(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="">Toate filialele</option>
+              <option value="none">Fără filială</option>
+              {branches.map(b => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Resetare filtre */}
+          {hasActiveFilters && (
+            <button
+              onClick={resetFilters}
+              className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Resetează
+            </button>
+          )}
+        </div>
+
+        {/* Statistici filtre */}
+        {hasActiveFilters && (
+          <div className="mt-3 pt-3 border-t border-gray-100 text-sm text-gray-600">
+            Se afișează {totalLessons} {totalLessons === 1 ? 'lecție' : 'lecții'} din {filteredGroups.length} {filteredGroups.length === 1 ? 'grupă' : 'grupe'}
+          </div>
+        )}
       </div>
 
       {/* Orar pe zile */}
@@ -156,20 +292,27 @@ export default function TeacherOrarPage() {
               </div>
 
               {/* Card-uri */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {daySchedule.map((item, idx) => (
                   <div 
                     key={`${item.id}-${idx}`} 
                     className={`bg-white rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow ${
-                      isToday ? 'border-indigo-200' : 'border-gray-100'
+                      item.isMyGroup 
+                        ? 'border-indigo-300 ring-1 ring-indigo-200' 
+                        : isToday ? 'border-indigo-200' : 'border-gray-100'
                     }`}
                   >
-                    {/* Header card - oră și filială */}
+                    {/* Header card - oră și badge-uri */}
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xl font-bold text-indigo-600">
+                      <span className={`text-xl font-bold ${item.isMyGroup ? 'text-indigo-600' : 'text-gray-700'}`}>
                         {item.time}
                       </span>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 flex-wrap justify-end">
+                        {item.isMyGroup && (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                            Mea
+                          </span>
+                        )}
                         {item.branch !== '-' && (
                           <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                             {item.branch}
@@ -183,22 +326,44 @@ export default function TeacherOrarPage() {
 
                     {/* Numele grupei */}
                     <h3 className="font-semibold text-gray-900 mb-1">{item.name}</h3>
-                    <p className="text-xs text-gray-500 mb-3">{item.course}</p>
+                    <p className="text-xs text-gray-500 mb-2">{item.course}</p>
+                    
+                    {/* Profesor */}
+                    {!showOnlyMine && !selectedTeacher && (
+                      <p className="text-xs text-gray-600 mb-2 flex items-center gap-1">
+                        <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span className={item.isMyGroup ? 'font-medium text-indigo-600' : ''}>
+                          {item.teacher}
+                        </span>
+                      </p>
+                    )}
 
                     {/* Locație */}
                     <div className="flex items-center gap-2 text-sm text-gray-600 p-2 bg-gray-50 rounded-lg">
                       {item.locationType === 'online' ? (
-                        <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                         </svg>
                       ) : (
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                       )}
                       <span className="truncate">{item.room}</span>
                     </div>
+
+                    {/* Link la grupă (doar pentru grupele mele) */}
+                    {item.isMyGroup && (
+                      <Link
+                        href={`/teacher/groups/${item.id}`}
+                        className="mt-3 block text-center text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                      >
+                        Vezi grupa →
+                      </Link>
+                    )}
                   </div>
                 ))}
               </div>
@@ -209,7 +374,10 @@ export default function TeacherOrarPage() {
         {/* Mesaj dacă nu sunt grupe */}
         {schedule.sortedDays.every(day => schedule.scheduleByDay[day].length === 0) && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 xs:p-12 text-center text-gray-500">
-            Nu ai grupe programate.
+            {hasActiveFilters 
+              ? 'Nu există grupe care să corespundă filtrelor selectate.'
+              : 'Nu există grupe programate.'
+            }
           </div>
         )}
       </div>

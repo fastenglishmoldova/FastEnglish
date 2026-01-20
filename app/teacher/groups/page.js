@@ -37,6 +37,9 @@ export default async function TeacherGroupsPage() {
     include: {
       course: true,
       groupStudents: {
+        where: {
+          status: { not: 'LEFT' }  // Exclude elevii plecați
+        },
         include: { student: true }
       },
       lessonSessions: {

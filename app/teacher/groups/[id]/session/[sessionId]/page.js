@@ -15,6 +15,9 @@ export default async function SessionDetailPage({ params }) {
       course: true,
       teacher: true,
       groupStudents: {
+        where: {
+          status: { not: 'LEFT' }  // Exclude elevii plecați
+        },
         include: { student: true }
       }
     }
