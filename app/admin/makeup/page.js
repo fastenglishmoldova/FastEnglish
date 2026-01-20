@@ -909,7 +909,7 @@ export default function AdminMakeupPage() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <p className="text-xs font-semibold text-blue-800 mb-2 flex items-center gap-1.5">
                     <CalendarIcon className="w-4 h-4" />
-                    Orar {daySchedule.dayOfWeek === 'Mon' ? 'Luni' : daySchedule.dayOfWeek === 'Tue' ? 'Marți' : daySchedule.dayOfWeek === 'Wed' ? 'Miercuri' : daySchedule.dayOfWeek === 'Thu' ? 'Joi' : daySchedule.dayOfWeek === 'Fri' ? 'Vineri' : daySchedule.dayOfWeek === 'Sat' ? 'Sâmbătă' : 'Duminică'}
+                    Orar
                     {formData.branchId && branches.find(b => b.id === formData.branchId) && ` - ${branches.find(b => b.id === formData.branchId).name}`}
                   </p>
                   {(daySchedule.groups?.length > 0 || daySchedule.makeups?.length > 0) ? (
@@ -1270,7 +1270,7 @@ export default function AdminMakeupPage() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <p className="text-xs font-semibold text-blue-800 mb-2 flex items-center gap-1.5">
                     <CalendarIcon className="w-4 h-4" />
-                    Orar {daySchedule.dayOfWeek === 'Mon' ? 'Luni' : daySchedule.dayOfWeek === 'Tue' ? 'Marți' : daySchedule.dayOfWeek === 'Wed' ? 'Miercuri' : daySchedule.dayOfWeek === 'Thu' ? 'Joi' : daySchedule.dayOfWeek === 'Fri' ? 'Vineri' : daySchedule.dayOfWeek === 'Sat' ? 'Sâmbătă' : 'Duminică'}
+                    Orar
                     {formData.branchId && branches.find(b => b.id === formData.branchId) && ` - ${branches.find(b => b.id === formData.branchId).name}`}
                   </p>
                   {(daySchedule.groups?.length > 0 || daySchedule.makeups?.filter(m => m.id !== editingLesson?.id).length > 0) ? (
