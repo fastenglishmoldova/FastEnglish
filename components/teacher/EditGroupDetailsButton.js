@@ -8,7 +8,6 @@ import {
   XMarkIcon, 
   ClockIcon, 
   UserIcon,
-  UserGroupIcon,
   CalendarDaysIcon 
 } from '@heroicons/react/24/outline'
 
@@ -42,17 +41,44 @@ function parseScheduleTime(scheduleTime, scheduleDays = []) {
   return scheduleTime
 }
 
+// Helper pentru a parsa scheduleTime existent în obiect per zi
+function parseScheduleTimeToObject(scheduleTime, scheduleDays = []) {
+  if (!scheduleTime) return {}
+  
+  if (scheduleTime.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(scheduleTime)
+      return parsed
+    } catch {
+      return {}
+    }
+  }
+  
+  // E un string simplu - aplică la toate zilele selectate
+  const result = {}
+  scheduleDays.forEach(day => {
+    result[day] = scheduleTime
+  })
+  // Păstrează și ca _default pentru zile noi
+  result._default = scheduleTime
+  return result
+}
+
 export default function EditGroupDetailsButton({ group, branches }) {
   const router = useRouter()
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState(false)
   const [schedulePreview, setSchedulePreview] = useState([])
   const [loadingSchedule, setLoadingSchedule] = useState(false)
+  
+  // Parse existing scheduleTime to object - include zilele pentru string simplu
+  const initialTimes = parseScheduleTimeToObject(group.scheduleTime, group.scheduleDays || [])
+  
   const [formData, setFormData] = useState({
-    scheduleTime: group.scheduleTime || '',
     scheduleDays: group.scheduleDays || [],
+    scheduleTimes: initialTimes, // Obiect { "Luni": "16:00", "Marți": "17:00" }
     locationDetails: group.locationDetails || '',
-    branchId: group.branchId || '',
+    branchId: group.branch?.id || group.branchId || '',
     locationType: group.locationType || 'physical'
   })
 
@@ -73,7 +99,10 @@ export default function EditGroupDetailsButton({ group, branches }) {
           // Filter groups by selected branch and days
           const filtered = data.groups.filter(g => {
             if (g.id === group.id) return false // Exclude current group
-            if (g.branchId !== formData.branchId) return false
+            
+            // Check branch match - compare branch.id or branchId
+            const groupBranchId = g.branch?.id || g.branchId
+            if (groupBranchId !== formData.branchId) return false
             
             // Check if any selected day overlaps
             const hasOverlap = formData.scheduleDays.some(day => 
@@ -84,8 +113,7 @@ export default function EditGroupDetailsButton({ group, branches }) {
             name: g.name,
             teacher: g.teacher?.fullName || 'Nealocat',
             days: g.scheduleDays || [],
-            time: parseScheduleTime(g.scheduleTime, g.scheduleDays),
-            studentCount: g._count?.groupStudents || 0
+            time: parseScheduleTime(g.scheduleTime, g.scheduleDays)
           }))
 
           setSchedulePreview(filtered)
@@ -105,10 +133,24 @@ export default function EditGroupDetailsButton({ group, branches }) {
     setLoading(true)
 
     try {
+      // Construiește scheduleTime ca JSON string
+      const timesObj = {}
+      formData.scheduleDays.forEach(day => {
+        timesObj[day] = formData.scheduleTimes[day] || formData.scheduleTimes._default || ''
+      })
+      
+      const submitData = {
+        scheduleDays: formData.scheduleDays,
+        scheduleTime: JSON.stringify(timesObj),
+        locationDetails: formData.locationDetails,
+        branchId: formData.branchId,
+        locationType: formData.locationType
+      }
+      
       const res = await fetch(`/api/teacher/groups/${group.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(submitData)
       })
 
       if (res.ok) {
@@ -127,11 +169,34 @@ export default function EditGroupDetailsButton({ group, branches }) {
   }
 
   const toggleDay = (day) => {
-    setFormData(prev => ({
-      ...prev,
-      scheduleDays: prev.scheduleDays.includes(day)
+    setFormData(prev => {
+      const newDays = prev.scheduleDays.includes(day)
         ? prev.scheduleDays.filter(d => d !== day)
         : [...prev.scheduleDays, day]
+      
+      // Dacă adăugăm o zi nouă, setăm ora default
+      const newTimes = { ...prev.scheduleTimes }
+      if (!prev.scheduleDays.includes(day) && !newTimes[day]) {
+        // Copiază ora de la _default sau prima zi existentă
+        newTimes[day] = prev.scheduleTimes._default || 
+          Object.values(prev.scheduleTimes).find(t => t && t !== '') || ''
+      }
+      
+      return {
+        ...prev,
+        scheduleDays: newDays,
+        scheduleTimes: newTimes
+      }
+    })
+  }
+
+  const updateTimeForDay = (day, time) => {
+    setFormData(prev => ({
+      ...prev,
+      scheduleTimes: {
+        ...prev.scheduleTimes,
+        [day]: time
+      }
     }))
   }
 
@@ -182,22 +247,31 @@ export default function EditGroupDetailsButton({ group, branches }) {
                 </div>
               </div>
 
-              {/* Ora cursului */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Ora cursului *
-                </label>
-                <input
-                  type="time"
-                  value={formData.scheduleTime}
-                  onChange={(e) => setFormData({ ...formData, scheduleTime: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
-                  required
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  Format 24h (ex: 16:00)
-                </p>
-              </div>
+              {/* Ora cursului - un input per zi selectată */}
+              {formData.scheduleDays.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ora cursului *
+                  </label>
+                  <div className="space-y-3">
+                    {formData.scheduleDays.map(day => (
+                      <div key={day} className="flex items-center gap-3">
+                        <span className="w-24 text-sm font-medium text-gray-700">{day}:</span>
+                        <input
+                          type="text"
+                          value={formData.scheduleTimes[day] || formData.scheduleTimes._default || ''}
+                          onChange={(e) => updateTimeForDay(day, e.target.value)}
+                          placeholder="13:00"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Introduceți ora în format 24h (ex: 13:00, 16:30)
+                  </p>
+                </div>
+              )}
 
               {/* Tip locație */}
               <div>
@@ -213,7 +287,7 @@ export default function EditGroupDetailsButton({ group, branches }) {
                       onChange={(e) => setFormData({ ...formData, locationType: e.target.value })}
                       className="mr-2"
                     />
-                    <span>Fizic</span>
+                    <span className="text-gray-700">Fizic</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -223,7 +297,7 @@ export default function EditGroupDetailsButton({ group, branches }) {
                       onChange={(e) => setFormData({ ...formData, locationType: e.target.value })}
                       className="mr-2"
                     />
-                    <span>Online</span>
+                    <span className="text-gray-700">Online</span>
                   </label>
                 </div>
               </div>
@@ -315,7 +389,13 @@ export default function EditGroupDetailsButton({ group, branches }) {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading || formData.scheduleDays.length === 0 || !formData.scheduleTime}
+                  disabled={
+                    loading || 
+                    formData.scheduleDays.length === 0 || 
+                    !formData.scheduleDays.every(day => 
+                      formData.scheduleTimes[day] || formData.scheduleTimes._default
+                    )
+                  }
                   className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? 'Se salvează...' : 'Salvează modificările'}

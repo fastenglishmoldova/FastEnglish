@@ -61,6 +61,7 @@ export default async function TeacherGroupDetailPage({ params }) {
     include: {
       course: true,
       teacher: true,
+      branch: true,
       groupStudents: {
         where: {
           status: { not: 'LEFT' }  // Exclude elevii plecați
@@ -173,6 +174,7 @@ export default async function TeacherGroupDetailPage({ params }) {
               scheduleDays: group.scheduleDays,
               locationDetails: group.locationDetails,
               branchId: group.branchId,
+              branch: group.branch,
               locationType: group.locationType
             }} 
             branches={await prisma.branch.findMany({ orderBy: { name: 'asc' } })}
