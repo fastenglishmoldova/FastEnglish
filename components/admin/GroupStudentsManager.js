@@ -27,7 +27,21 @@ const STATUS_CONFIG = {
   COMPLETED: { label: 'Terminat', color: 'blue', icon: CheckCircleIcon }
 }
 
-export default function GroupStudentsManager({ group, allStudents, allGroups = [] }) {
+export default function GroupStudentsManager({ group, allStudents, allGroups = [], permissions = {} }) {
+  // Destructure permissions with defaults
+  const {
+    canViewStudents = false,
+    canAddStudents = false,
+    canRemoveStudents = false,
+    canTransfer = false,
+    canChangeStatus = false,
+    canModifyLessons = false,
+    canModifyAbsences = false,
+    canViewPayments = false,
+    canAddPayments = false,
+    canDeletePayments = false
+  } = permissions
+
   const router = useRouter()
   const [selectedStudentId, setSelectedStudentId] = useState('')
   const [lessonsRemaining, setLessonsRemaining] = useState(group.course?.lessonsCount || 12)
@@ -344,6 +358,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
       )}
 
       {/* Add Student */}
+      {canAddStudents && (
       <div className="bg-white rounded-xl xs:rounded-2xl shadow-sm border border-gray-100 p-3 xs:p-4 sm:p-6">
         <h3 className="text-base xs:text-lg font-semibold text-gray-900 mb-3 xs:mb-4">Adaugă elev în grupă</h3>
         <div className="flex flex-col xs:flex-row gap-2 xs:gap-3 sm:gap-4">
@@ -376,6 +391,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
           </div>
         </div>
       </div>
+      )}
 
       {/* Students List */}
       <div className="bg-white rounded-xl xs:rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -428,6 +444,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                       <p className="text-sm text-gray-500">{gs.student.parentPhone}</p>
                     </td>
                     <td className="px-6 py-4">
+                      {canChangeStatus ? (
                       <button
                         onClick={() => openStatusModal(gs)}
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all hover:ring-2 hover:ring-offset-1 ${
@@ -440,6 +457,18 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                         <StatusIcon className="w-3.5 h-3.5" />
                         {statusConfig.label}
                       </button>
+                      ) : (
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                          status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
+                          status === 'PAUSED' ? 'bg-amber-100 text-amber-700' :
+                          status === 'LEFT' ? 'bg-red-100 text-red-700' :
+                          'bg-blue-100 text-blue-700'
+                        }`}
+                      >
+                        <StatusIcon className="w-3.5 h-3.5" />
+                        {statusConfig.label}
+                      </span>
+                      )}
                       {gs.statusNote && (
                         <p className="text-xs text-gray-500 mt-1 truncate max-w-[120px]" title={gs.statusNote}>
                           {gs.statusNote}
@@ -464,6 +493,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                       </div>
                       
                       {/* Add/Remove lessons controls */}
+                      {canModifyLessons && (
                       <div className="flex items-center gap-2 mt-2">
                         <button
                           onClick={() => setLessonsToAdd(prev => ({ ...prev, [gs.id]: (prev[gs.id] || 0) - 1 }))}
@@ -491,6 +521,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                           {addingLessons[gs.id] ? '...' : 'Salvează'}
                         </button>
                       </div>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       {/* Absences display */}
@@ -505,6 +536,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                       </div>
                       
                       {/* Add/Remove absences controls */}
+                      {canModifyAbsences && (
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setAbsencesToAdd(prev => ({ ...prev, [gs.id]: (prev[gs.id] || 0) - 1 }))}
@@ -532,8 +564,10 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                           {addingAbsences[gs.id] ? '...' : 'Salvează'}
                         </button>
                       </div>
+                      )}
                     </td>
                     <td className="px-6 py-4">
+                      {canViewPayments ? (
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-gray-900">
@@ -544,6 +578,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
+                          {canAddPayments && (
                           <button
                             onClick={() => openPaymentModal(gs)}
                             className="inline-flex items-center gap-1 px-2 py-1 bg-green-600 text-white text-xs rounded font-medium hover:bg-green-700"
@@ -551,6 +586,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                             <BanknotesIcon className="w-3 h-3" />
                             Adaugă plată
                           </button>
+                          )}
                           {gs.payments?.length > 0 && (
                             <button
                               onClick={() => togglePayments(gs.id)}
@@ -571,24 +607,31 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                           )}
                         </div>
                       </div>
+                      ) : (
+                      <span className="text-sm text-gray-400">-</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {new Date(gs.enrolledAt).toLocaleDateString('ro-RO')}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        {canTransfer && (
                         <button
                           onClick={() => openTransferModal(gs)}
                           className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
                         >
                           Transfer
                         </button>
+                        )}
+                        {canRemoveStudents && (
                         <button
                           onClick={() => handleRemoveStudent(gs.id)}
                           className="text-red-600 hover:text-red-900 text-sm font-medium"
                         >
                           Elimină
                         </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -629,12 +672,14 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                                     <span className="text-xs text-gray-500 italic">{payment.notes}</span>
                                   )}
                                 </div>
+                                {canDeletePayments && (
                                 <button
                                   onClick={() => handleDeletePayment(payment.id)}
                                   className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
                                 >
                                   <TrashIcon className="w-4 h-4" />
                                 </button>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -676,6 +721,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                       </p>
                       <p className="text-xs text-gray-500">{gs.student.parentPhone}</p>
                     </div>
+                    {canChangeStatus ? (
                     <button
                       onClick={() => openStatusModal(gs)}
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] xs:text-xs font-medium flex-shrink-0 ${
@@ -688,6 +734,18 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                       <StatusIcon className="w-3 h-3" />
                       {statusConfig.label}
                     </button>
+                    ) : (
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] xs:text-xs font-medium flex-shrink-0 ${
+                        status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
+                        status === 'PAUSED' ? 'bg-amber-100 text-amber-700' :
+                        status === 'LEFT' ? 'bg-red-100 text-red-700' :
+                        'bg-blue-100 text-blue-700'
+                      }`}
+                    >
+                      <StatusIcon className="w-3 h-3" />
+                      {statusConfig.label}
+                    </span>
+                    )}
                   </div>
 
                   {/* Lessons Section */}
@@ -707,6 +765,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                         )}
                       </div>
                     </div>
+                    {canModifyLessons && (
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => setLessonsToAdd(prev => ({ ...prev, [gs.id]: (prev[gs.id] || 0) - 1 }))}
@@ -734,6 +793,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                         {addingLessons[gs.id] ? '...' : 'Salvează'}
                       </button>
                     </div>
+                    )}
                   </div>
 
                   {/* Absences Section */}
@@ -748,6 +808,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                         {Math.max(0, gs.absences || 0)}
                       </span>
                     </div>
+                    {canModifyAbsences && (
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => setAbsencesToAdd(prev => ({ ...prev, [gs.id]: (prev[gs.id] || 0) - 1 }))}
@@ -775,9 +836,11 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                         {addingAbsences[gs.id] ? '...' : 'Salvează'}
                       </button>
                     </div>
+                    )}
                   </div>
 
                   {/* Payments Section */}
+                  {canViewPayments && (
                   <div className="bg-white/50 rounded-lg p-2 xs:p-3 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-500">Plăți:</span>
@@ -786,6 +849,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5">
+                      {canAddPayments && (
                       <button
                         onClick={() => openPaymentModal(gs)}
                         className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 bg-green-600 text-white text-[10px] xs:text-xs rounded font-medium hover:bg-green-700"
@@ -793,6 +857,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                         <BanknotesIcon className="w-3 h-3" />
                         Adaugă plată
                       </button>
+                      )}
                       {gs.payments?.length > 0 && (
                         <button
                           onClick={() => togglePayments(gs.id)}
@@ -818,17 +883,20 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                                 <span className="text-indigo-600">+{payment.lessonsAdded} lecții</span>
                               )}
                             </div>
+                            {canDeletePayments && (
                             <button
                               onClick={() => handleDeletePayment(payment.id)}
                               className="p-1 text-red-500 hover:bg-red-50 rounded"
                             >
                               <TrashIcon className="w-3 h-3" />
                             </button>
+                            )}
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
+                  )}
 
                   {/* Footer: Date + Transfer + Remove */}
                   <div className="flex items-center justify-between pt-2 border-t border-gray-200">
@@ -836,18 +904,22 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                       Înscris: {new Date(gs.enrolledAt).toLocaleDateString('ro-RO')}
                     </span>
                     <div className="flex items-center gap-3">
+                      {canTransfer && (
                       <button
                         onClick={() => openTransferModal(gs)}
                         className="text-indigo-600 hover:text-indigo-900 text-[10px] xs:text-xs font-medium"
                       >
                         Transfer
                       </button>
+                      )}
+                      {canRemoveStudents && (
                       <button
                         onClick={() => handleRemoveStudent(gs.id)}
                         className="text-red-600 hover:text-red-900 text-[10px] xs:text-xs font-medium"
                       >
                         Elimină
                       </button>
+                      )}
                     </div>
                   </div>
                 </div>
