@@ -181,7 +181,12 @@ export default function TeacherOrarPage() {
               <input
                 type="checkbox"
                 checked={showOnlyMine}
-                onChange={(e) => setShowOnlyMine(e.target.checked)}
+                onChange={(e) => {
+                  setShowOnlyMine(e.target.checked)
+                  if (e.target.checked) {
+                    setSelectedTeacher('') // Resetează filtrul de profesor
+                  }
+                }}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
@@ -204,20 +209,22 @@ export default function TeacherOrarPage() {
             </select>
           </div>
 
-          {/* Filtru profesor */}
-          <div className="flex-1 min-w-[150px]">
-            <label className="block text-xs font-medium text-gray-500 mb-1">Profesor</label>
-            <select
-              value={selectedTeacher}
-              onChange={(e) => setSelectedTeacher(e.target.value)}
-              className="text-gray-700 w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="">Toți profesorii</option>
-              {teachers.map(t => (
-                <option key={t.id} value={t.id}>{t.name || t.email}</option>
-              ))}
-            </select>
-          </div>
+          {/* Filtru profesor - ascuns dacă "doar ale mele" e activ */}
+          {!showOnlyMine && (
+            <div className="flex-1 min-w-[150px]">
+              <label className="block text-xs font-medium text-gray-500 mb-1">Profesor</label>
+              <select
+                value={selectedTeacher}
+                onChange={(e) => setSelectedTeacher(e.target.value)}
+                className="text-gray-700 w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="">Toți profesorii</option>
+                {teachers.map(t => (
+                  <option key={t.id} value={t.id}>{t.name || t.email}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Filtru filială */}
           <div className="flex-1 min-w-[140px]">
