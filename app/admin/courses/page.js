@@ -3,8 +3,17 @@ export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import DeleteCourseButton from '@/components/admin/DeleteCourseButton'
+import PermissionGuard from '@/components/admin/PermissionGuard'
 
 export default async function CoursesPage() {
+  return (
+    <PermissionGuard permission="courses.view">
+      <CoursesPageContent />
+    </PermissionGuard>
+  )
+}
+
+async function CoursesPageContent() {
   const courses = await prisma.course.findMany({
     orderBy: { createdAt: 'desc' }
   })

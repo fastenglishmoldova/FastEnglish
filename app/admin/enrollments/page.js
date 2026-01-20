@@ -2,8 +2,17 @@ export const dynamic = 'force-dynamic'
 
 import prisma from '@/lib/prisma'
 import EnrollmentsTable from '@/components/admin/EnrollmentsTable'
+import PermissionGuard from '@/components/admin/PermissionGuard'
 
 export default async function EnrollmentsPage() {
+  return (
+    <PermissionGuard permission="enrollments.view">
+      <EnrollmentsPageContent />
+    </PermissionGuard>
+  )
+}
+
+async function EnrollmentsPageContent() {
   // Înscrieri din modalul de pe homepage (cu curs specific)
   const enrollments = await prisma.enrollment.findMany({
     orderBy: { createdAt: 'desc' },

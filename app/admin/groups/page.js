@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import DeleteGroupButton from '@/components/admin/DeleteGroupButton'
 import { usePermissions } from '@/hooks/usePermissions'
@@ -47,9 +48,11 @@ const dayMapping = {
 const allDays = ['Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă', 'Duminică']
 
 export default function GroupsPage() {
-  const { hasPermission } = usePermissions()
+  const router = useRouter()
+  const { hasPermission, isSuperAdmin } = usePermissions()
   
   // Permisiuni
+  const canViewGroups = hasPermission('groups.view')
   const canCreateGroups = hasPermission('groups.create')
   const canEditGroups = hasPermission('groups.edit')
   const canDeleteGroups = hasPermission('groups.delete')
@@ -67,6 +70,13 @@ export default function GroupsPage() {
   const [selectedBranch, setSelectedBranch] = useState('')
   const [dateFilter, setDateFilter] = useState('all') // 'all', 'today', 'custom'
   const [customDate, setCustomDate] = useState('')
+
+  // Verifică permisiunea
+  useEffect(() => {
+    if (!canViewGroups && !isSuperAdmin) {
+      router.push('/admin')
+    }
+  }, [canViewGroups, isSuperAdmin, router])
 
   useEffect(() => {
     fetchData()
@@ -199,7 +209,7 @@ export default function GroupsPage() {
               placeholder="Caută după elev, profesor, grupă, curs, filială, zi..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="text-gray-700 w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
 

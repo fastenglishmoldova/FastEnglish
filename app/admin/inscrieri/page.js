@@ -13,6 +13,7 @@ import {
   ClockIcon,
   ChatBubbleLeftIcon
 } from '@heroicons/react/24/outline'
+import PermissionGuard from '@/components/admin/PermissionGuard'
 
 const statusConfig = {
   NOU: { label: 'Nou', color: 'bg-blue-100 text-blue-800', icon: ClockIcon },
@@ -22,6 +23,14 @@ const statusConfig = {
 }
 
 export default async function InscrieriPage() {
+  return (
+    <PermissionGuard permission="inscrieri.view">
+      <InscrieriPageContent />
+    </PermissionGuard>
+  )
+}
+
+async function InscrieriPageContent() {
   const inscrieri = await prisma.inscriere.findMany({
     orderBy: { createdAt: 'desc' }
   })

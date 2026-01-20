@@ -1,11 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import TwoFactorModal from '@/components/admin/TwoFactorModal'
+import { usePermissions } from '@/hooks/usePermissions'
 
 export default function BranchesPage() {
+  const router = useRouter()
+  const { hasPermission, isSuperAdmin } = usePermissions()
+  
   const [branches, setBranches] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -18,6 +23,13 @@ export default function BranchesPage() {
     active: true
   })
   const [saving, setSaving] = useState(false)
+  
+  // Verifică permisiunea
+  useEffect(() => {
+    if (!hasPermission('branches.view') && !isSuperAdmin) {
+      router.push('/admin')
+    }
+  }, [hasPermission, isSuperAdmin, router])
 
   useEffect(() => {
     fetchBranches()

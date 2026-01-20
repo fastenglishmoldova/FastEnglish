@@ -3,8 +3,17 @@ export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import ReviewPublishToggle from '@/components/admin/ReviewPublishToggle'
+import PermissionGuard from '@/components/admin/PermissionGuard'
 
 export default async function ReviewsPage() {
+  return (
+    <PermissionGuard permission="reviews.view">
+      <ReviewsPageContent />
+    </PermissionGuard>
+  )
+}
+
+async function ReviewsPageContent() {
   const reviews = await prisma.review.findMany({
     orderBy: { createdAt: 'desc' },
     include: { course: true }

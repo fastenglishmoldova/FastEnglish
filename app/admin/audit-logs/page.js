@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import { usePermissions } from '@/hooks/usePermissions'
 
 const SEVERITY_STYLES = {
   info: 'bg-blue-100 text-blue-800',
@@ -38,6 +39,8 @@ const ACTION_LABELS = {
 export default function AuditLogsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { hasPermission, isSuperAdmin } = usePermissions()
+  
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
   const [pagination, setPagination] = useState({ total: 0, limit: 50, skip: 0 })
@@ -51,17 +54,17 @@ export default function AuditLogsPage() {
   const [availableActions, setAvailableActions] = useState([])
   const [selectedLog, setSelectedLog] = useState(null)
 
-  // Check if user is SUPERADMIN
+  // Verifică permisiunea
   useEffect(() => {
     if (status === 'loading') return
-    if (!session || session.user.role !== 'SUPERADMIN') {
-      toast.error('Acces permis doar pentru Super Admin')
+    if (!hasPermission('audit.view') && !isSuperAdmin) {
+      toast.error('Nu ai permisiunea să vezi audit logs')
       router.push('/admin')
     }
-  }, [session, status, router])
+  }, [hasPermission, isSuperAdmin, router, status])
 
   const fetchLogs = useCallback(async () => {
-    if (!session || session.user.role !== 'SUPERADMIN') return
+    if (!hasPermission('audit.view') && !isSuperAdmin) return
     setLoading(true)
     try {
       const params = new URLSearchParams()

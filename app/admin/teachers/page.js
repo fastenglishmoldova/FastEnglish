@@ -5,8 +5,17 @@ import Image from 'next/image'
 import prisma from '@/lib/prisma'
 import { ChartBarIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
 import DeleteTeacherButton from '@/components/admin/DeleteTeacherButton'
+import PermissionGuard from '@/components/admin/PermissionGuard'
 
 export default async function TeachersPage() {
+  return (
+    <PermissionGuard permission="teachers.view">
+      <TeachersPageContent />
+    </PermissionGuard>
+  )
+}
+
+async function TeachersPageContent() {
   const teachers = await prisma.user.findMany({
     where: { role: { in: ['TEACHER', 'ADMIN', 'MANAGER'] } },
     orderBy: [{ role: 'asc' }, { createdAt: 'desc' }],

@@ -5,13 +5,18 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import NotificationsPageClient from './NotificationsPageClient'
+import PermissionGuard from '@/components/admin/PermissionGuard'
 
 export default async function AdminNotificationsPage() {
+  return (
+    <PermissionGuard permission="notifications.view">
+      <NotificationsPageContent />
+    </PermissionGuard>
+  )
+}
+
+async function NotificationsPageContent() {
   const session = await getServerSession(authOptions)
-  
-  if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'MANAGER')) {
-    redirect('/login')
-  }
 
   const notifications = await prisma.notification.findMany({
     where: {

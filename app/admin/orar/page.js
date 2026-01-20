@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
+import { usePermissions } from '@/hooks/usePermissions'
 
 // Mapare zi săptămână JS -> română
 const dayMapping = {
@@ -39,10 +41,20 @@ const getTimeForDay = (scheduleTime, day) => {
 }
 
 export default function OrarPage() {
+  const router = useRouter()
+  const { hasPermission, isSuperAdmin } = usePermissions()
+  
   const [groups, setGroups] = useState([])
   const [branches, setBranches] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedBranch, setSelectedBranch] = useState('')
+
+  // Verifică permisiunea
+  useEffect(() => {
+    if (!hasPermission('schedule.view') && !isSuperAdmin) {
+      router.push('/admin')
+    }
+  }, [hasPermission, isSuperAdmin, router])
 
   useEffect(() => {
     fetchData()

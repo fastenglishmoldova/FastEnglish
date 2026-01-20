@@ -13,6 +13,7 @@ import {
   ArchiveBoxIcon,
   InboxIcon
 } from '@heroicons/react/24/outline'
+import PermissionGuard from '@/components/admin/PermissionGuard'
 
 const statusConfig = {
   NOU: { label: 'Nou', color: 'bg-blue-100 text-blue-800' },
@@ -22,6 +23,14 @@ const statusConfig = {
 }
 
 export default async function ContactMessagesPage() {
+  return (
+    <PermissionGuard permission="contact.view">
+      <ContactMessagesPageContent />
+    </PermissionGuard>
+  )
+}
+
+async function ContactMessagesPageContent() {
   const messages = await prisma.contactMessage.findMany({
     orderBy: { createdAt: 'desc' }
   })

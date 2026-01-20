@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { 
   CalendarDaysIcon, 
@@ -9,14 +10,25 @@ import {
   XCircleIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline'
+import { usePermissions } from '@/hooks/usePermissions'
 
 export default function AdminSessionsPage() {
+  const router = useRouter()
+  const { hasPermission, isSuperAdmin } = usePermissions()
+  
   const [sessions, setSessions] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedTeacher, setSelectedTeacher] = useState('')
   const [selectedGroup, setSelectedGroup] = useState('')
   const [teachers, setTeachers] = useState([])
   const [groups, setGroups] = useState([])
+  
+  // Verifică permisiunea
+  useEffect(() => {
+    if (!hasPermission('sessions.view') && !isSuperAdmin) {
+      router.push('/admin')
+    }
+  }, [hasPermission, isSuperAdmin, router])
 
   useEffect(() => {
     fetchData()

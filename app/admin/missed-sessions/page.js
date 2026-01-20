@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { 
@@ -12,11 +13,22 @@ import {
   UserIcon,
   AcademicCapIcon
 } from '@heroicons/react/24/outline'
+import { usePermissions } from '@/hooks/usePermissions'
 
 export default function MissedSessionsPage() {
+  const router = useRouter()
+  const { hasPermission, isSuperAdmin } = usePermissions()
+  
   const [missedSessions, setMissedSessions] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all') // all, unacknowledged, acknowledged
+  
+  // Verifică permisiunea
+  useEffect(() => {
+    if (!hasPermission('missed-sessions.view') && !isSuperAdmin) {
+      router.push('/admin')
+    }
+  }, [hasPermission, isSuperAdmin, router])
 
   useEffect(() => {
     fetchMissedSessions()

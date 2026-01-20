@@ -1,10 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowPathIcon, PlusIcon, XMarkIcon, ChevronLeftIcon, ChevronRightIcon, CalendarIcon, ClockIcon } from '@heroicons/react/24/outline'
+import { usePermissions } from '@/hooks/usePermissions'
 
 export default function AdminMakeupPage() {
+  const router = useRouter()
+  const { hasPermission, isSuperAdmin } = usePermissions()
+  
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [selectedTeacher, setSelectedTeacher] = useState('')
@@ -32,6 +37,13 @@ export default function AdminMakeupPage() {
   const [pickerYear, setPickerYear] = useState(new Date().getFullYear())
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedTime, setSelectedTime] = useState('10:00')
+  
+  // Verifică permisiunea
+  useEffect(() => {
+    if (!hasPermission('makeup.view') && !isSuperAdmin) {
+      router.push('/admin')
+    }
+  }, [hasPermission, isSuperAdmin, router])
 
   useEffect(() => {
     fetchData()

@@ -2,21 +2,37 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
+import { usePermissions } from '@/hooks/usePermissions'
+import TwoFactorModal from '@/components/admin/TwoFactorModal'
 
 export default function SecurityPage() {
   const { data: session } = useSession()
+  const router = useRouter()
+  const { hasPermission, isSuperAdmin } = usePermissions()
+  
   const [loading, setLoading] = useState(true)
   const [user2FAStatus, setUser2FAStatus] = useState(null)
+  const [requires2FAVerification, setRequires2FAVerification] = useState(true)
+  const [show2FAModal, setShow2FAModal] = useState(false)
+  const [accessGranted, setAccessGranted] = useState(false)
   const [setupMode, setSetupMode] = useState(false)
   const [qrCode, setQrCode] = useState('')
   const [secret, setSecret] = useState('')
   const [verifyCode, setVerifyCode] = useState('')
   const [verifying, setVerifying] = useState(false)
   const [backupCodes, setBackupCodes] = useState([])
+  
+  // Verifică permisiunea
+  useEffect(() => {
+    if (!hasPermission('security.view') && !isSuperAdmin) {
+      router.push('/admin')
+    }
+  }, [hasPermission, isSuperAdmin, router])
 
-  // Fetch 2FA status
+  // Fetch 2FA status and check if verification is needed
   useEffect(() => {
     async function fetch2FAStatus() {
       try {
@@ -24,15 +40,37 @@ export default function SecurityPage() {
         if (res.ok) {
           const data = await res.json()
           setUser2FAStatus(data)
+          
+          // Dacă utilizatorul are 2FA activat, cere verificarea
+          if (data.enabled) {
+            setRequires2FAVerification(true)
+            setShow2FAModal(true)
+          } else {
+            // Dacă nu are 2FA activat, permite accesul direct
+            setAccessGranted(true)
+          }
         }
       } catch (error) {
         console.error('Error fetching 2FA status:', error)
+        setAccessGranted(true) // Permite accesul în caz de eroare
       } finally {
         setLoading(false)
       }
     }
     fetch2FAStatus()
   }, [])
+
+  // Handler pentru verificarea 2FA reușită
+  const handle2FAVerify = (token) => {
+    setAccessGranted(true)
+    setShow2FAModal(false)
+    toast.success('Acces acordat')
+  }
+
+  // Handler pentru închiderea modalului fără verificare
+  const handle2FAClose = () => {
+    router.push('/admin')
+  }
 
   // Initialize 2FA setup
   const initSetup = async () => {
@@ -131,6 +169,38 @@ export default function SecurityPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
       </div>
+    )
+  }
+
+  // Afișează modalul 2FA dacă este necesar
+  if (!accessGranted && user2FAStatus?.enabled) {
+    return (
+      <>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Verificare 2FA necesară</h2>
+            <p className="text-gray-600 mb-4">Această pagină necesită verificare suplimentară.</p>
+            <button
+              onClick={() => setShow2FAModal(true)}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            >
+              Verifică identitatea
+            </button>
+          </div>
+        </div>
+        <TwoFactorModal
+          isOpen={show2FAModal}
+          onClose={handle2FAClose}
+          onVerify={handle2FAVerify}
+          title="Verificare 2FA"
+          description="Introdu codul din aplicația de autentificare pentru a accesa pagina de securitate."
+        />
+      </>
     )
   }
 

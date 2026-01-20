@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, Fragment } from 'react'
+import { useRouter } from 'next/navigation'
 import { 
   BanknotesIcon, 
   UsersIcon, 
@@ -14,8 +15,65 @@ import {
   ChartBarIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline'
+import { usePermissions } from '@/hooks/usePermissions'
+import TwoFactorModal from '@/components/admin/TwoFactorModal'
+import toast from 'react-hot-toast'
 
 export default function PaymentsPage() {
+  const router = useRouter()
+  const { hasPermission, isSuperAdmin } = usePermissions()
+  
+  // Stări pentru verificare 2FA la intrare
+  const [requires2FAVerification, setRequires2FAVerification] = useState(true)
+  const [show2FAModal, setShow2FAModal] = useState(false)
+  const [accessGranted, setAccessGranted] = useState(false)
+  const [checking2FA, setChecking2FA] = useState(true)
+  
+  // Verifică permisiunea
+  useEffect(() => {
+    if (!hasPermission('payments.view') && !isSuperAdmin) {
+      router.push('/admin')
+    }
+  }, [hasPermission, isSuperAdmin, router])
+  
+  // Verifică dacă utilizatorul are 2FA și cere verificare
+  useEffect(() => {
+    async function check2FAStatus() {
+      try {
+        const res = await fetch('/api/admin/security/2fa/status')
+        if (res.ok) {
+          const data = await res.json()
+          if (data.enabled) {
+            setRequires2FAVerification(true)
+            setShow2FAModal(true)
+          } else {
+            setAccessGranted(true)
+          }
+        } else {
+          setAccessGranted(true)
+        }
+      } catch (error) {
+        console.error('Error checking 2FA status:', error)
+        setAccessGranted(true)
+      } finally {
+        setChecking2FA(false)
+      }
+    }
+    check2FAStatus()
+  }, [])
+  
+  // Handler pentru verificarea 2FA reușită
+  const handle2FAVerify = (token) => {
+    setAccessGranted(true)
+    setShow2FAModal(false)
+    toast.success('Acces acordat')
+  }
+  
+  // Handler pentru închiderea modalului fără verificare
+  const handle2FAClose = () => {
+    router.push('/admin')
+  }
+  
   const [year, setYear] = useState(new Date().getFullYear())
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -627,6 +685,47 @@ export default function PaymentsPage() {
   
   // Calculate max amount for visual bars
   const maxMonthAmount = filteredData ? Math.max(...filteredData.months.map(m => m.totalAmount), 1) : 1
+
+  // Verificare 2FA în așteptare
+  if (checking2FA) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      </div>
+    )
+  }
+
+  // Afișează ecranul de verificare 2FA dacă nu a fost verificat
+  if (!accessGranted && requires2FAVerification) {
+    return (
+      <>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Verificare 2FA necesară</h2>
+            <p className="text-gray-600 mb-4">Această pagină necesită verificare suplimentară.</p>
+            <button
+              onClick={() => setShow2FAModal(true)}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              Verifică identitatea
+            </button>
+          </div>
+        </div>
+        <TwoFactorModal
+          isOpen={show2FAModal}
+          onClose={handle2FAClose}
+          onVerify={handle2FAVerify}
+          title="Verificare 2FA"
+          description="Introdu codul din aplicația de autentificare pentru a accesa statisticile de plăți."
+        />
+      </>
+    )
+  }
 
   return (
     <div className="space-y-4 xs:space-y-6 md:space-y-8">

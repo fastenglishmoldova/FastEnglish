@@ -3,8 +3,17 @@ export const dynamic = 'force-dynamic'
 import prisma from '@/lib/prisma'
 import StudentsTable from '@/components/admin/StudentsTable'
 import AddStudentButton from '@/components/admin/AddStudentButton'
+import PermissionGuard from '@/components/admin/PermissionGuard'
 
 export default async function StudentsPage() {
+  return (
+    <PermissionGuard permission="students.view">
+      <StudentsPageContent />
+    </PermissionGuard>
+  )
+}
+
+async function StudentsPageContent() {
   const [students, groups] = await Promise.all([
     prisma.student.findMany({
       orderBy: { createdAt: 'desc' },
