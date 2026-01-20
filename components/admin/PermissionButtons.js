@@ -1,6 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { PermissionGate } from '@/hooks/usePermissions'
 
 export function AddGroupButton() {
@@ -101,6 +103,44 @@ export function EditReviewLink({ reviewId, className }) {
       >
         Editează
       </Link>
+    </PermissionGate>
+  )
+}
+
+export function DeleteReviewButton({ reviewId, className }) {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  
+  const handleDelete = async () => {
+    if (!confirm('Sigur doriți să ștergeți acest review?')) return
+    
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/admin/reviews/${reviewId}`, {
+        method: 'DELETE'
+      })
+      
+      if (res.ok) {
+        router.refresh()
+      } else {
+        alert('Eroare la ștergere')
+      }
+    } catch (error) {
+      alert('Eroare la ștergere')
+    } finally {
+      setLoading(false)
+    }
+  }
+  
+  return (
+    <PermissionGate permission="reviews.delete">
+      <button
+        onClick={handleDelete}
+        disabled={loading}
+        className={className || "text-red-600 hover:text-red-900 text-sm font-medium"}
+      >
+        {loading ? '...' : 'Șterge'}
+      </button>
     </PermissionGate>
   )
 }

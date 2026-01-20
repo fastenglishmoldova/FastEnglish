@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import prisma from '@/lib/prisma'
 import ReviewPublishToggle from '@/components/admin/ReviewPublishToggle'
 import PermissionGuard from '@/components/admin/PermissionGuard'
-import { AddReviewButton, EditReviewLink } from '@/components/admin/PermissionButtons'
+import { AddReviewButton, EditReviewLink, DeleteReviewButton } from '@/components/admin/PermissionButtons'
 
 export default async function ReviewsPage() {
   return (
@@ -79,7 +79,10 @@ async function ReviewsPageContent() {
                     <ReviewPublishToggle review={JSON.parse(JSON.stringify(review))} />
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <EditReviewLink reviewId={review.id} />
+                    <div className="flex items-center justify-end gap-3">
+                      <EditReviewLink reviewId={review.id} />
+                      <DeleteReviewButton reviewId={review.id} />
+                    </div>
                   </td>
                 </tr>
               ))
@@ -116,7 +119,10 @@ async function ReviewsPageContent() {
                   </span>
                   <ReviewPublishToggle review={JSON.parse(JSON.stringify(review))} />
                 </div>
-                <EditReviewLink reviewId={review.id} className="text-indigo-600 hover:text-indigo-900 text-xs font-medium flex-shrink-0 self-end xs:self-auto" />
+                <div className="flex items-center gap-3 flex-shrink-0 self-end xs:self-auto">
+                  <EditReviewLink reviewId={review.id} className="text-indigo-600 hover:text-indigo-900 text-xs font-medium" />
+                  <DeleteReviewButton reviewId={review.id} className="text-red-600 hover:text-red-900 text-xs font-medium" />
+                </div>
               </div>
             </div>
           ))
