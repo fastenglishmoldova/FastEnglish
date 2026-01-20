@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import StartSessionButton from '@/components/teacher/StartSessionButton'
+import EditGroupDetailsButton from '@/components/teacher/EditGroupDetailsButton'
 import { 
   AcademicCapIcon, 
   CalendarDaysIcon, 
@@ -152,7 +153,7 @@ export default async function TeacherGroupDetailPage({ params }) {
           </div>
           <p className="text-gray-600 mt-0.5 xs:mt-1 text-xs xs:text-sm md:text-base">{group.course.title}</p>
         </div>
-        <div className="flex">
+        <div className="flex flex-wrap gap-2 xs:gap-3">
           {todaySession ? (
             <Link
               href={`/teacher/groups/${group.id}/session/${todaySession.id}`}
@@ -165,6 +166,17 @@ export default async function TeacherGroupDetailPage({ params }) {
           ) : (
             <StartSessionButton groupId={group.id} />
           )}
+          <EditGroupDetailsButton 
+            group={{
+              id: group.id,
+              scheduleTime: group.scheduleTime,
+              scheduleDays: group.scheduleDays,
+              locationDetails: group.locationDetails,
+              branchId: group.branchId,
+              locationType: group.locationType
+            }} 
+            branches={await prisma.branch.findMany({ orderBy: { name: 'asc' } })}
+          />
         </div>
       </div>
 
@@ -180,9 +192,9 @@ export default async function TeacherGroupDetailPage({ params }) {
               <p className="text-lg xs:text-xl md:text-2xl font-bold text-gray-900">
                 {activeStudents.length}
               </p>
-              {inactiveStudents.length > 0 && (
+              {pausedStudents.length > 0 && (
                 <p className="text-[10px] xs:text-xs text-gray-400">
-                  +{inactiveStudents.length} inactivi
+                  +{pausedStudents.length} în pauză
                 </p>
               )}
             </div>
