@@ -3,8 +3,28 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 
+// Helper pentru formatarea orei din JSON sau string simplu
+function formatScheduleTime(scheduleTime, scheduleDays) {
+  if (!scheduleTime) return 'Neprecizat'
+  
+  try {
+    if (scheduleTime.startsWith('{')) {
+      const times = JSON.parse(scheduleTime)
+      // Formatează ca: Luni la 12:00, Vineri la 19:00, Duminică la 13:00
+      const days = scheduleDays || Object.keys(times)
+      return days
+        .filter(day => times[day])
+        .map(day => `${day} la ${times[day]}`)
+        .join(', ')
+    }
+  } catch (e) {
+    // Nu e JSON valid, returnează ca atare
+  }
+  return scheduleTime
+}
+
 // Funcție pentru a trimite notificare Telegram către group management
-async function notifyGroupUpdate(groupName, teacherName, updates) {
+async function notifyGroupUpdate(groupName, teacherName, updates, scheduleDays) {
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_LESSONS_BOT_TOKEN
   const CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID
   const THREAD_ID = process.env.TELEGRAM_ADMIN_THREAD_ID
@@ -14,11 +34,15 @@ async function notifyGroupUpdate(groupName, teacherName, updates) {
   const updatesList = Object.entries(updates)
     .map(([key, value]) => {
       const labels = {
-        scheduleTime: '⏰ Ora',
+        scheduleTime: '⏰ Program',
         scheduleDays: '📅 Zile',
         locationDetails: '📍 Sala',
         branchId: '🏢 Filiala',
         locationType: '💻 Tip locație'
+      }
+      // Formatează scheduleTime frumos
+      if (key === 'scheduleTime') {
+        value = formatScheduleTime(value, scheduleDays)
       }
       return `${labels[key] || key}: ${value}`
     })
@@ -131,7 +155,8 @@ export async function PATCH(request, { params }) {
       await notifyGroupUpdate(
         group.name,
         group.teacher?.name || group.teacher?.email || 'Profesor',
-        changes
+        changes,
+        scheduleDays || updateData.scheduleDays || group.scheduleDays
       )
     }
 
