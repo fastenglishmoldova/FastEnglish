@@ -53,7 +53,8 @@ export default function AdminMakeupPage() {
     if (!scheduleTime) return '—'
     try {
       const parsed = typeof scheduleTime === 'string' ? JSON.parse(scheduleTime) : scheduleTime
-      return parsed[dayOfWeek] || '—'
+      const time = parsed[dayOfWeek] || '—'
+      return `${dayOfWeek} ${time}`
     } catch {
       return scheduleTime // dacă nu e JSON, returnează ca atare
     }
@@ -112,7 +113,7 @@ export default function AdminMakeupPage() {
 
   // Fetch schedule for selected date and branch
   const fetchDaySchedule = (date, branchId) => {
-    if (!date) {
+    if (!date || !branchId) {
       setDaySchedule(null)
       return
     }
@@ -126,25 +127,21 @@ export default function AdminMakeupPage() {
     
     console.log('fetchDaySchedule:', { date, branchId, dayOfWeek, groupsCount: groups.length })
     
-    // Filter groups that have lessons on this day
+    // Filter groups that have lessons on this day AND belong to selected branch
     let scheduleForDay = groups.filter(group => {
       if (!group.scheduleDays || !Array.isArray(group.scheduleDays)) return false
+      if (group.branchId !== branchId) return false
       return group.scheduleDays.includes(dayOfWeek)
     })
     
-    console.log('Groups for day:', scheduleForDay.length)
+    console.log('Groups for day:', scheduleForDay.length, scheduleForDay.map(g => ({ name: g.name, scheduleTime: g.scheduleTime })))
     
-    // If branch is selected, filter by branch
-    if (branchId) {
-      scheduleForDay = scheduleForDay.filter(group => group.branchId === branchId)
-    }
-    
-    // Also get makeup lessons scheduled for this date
+    // Also get makeup lessons scheduled for this date and branch
     const makeupForDay = data?.makeupLessons?.filter(lesson => {
       const lessonDate = new Date(lesson.scheduledAt).toISOString().split('T')[0]
       const selectedDateStr = date
       if (lessonDate !== selectedDateStr) return false
-      if (branchId && lesson.branchId !== branchId) return false
+      if (lesson.branchId !== branchId) return false
       return true
     }) || []
     
@@ -916,12 +913,11 @@ export default function AdminMakeupPage() {
               </div>
 
               {/* Schedule Preview for Selected Day */}
-              {selectedDate && daySchedule && (
+              {selectedDate && formData.branchId && daySchedule && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <p className="text-xs font-semibold text-blue-800 mb-2 flex items-center gap-1.5">
                     <CalendarIcon className="w-4 h-4" />
-                    Orar
-                    {formData.branchId && branches.find(b => b.id === formData.branchId) && ` - ${branches.find(b => b.id === formData.branchId).name}`}
+                    Orar - {branches.find(b => b.id === formData.branchId)?.name || ''}
                   </p>
                   {(daySchedule.groups?.length > 0 || daySchedule.makeups?.length > 0) ? (
                     <div className="space-y-1.5 max-h-32 overflow-y-auto">
@@ -1277,12 +1273,11 @@ export default function AdminMakeupPage() {
               </div>
 
               {/* Schedule Preview for Selected Day */}
-              {selectedDate && daySchedule && (
+              {selectedDate && formData.branchId && daySchedule && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <p className="text-xs font-semibold text-blue-800 mb-2 flex items-center gap-1.5">
                     <CalendarIcon className="w-4 h-4" />
-                    Orar
-                    {formData.branchId && branches.find(b => b.id === formData.branchId) && ` - ${branches.find(b => b.id === formData.branchId).name}`}
+                    Orar - {branches.find(b => b.id === formData.branchId)?.name || ''}
                   </p>
                   {(daySchedule.groups?.length > 0 || daySchedule.makeups?.filter(m => m.id !== editingLesson?.id).length > 0) ? (
                     <div className="space-y-1.5 max-h-32 overflow-y-auto">
