@@ -1,6 +1,32 @@
+'use client'
+
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { usePermissions } from '@/hooks/usePermissions'
 import ReviewForm from '@/components/admin/ReviewForm'
 
 export default function NewReviewPage() {
+  const router = useRouter()
+  const { hasPermission, isSuperAdmin, loading } = usePermissions()
+  
+  useEffect(() => {
+    if (!loading && !hasPermission('reviews.create') && !isSuperAdmin) {
+      router.push('/admin/reviews')
+    }
+  }, [hasPermission, isSuperAdmin, loading, router])
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    )
+  }
+  
+  if (!hasPermission('reviews.create') && !isSuperAdmin) {
+    return null
+  }
+
   return (
     <div>
       <div className="mb-4 xs:mb-6 md:mb-8">
