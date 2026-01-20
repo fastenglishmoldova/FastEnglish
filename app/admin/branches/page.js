@@ -204,12 +204,14 @@ export default function BranchesPage() {
           <h1 className="text-xl xs:text-2xl font-bold text-gray-900">Filiale</h1>
           <p className="text-sm xs:text-base text-gray-600">Gestionează filialele (Centru, Ciocana, etc.)</p>
         </div>
-        <button
-          onClick={openAddModal}
-          className="px-3 xs:px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm xs:text-base font-medium hover:bg-indigo-700 transition-colors text-center"
-        >
-          + Adaugă filială
-        </button>
+        {(hasPermission('branches.create') || isSuperAdmin) && (
+          <button
+            onClick={openAddModal}
+            className="px-3 xs:px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm xs:text-base font-medium hover:bg-indigo-700 transition-colors text-center"
+          >
+            + Adaugă filială
+          </button>
+        )}
       </div>
 
       {/* Lista filiale */}
@@ -269,20 +271,24 @@ export default function BranchesPage() {
                       </span>
                     </td>
                     <td className="px-4 xs:px-6 py-4 whitespace-nowrap text-right text-sm">
-                      <button
-                        onClick={() => openEditModal(branch)}
-                        className="text-indigo-600 hover:text-indigo-900 font-medium mr-3"
-                      >
-                        Editează
-                      </button>
-                      <button
-                        onClick={() => handleDelete(branch)}
-                        className="text-red-600 hover:text-red-900 font-medium"
-                        disabled={branch._count?.groups > 0}
-                        title={branch._count?.groups > 0 ? 'Nu poți șterge filiala deoarece are grupe asociate' : ''}
-                      >
-                        Șterge
-                      </button>
+                      {(hasPermission('branches.edit') || isSuperAdmin) && (
+                        <button
+                          onClick={() => openEditModal(branch)}
+                          className="text-indigo-600 hover:text-indigo-900 font-medium mr-3"
+                        >
+                          Editează
+                        </button>
+                      )}
+                      {(hasPermission('branches.delete') || isSuperAdmin) && (
+                        <button
+                          onClick={() => handleDelete(branch)}
+                          className="text-red-600 hover:text-red-900 font-medium"
+                          disabled={branch._count?.groups > 0}
+                          title={branch._count?.groups > 0 ? 'Nu poți șterge filiala deoarece are grupe asociate' : ''}
+                        >
+                          Șterge
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
