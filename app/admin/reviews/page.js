@@ -1,10 +1,9 @@
 export const dynamic = 'force-dynamic'
 
-import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import ReviewPublishToggle from '@/components/admin/ReviewPublishToggle'
 import PermissionGuard from '@/components/admin/PermissionGuard'
-import { AddReviewButton } from '@/components/admin/PermissionButtons'
+import { AddReviewButton, EditReviewLink } from '@/components/admin/PermissionButtons'
 
 export default async function ReviewsPage() {
   return (
@@ -80,12 +79,7 @@ async function ReviewsPageContent() {
                     <ReviewPublishToggle review={JSON.parse(JSON.stringify(review))} />
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <Link
-                      href={`/admin/reviews/${review.id}`}
-                      className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-                    >
-                      Editează
-                    </Link>
+                    <EditReviewLink reviewId={review.id} />
                   </td>
                 </tr>
               ))
@@ -122,12 +116,7 @@ async function ReviewsPageContent() {
                   </span>
                   <ReviewPublishToggle review={JSON.parse(JSON.stringify(review))} />
                 </div>
-                <Link
-                  href={`/admin/reviews/${review.id}`}
-                  className="text-indigo-600 hover:text-indigo-900 text-xs font-medium flex-shrink-0 self-end xs:self-auto"
-                >
-                  Editează
-                </Link>
+                <EditReviewLink reviewId={review.id} className="text-indigo-600 hover:text-indigo-900 text-xs font-medium flex-shrink-0 self-end xs:self-auto" />
               </div>
             </div>
           ))

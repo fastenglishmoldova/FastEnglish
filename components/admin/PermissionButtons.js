@@ -91,3 +91,16 @@ export function AddReviewButton() {
     </PermissionGate>
   )
 }
+
+export function EditReviewLink({ reviewId, className }) {
+  return (
+    <PermissionGate permission="reviews.edit">
+      <Link
+        href={`/admin/reviews/${reviewId}`}
+        className={className || "text-indigo-600 hover:text-indigo-900 text-sm font-medium"}
+      >
+        Editează
+      </Link>
+    </PermissionGate>
+  )
+}
