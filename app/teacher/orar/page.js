@@ -55,17 +55,13 @@ export default function TeacherOrarPage() {
 
   const fetchData = async () => {
     try {
-      // Fetch all groups (using admin endpoint for full data)
-      const res = await fetch('/api/admin/groups')
+      // Fetch all groups using the schedule endpoint (accessible to all authenticated users)
+      const res = await fetch('/api/teacher/schedule')
       const data = await res.json()
       setGroups(data.groups || [])
       setTeachers(data.teachers || [])
       setBranches(data.branches || [])
-      
-      // Get current user ID
-      const sessionRes = await fetch('/api/auth/session')
-      const sessionData = await sessionRes.json()
-      setCurrentUserId(sessionData?.user?.id)
+      setCurrentUserId(data.currentUserId)
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
