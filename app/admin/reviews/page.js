@@ -4,6 +4,7 @@ import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import ReviewPublishToggle from '@/components/admin/ReviewPublishToggle'
 import PermissionGuard from '@/components/admin/PermissionGuard'
+import { AddReviewButton } from '@/components/admin/PermissionButtons'
 
 export default async function ReviewsPage() {
   return (
@@ -32,12 +33,7 @@ async function ReviewsPageContent() {
           <h1 className="text-xl xs:text-2xl font-bold text-gray-900">Reviews</h1>
           <p className="text-gray-600 text-sm xs:text-base">Gestionează recenziile afișate pe site</p>
         </div>
-        <Link
-          href="/admin/reviews/new"
-          className="px-3 xs:px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm xs:text-base font-medium hover:bg-indigo-700 transition-colors w-full xs:w-auto text-center"
-        >
-          + Adaugă review
-        </Link>
+        <AddReviewButton />
       </div>
 
       {/* Desktop table */}
