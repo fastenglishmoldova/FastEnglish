@@ -568,8 +568,9 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      {canViewPayments ? (
+                      {(canViewPayments || canAddPayments || canDeletePayments) ? (
                       <div className="space-y-2">
+                        {canViewPayments && (
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-gray-900">
                             Total: {getTotalPayments(gs.payments).toLocaleString('ro-RO')} MDL
@@ -578,6 +579,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                             ({gs.payments?.length || 0} {gs.payments?.length === 1 ? 'plată' : 'plăți'})
                           </span>
                         </div>
+                        )}
                         <div className="flex items-center gap-2">
                           {canAddPayments && (
                           <button
@@ -588,7 +590,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                             Adaugă plată
                           </button>
                           )}
-                          {gs.payments?.length > 0 && (
+                          {canViewPayments && gs.payments?.length > 0 && (
                             <button
                               onClick={() => togglePayments(gs.id)}
                               className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded font-medium hover:bg-gray-200"
@@ -841,14 +843,16 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                   </div>
 
                   {/* Payments Section */}
-                  {canViewPayments && (
+                  {(canViewPayments || canAddPayments || canDeletePayments) && (
                   <div className="bg-white/50 rounded-lg p-2 xs:p-3 space-y-2">
+                    {canViewPayments && (
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-500">Plăți:</span>
                       <span className="text-xs xs:text-sm font-medium text-gray-900">
                         {getTotalPayments(gs.payments).toLocaleString('ro-RO')} MDL
                       </span>
                     </div>
+                    )}
                     <div className="flex items-center gap-1.5">
                       {canAddPayments && (
                       <button
@@ -859,7 +863,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                         Adaugă plată
                       </button>
                       )}
-                      {gs.payments?.length > 0 && (
+                      {canViewPayments && gs.payments?.length > 0 && (
                         <button
                           onClick={() => togglePayments(gs.id)}
                           className="inline-flex items-center gap-1 px-2 py-1.5 bg-gray-100 text-gray-700 text-[10px] xs:text-xs rounded font-medium hover:bg-gray-200"

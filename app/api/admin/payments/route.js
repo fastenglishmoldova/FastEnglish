@@ -96,8 +96,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    // Check permission
-    const permCheck = await checkPermission('payments.create')
+    // Check permission - use groups.students.payments.create for adding payments to students in groups
+    const permCheck = await checkPermission('groups.students.payments.create')
     if (!permCheck.allowed) {
       return NextResponse.json({ error: 'Nu ai permisiunea să adaugi plăți' }, { status: 403 })
     }
