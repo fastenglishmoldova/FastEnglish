@@ -32,7 +32,8 @@ export async function POST(request, { params }) {
       where: { id },
       include: {
         teacher: { select: { telegramChatId: true } },
-        course: { select: { title: true } }
+        course: { select: { title: true } },
+        branch: { select: { name: true } }
       }
     })
 
@@ -52,11 +53,25 @@ export async function POST(request, { params }) {
 
     // Notify teacher via Telegram
     if (group?.teacher?.telegramChatId && student) {
+      // Format schedule for display
+      const scheduleDays = group.scheduleDays?.join(', ') || ''
+      let scheduleTime = group.scheduleTime || ''
+      // Parse JSON schedule if needed
+      if (scheduleTime.startsWith('{')) {
+        try {
+          const times = JSON.parse(scheduleTime)
+          scheduleTime = Object.entries(times).map(([day, time]) => `${day} ${time}`).join(', ')
+        } catch {}
+      }
+      
       await notifyTeacherNewStudent({
         teacherChatId: group.teacher.telegramChatId,
         studentName: student.fullName,
         groupName: group.name,
         courseName: group.course?.title || 'Curs',
+        scheduleDays,
+        scheduleTime,
+        branchName: group.branch?.name,
         parentPhone: student.parentPhone,
         parentEmail: student.parentEmail,
         action: 'adăugat'

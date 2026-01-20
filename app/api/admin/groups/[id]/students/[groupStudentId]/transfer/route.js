@@ -52,7 +52,8 @@ export async function POST(request, { params }) {
       where: { id: targetGroupId },
       include: {
         teacher: { select: { telegramChatId: true, name: true } },
-        course: { select: { title: true } }
+        course: { select: { title: true } },
+        branch: { select: { name: true } }
       }
     })
 
@@ -132,11 +133,24 @@ export async function POST(request, { params }) {
 
     // Notify target group teacher that student was added
     if (targetGroup.teacher?.telegramChatId) {
+      // Format schedule for display
+      const scheduleDays = targetGroup.scheduleDays?.join(', ') || ''
+      let scheduleTime = targetGroup.scheduleTime || ''
+      if (scheduleTime.startsWith('{')) {
+        try {
+          const times = JSON.parse(scheduleTime)
+          scheduleTime = Object.entries(times).map(([day, time]) => `${day} ${time}`).join(', ')
+        } catch {}
+      }
+      
       await notifyTeacherNewStudent({
         teacherChatId: targetGroup.teacher.telegramChatId,
         studentName: groupStudent.student.fullName,
         groupName: targetGroup.name,
         courseName: targetGroup.course?.title || 'Curs',
+        scheduleDays,
+        scheduleTime,
+        branchName: targetGroup.branch?.name,
         parentPhone: groupStudent.student.parentPhone,
         parentEmail: groupStudent.student.parentEmail,
         action: 'transferat',
