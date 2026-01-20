@@ -8,7 +8,7 @@ import { checkPermission } from '@/lib/permissions'
 export async function GET(request, { params }) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (!session || !['SUPERADMIN', 'ADMIN'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
@@ -51,7 +51,7 @@ export async function GET(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session || !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (!session || !['SUPERADMIN', 'ADMIN'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     

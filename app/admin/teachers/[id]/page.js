@@ -51,7 +51,7 @@ export default async function TeacherDetailPage({ params }) {
     }
   })
 
-  if (!teacher || !['TEACHER', 'MANAGER', 'ADMIN'].includes(teacher.role)) {
+  if (!teacher || !['TEACHER', 'ADMIN'].includes(teacher.role)) {
     notFound()
   }
 
@@ -88,6 +88,7 @@ export default async function TeacherDetailPage({ params }) {
     const pausedStudents = group.groupStudents.filter(gs => gs.status === 'PAUSED')
     const leftStudents = group.groupStudents.filter(gs => gs.status === 'LEFT')
     const completedStudents = group.groupStudents.filter(gs => gs.status === 'COMPLETED')
+    const transferredStudents = group.groupStudents.filter(gs => gs.status === 'TRANSFERRED')
     
     let totalPresent = 0
     let totalAbsent = 0
@@ -109,6 +110,7 @@ export default async function TeacherDetailPage({ params }) {
     stats.pausedStudents += pausedStudents.length
     stats.leftStudents += leftStudents.length
     stats.completedStudents += completedStudents.length
+    stats.transferredStudents = (stats.transferredStudents || 0) + transferredStudents.length
     stats.totalSessions += group.lessonSessions.length
     stats.presentCount += totalPresent
     stats.absentCount += totalAbsent
@@ -125,6 +127,7 @@ export default async function TeacherDetailPage({ params }) {
       pausedStudents: pausedStudents.length,
       leftStudents: leftStudents.length,
       completedStudents: completedStudents.length,
+      transferredStudents: transferredStudents.length,
       totalSessions: group.lessonSessions.length,
       attendanceRate,
       zeroLessons: activeStudents.filter(gs => gs.lessonsRemaining === 0).length,

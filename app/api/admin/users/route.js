@@ -35,7 +35,7 @@ export async function POST(request) {
     }
     
     // Validate role
-    const validRoles = ['ADMIN', 'MANAGER', 'TEACHER']
+    const validRoles = ['ADMIN', 'TEACHER']
     if (!validRoles.includes(role)) {
       return apiError('Invalid role', 400)
     }
@@ -168,7 +168,7 @@ export async function POST(request) {
 
 /**
  * GET /api/admin/users
- * List all users (admins, managers, teachers)
+ * List all users (admins, teachers)
  */
 export async function GET(request) {
   try {
@@ -183,7 +183,7 @@ export async function GET(request) {
     
     const where = {}
     
-    if (role && ['ADMIN', 'MANAGER', 'TEACHER'].includes(role)) {
+    if (role && ['ADMIN', 'TEACHER'].includes(role)) {
       where.role = role
     }
     

@@ -9,7 +9,7 @@ export async function GET() {
   try {
     await requireAdmin()
     const teachers = await prisma.user.findMany({
-      where: { role: { in: ['TEACHER', 'ADMIN', 'MANAGER'] } },
+      where: { role: { in: ['TEACHER', 'ADMIN'] } },
       orderBy: { createdAt: 'desc' }
     })
     return NextResponse.json(teachers)
@@ -50,10 +50,10 @@ export async function POST(request) {
 
     const { name, email, phone, telegramChatId, password, active, twoFactorAllowed, role, permissions } = body
 
-    // Doar SUPERADMIN poate crea ADMIN/MANAGER
+    // Doar SUPERADMIN poate crea ADMIN
     const allowedRoles = ['TEACHER']
     if (currentUser?.role === 'SUPERADMIN') {
-      allowedRoles.push('ADMIN', 'MANAGER')
+      allowedRoles.push('ADMIN')
     }
 
     const finalRole = allowedRoles.includes(role) ? role : 'TEACHER'
@@ -66,7 +66,7 @@ export async function POST(request) {
 
     const hashedPassword = password ? await hashPassword(password) : null
 
-    // Only store permissions for ADMIN/MANAGER
+    // Only store permissions for ADMIN
     const finalPermissions = (finalRole === 'TEACHER') ? [] : (Array.isArray(permissions) ? permissions : [])
 
     const teacher = await prisma.user.create({

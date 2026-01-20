@@ -24,7 +24,7 @@ export async function GET() {
         _count: {
           select: {
             groupStudents: {
-              where: { status: { not: 'LEFT' } }
+              where: { status: { notIn: ['LEFT', 'TRANSFERRED'] } }
             }
           }
         }
@@ -35,7 +35,7 @@ export async function GET() {
     // Fetch all teachers for filter
     const teachers = await prisma.user.findMany({
       where: { 
-        role: { in: ['TEACHER', 'ADMIN', 'MANAGER', 'SUPERADMIN'] },
+        role: { in: ['TEACHER', 'ADMIN', 'SUPERADMIN'] },
         active: true
       },
       select: { id: true, name: true, email: true },

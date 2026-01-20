@@ -25,7 +25,8 @@ const STATUS_CONFIG = {
   ACTIVE: { label: 'Activ', color: 'green', icon: PlayCircleIcon },
   PAUSED: { label: 'Pauză', color: 'amber', icon: PauseCircleIcon },
   LEFT: { label: 'Plecat', color: 'red', icon: ArrowRightStartOnRectangleIcon },
-  COMPLETED: { label: 'Terminat', color: 'blue', icon: CheckCircleIcon }
+  COMPLETED: { label: 'Terminat', color: 'blue', icon: CheckCircleIcon },
+  TRANSFERRED: { label: 'Transferat', color: 'purple', icon: ArrowsRightLeftIcon }
 }
 
 export default function GroupStudentsManager({ group, allStudents, allGroups = [], permissions = {} }) {
@@ -487,6 +488,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                           status === 'ACTIVE' ? 'bg-green-100 text-green-700 hover:ring-green-300' :
                           status === 'PAUSED' ? 'bg-amber-100 text-amber-700 hover:ring-amber-300' :
                           status === 'LEFT' ? 'bg-red-100 text-red-700 hover:ring-red-300' :
+                          status === 'TRANSFERRED' ? 'bg-purple-100 text-purple-700 hover:ring-purple-300' :
                           'bg-blue-100 text-blue-700 hover:ring-blue-300'
                         }`}
                       >
@@ -498,6 +500,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                           status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
                           status === 'PAUSED' ? 'bg-amber-100 text-amber-700' :
                           status === 'LEFT' ? 'bg-red-100 text-red-700' :
+                          status === 'TRANSFERRED' ? 'bg-purple-100 text-purple-700' :
                           'bg-blue-100 text-blue-700'
                         }`}
                       >
@@ -766,6 +769,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                         status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
                         status === 'PAUSED' ? 'bg-amber-100 text-amber-700' :
                         status === 'LEFT' ? 'bg-red-100 text-red-700' :
+                        status === 'TRANSFERRED' ? 'bg-purple-100 text-purple-700' :
                         'bg-blue-100 text-blue-700'
                       }`}
                     >
@@ -777,6 +781,7 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                         status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
                         status === 'PAUSED' ? 'bg-amber-100 text-amber-700' :
                         status === 'LEFT' ? 'bg-red-100 text-red-700' :
+                        status === 'TRANSFERRED' ? 'bg-purple-100 text-purple-700' :
                         'bg-blue-100 text-blue-700'
                       }`}
                     >
@@ -1284,7 +1289,8 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                     placeholder={
                       statusForm.status === 'LEFT' ? 'Ex: S-a mutat în alt oraș...' :
                       statusForm.status === 'PAUSED' ? 'Ex: Pauză pentru vacanță...' :
-                      statusForm.status === 'COMPLETED' ? 'Ex: A terminat toate lecțiile...' : ''
+                      statusForm.status === 'COMPLETED' ? 'Ex: A terminat toate lecțiile...' :
+                      statusForm.status === 'TRANSFERRED' ? 'Ex: Transferat la grupa X pe Y...' : ''
                     }
                   />
                 </div>
@@ -1295,7 +1301,15 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
                 <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2">
                   <ExclamationTriangleIcon className="w-5 h-5 text-red-500 flex-shrink-0" />
                   <p className="text-sm text-red-700">
-                    Elevul va fi marcat ca &quot;plecat&quot; și nu va mai fi inclus în statisticile active ale profesorului.
+                    Elevul va fi marcat ca &quot;plecat definitiv&quot; și nu va mai fi inclus în statisticile active ale profesorului. Pentru transfer, folosește opțiunea de Transfer.
+                  </p>
+                </div>
+              )}
+              {statusForm.status === 'TRANSFERRED' && (
+                <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 flex items-start gap-2">
+                  <ExclamationTriangleIcon className="w-5 h-5 text-purple-500 flex-shrink-0" />
+                  <p className="text-sm text-purple-700">
+                    Acest status este setat automat când transferi elevul. Nu îl seta manual.
                   </p>
                 </div>
               )}

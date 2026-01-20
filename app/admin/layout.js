@@ -11,7 +11,7 @@ export default async function AdminLayout({ children }) {
     redirect('/login')
   }
 
-  if (!['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
+  if (!['SUPERADMIN', 'ADMIN'].includes(session.user.role)) {
     redirect('/teacher')
   }
 

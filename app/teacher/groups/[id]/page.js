@@ -64,7 +64,7 @@ export default async function TeacherGroupDetailPage({ params }) {
       branch: true,
       groupStudents: {
         where: {
-          status: { not: 'LEFT' }  // Exclude elevii plecați
+          status: { notIn: ['LEFT', 'TRANSFERRED'] }  // Exclude elevii plecați și transferați
         },
         include: {
           student: true
@@ -91,7 +91,7 @@ export default async function TeacherGroupDetailPage({ params }) {
   })
 
   // Verify teacher owns this group
-  if (group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
+  if (group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN'].includes(session.user.role)) {
     redirect('/teacher/groups')
   }
 
@@ -310,11 +310,13 @@ export default async function TeacherGroupDetailPage({ params }) {
                             status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
                             status === 'PAUSED' ? 'bg-amber-100 text-amber-700' :
                             status === 'LEFT' ? 'bg-red-100 text-red-700' :
+                            status === 'TRANSFERRED' ? 'bg-purple-100 text-purple-700' :
                             'bg-blue-100 text-blue-700'
                           }`}>
                             {status === 'ACTIVE' ? 'Activ' :
                              status === 'PAUSED' ? 'Pauză' :
-                             status === 'LEFT' ? 'Plecat' : 'Terminat'}
+                             status === 'LEFT' ? 'Plecat' :
+                             status === 'TRANSFERRED' ? 'Transferat' : 'Terminat'}
                           </span>
                           {!isInactive && gs.lessonsRemaining === 0 && (
                             <span className="text-[10px] xs:text-xs text-red-600 font-medium">Nu a achitat!</span>

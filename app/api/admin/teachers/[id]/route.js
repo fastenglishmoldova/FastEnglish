@@ -25,13 +25,13 @@ export async function PUT(request, { params }) {
       select: { twoFactorEnabled: true, role: true }
     })
     
-    // Check if trying to edit an admin/manager - only SUPERADMIN can do that
+    // Check if trying to edit an admin - only SUPERADMIN can do that
     const targetUser = await prisma.user.findUnique({
       where: { id },
       select: { role: true }
     })
     
-    if (targetUser && ['ADMIN', 'MANAGER'].includes(targetUser.role) && currentUser?.role !== 'SUPERADMIN') {
+    if (targetUser && ['ADMIN'].includes(targetUser.role) && currentUser?.role !== 'SUPERADMIN') {
       return NextResponse.json({ error: 'Doar superadmin poate modifica alți administratori' }, { status: 403 })
     }
     
@@ -53,11 +53,11 @@ export async function PUT(request, { params }) {
 
     // Only SUPERADMIN can change role and permissions
     if (currentUser?.role === 'SUPERADMIN') {
-      if (role && ['TEACHER', 'MANAGER', 'ADMIN'].includes(role)) {
+      if (role && ['TEACHER', 'ADMIN'].includes(role)) {
         updateData.role = role
       }
       if (Array.isArray(permissions)) {
-        // Only store permissions for ADMIN/MANAGER
+        // Only store permissions for ADMIN
         updateData.permissions = (role === 'TEACHER') ? [] : permissions
       }
     }
@@ -99,13 +99,13 @@ export async function DELETE(request, { params }) {
       select: { twoFactorEnabled: true, role: true }
     })
     
-    // Check if trying to delete an admin/manager - only SUPERADMIN can do that
+    // Check if trying to delete an admin - only SUPERADMIN can do that
     const targetUser = await prisma.user.findUnique({
       where: { id },
       select: { role: true }
     })
     
-    if (targetUser && ['ADMIN', 'MANAGER'].includes(targetUser.role) && currentUser?.role !== 'SUPERADMIN') {
+    if (targetUser && ['ADMIN'].includes(targetUser.role) && currentUser?.role !== 'SUPERADMIN') {
       return NextResponse.json({ error: 'Doar superadmin poate șterge alți administratori' }, { status: 403 })
     }
     

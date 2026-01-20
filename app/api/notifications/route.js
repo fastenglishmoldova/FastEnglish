@@ -15,7 +15,7 @@ export async function GET(request) {
     const unreadOnly = searchParams.get('unread') === 'true'
     const limit = parseInt(searchParams.get('limit') || '20')
 
-    const isAdmin = session.user.role === 'ADMIN' || session.user.role === 'MANAGER'
+    const isAdmin = session.user.role === 'ADMIN'
 
     // Build where clause based on role
     let whereClause = {}
@@ -77,7 +77,7 @@ export async function PATCH(request) {
     const body = await request.json()
     const { notificationIds, markAllRead } = body
 
-    const isAdmin = session.user.role === 'ADMIN' || session.user.role === 'MANAGER'
+    const isAdmin = session.user.role === 'ADMIN'
 
     if (markAllRead) {
       // Mark all notifications as read for this user

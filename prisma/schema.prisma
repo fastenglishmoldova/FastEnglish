@@ -20,7 +20,7 @@ model User {
   telegramChatId    String?   // Chat ID pentru notificări Telegram
   image             String?
   role              Role      @default(TEACHER)
-  permissions       String[]  @default([]) // Granular permissions for ADMIN/MANAGER
+  permissions       String[]  @default([]) // Granular permissions for ADMIN
   emailVerified     DateTime?
   active            Boolean   @default(true)
   
@@ -52,7 +52,6 @@ model User {
 enum Role {
   SUPERADMIN
   ADMIN
-  MANAGER
   TEACHER
 }
 
@@ -368,10 +367,11 @@ model GroupStudent {
 }
 
 enum GroupStudentStatus {
-  ACTIVE    // Activ - participă la lecții
-  PAUSED    // Pauză temporară
-  LEFT      // A plecat din grupă
-  COMPLETED // A terminat cursul
+  ACTIVE       // Activ - participă la lecții
+  PAUSED       // Pauză temporară
+  LEFT         // A plecat din grupă
+  COMPLETED    // A terminat cursul
+  TRANSFERRED  // Transferat la altă grupă
 }
 
 // ==================== LESSON SESSIONS ====================

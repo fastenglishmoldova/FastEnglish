@@ -8,7 +8,7 @@ import { notifyCancelledLesson } from '@/lib/telegram'
 export async function GET(request, { params }) {
   const session = await getServerSession(authOptions)
   
-  if (!session || !['TEACHER', 'MANAGER', 'ADMIN'].includes(session.user.role)) {
+  if (!session || !['TEACHER', 'ADMIN'].includes(session.user.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -31,7 +31,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
-    if (lessonSession.group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (lessonSession.group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -46,7 +46,7 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   const session = await getServerSession(authOptions)
   
-  if (!session || !['TEACHER', 'MANAGER', 'ADMIN'].includes(session.user.role)) {
+  if (!session || !['TEACHER', 'ADMIN'].includes(session.user.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -63,7 +63,7 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
-    if (lessonSession.group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (lessonSession.group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -71,7 +71,7 @@ export async function PATCH(request, { params }) {
     const hoursElapsed = (Date.now() - new Date(lessonSession.date).getTime()) / (1000 * 60 * 60)
     const isExpired = hoursElapsed >= 24
     
-    if (isExpired && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (isExpired && !['SUPERADMIN', 'ADMIN'].includes(session.user.role)) {
       return NextResponse.json({ 
         error: 'Nu poți modifica sesiunea după 24 de ore. Contactează un administrator.' 
       }, { status: 403 })
@@ -89,12 +89,12 @@ export async function PATCH(request, { params }) {
   }
 }
 
-// DELETE - Delete a session (ADMIN/MANAGER ONLY - teachers cannot cancel group lessons)
+// DELETE - Delete a session (ADMIN ONLY - teachers cannot cancel group lessons)
 export async function DELETE(request, { params }) {
   const session = await getServerSession(authOptions)
   
-  // Doar adminii și managerii pot șterge lecții de grup
-  if (!session || !['MANAGER', 'ADMIN'].includes(session.user.role)) {
+  // Doar adminii pot șterge lecții de grup
+  if (!session || session.user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Doar administratorii pot anula lecțiile de grup' }, { status: 403 })
   }
 

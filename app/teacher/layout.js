@@ -11,8 +11,8 @@ export default async function TeacherLayout({ children }) {
     redirect('/login')
   }
 
-  // Only allow TEACHER, MANAGER, ADMIN and SUPERADMIN roles
-  if (!['SUPERADMIN', 'TEACHER', 'MANAGER', 'ADMIN'].includes(session.user.role)) {
+  // Only allow TEACHER, ADMIN and SUPERADMIN roles
+  if (!['SUPERADMIN', 'TEACHER', 'ADMIN'].includes(session.user.role)) {
     redirect('/')
   }
 

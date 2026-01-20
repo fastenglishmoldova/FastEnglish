@@ -29,7 +29,7 @@ async function TeachersPageContent() {
   
   // Administratorii văd doar profesorii, superadmin vede pe toți
   const roleFilter = userIsSuperAdmin 
-    ? { in: ['TEACHER', 'ADMIN', 'MANAGER'] }
+    ? { in: ['TEACHER', 'ADMIN'] }
     : { equals: 'TEACHER' }
   
   const teachers = await prisma.user.findMany({
@@ -54,6 +54,7 @@ async function TeachersPageContent() {
     for (const group of teacher.teacherGroups) {
       totalStudents += group.groupStudents.length
       activeStudents += group.groupStudents.filter(gs => gs.status === 'ACTIVE' || !gs.status).length
+      // LEFT = plecat definitiv, nu includem TRANSFERRED (e doar mutat la altă grupă)
       leftStudents += group.groupStudents.filter(gs => gs.status === 'LEFT').length
     }
     
@@ -120,7 +121,6 @@ async function TeachersPageContent() {
                       ) : (
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                           teacher.role === 'ADMIN' ? 'bg-gradient-to-br from-red-500 to-orange-600' :
-                          teacher.role === 'MANAGER' ? 'bg-gradient-to-br from-yellow-500 to-amber-600' :
                           'bg-gradient-to-br from-indigo-500 to-purple-600'
                         }`}>
                           <span className="text-white font-medium">
@@ -142,11 +142,9 @@ async function TeachersPageContent() {
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       teacher.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
-                      teacher.role === 'MANAGER' ? 'bg-yellow-100 text-yellow-800' :
                       'bg-indigo-100 text-indigo-800'
                     }`}>
-                      {teacher.role === 'ADMIN' ? 'Administrator' : 
-                       teacher.role === 'MANAGER' ? 'Manager' : 'Profesor'}
+                      {teacher.role === 'ADMIN' ? 'Administrator' : 'Profesor'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">{teacher.email}</td>

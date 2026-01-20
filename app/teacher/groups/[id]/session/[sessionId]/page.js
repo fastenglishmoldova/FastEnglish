@@ -16,7 +16,7 @@ export default async function SessionDetailPage({ params }) {
       teacher: true,
       groupStudents: {
         where: {
-          status: { not: 'LEFT' }  // Exclude elevii plecați
+          status: { notIn: ['LEFT', 'TRANSFERRED'] }  // Exclude elevii plecați și transferați
         },
         include: { student: true }
       }
@@ -28,7 +28,7 @@ export default async function SessionDetailPage({ params }) {
   }
 
   // Verify teacher owns this group
-  if (group.teacherId !== userSession.user.id && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(userSession.user.role)) {
+  if (group.teacherId !== userSession.user.id && !['SUPERADMIN', 'ADMIN'].includes(userSession.user.role)) {
     redirect('/teacher/groups')
   }
 

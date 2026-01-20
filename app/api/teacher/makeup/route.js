@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request) {
   const session = await getServerSession(authOptions)
   
-  if (!session || !['TEACHER', 'MANAGER', 'ADMIN'].includes(session.user.role)) {
+  if (!session || !['TEACHER', 'ADMIN'].includes(session.user.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -21,8 +21,8 @@ export async function GET(request) {
         status: { not: 'CANCELED' } // Exclude cancelled lessons
       }
       
-      // Filter by teacher unless admin/manager
-      if (!['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
+      // Filter by teacher unless admin
+      if (!['SUPERADMIN', 'ADMIN'].includes(session.user.role)) {
         whereLesson.teacherId = session.user.id
       }
 
@@ -58,8 +58,8 @@ export async function GET(request) {
       absences: { gt: 0 }
     }
 
-    // Filter by teacher's groups unless admin/manager
-    if (!['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
+    // Filter by teacher's groups unless admin
+    if (!['SUPERADMIN', 'ADMIN'].includes(session.user.role)) {
       where.group = { teacherId: session.user.id }
     }
 
@@ -94,7 +94,7 @@ export async function GET(request) {
 export async function POST(request) {
   const session = await getServerSession(authOptions)
   
-  if (!session || !['TEACHER', 'MANAGER', 'ADMIN'].includes(session.user.role)) {
+  if (!session || !['TEACHER', 'ADMIN'].includes(session.user.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -110,7 +110,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 })
     }
 
-    if (group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

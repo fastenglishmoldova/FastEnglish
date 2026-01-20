@@ -29,7 +29,7 @@ export async function GET(request) {
       },
       session: {
         twoFactorVerified: session.twoFactorVerified,
-        requires2FASetup: !user.twoFactorEnabled && ['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(user.role),
+        requires2FASetup: !user.twoFactorEnabled && ['SUPERADMIN', 'ADMIN'].includes(user.role),
       }
     })
     

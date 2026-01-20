@@ -1,6 +1,6 @@
 // Configurația permisiunilor granulare pentru sistem
 // SUPERADMIN are automat toate permisiunile
-// ADMIN/MANAGER pot avea permisiuni selective setate de SUPERADMIN
+// ADMIN poate avea permisiuni selective setate de SUPERADMIN
 
 export const PERMISSIONS = {
   // Înscrieri (formulare de pe site)

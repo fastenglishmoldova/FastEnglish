@@ -7,7 +7,7 @@ import { notifyLowLessons } from '@/lib/telegram'
 export async function POST(request) {
   const session = await getServerSession(authOptions)
   
-  if (!session || !['TEACHER', 'MANAGER', 'ADMIN'].includes(session.user.role)) {
+  if (!session || !['TEACHER', 'ADMIN'].includes(session.user.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -31,7 +31,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
-    if (lessonSession.group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (lessonSession.group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

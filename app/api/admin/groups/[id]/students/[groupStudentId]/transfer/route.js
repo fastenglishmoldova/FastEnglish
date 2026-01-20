@@ -79,16 +79,16 @@ export async function POST(request, { params }) {
       where: {
         groupId: targetGroupId,
         studentId: groupStudent.studentId,
-        status: { in: ['LEFT', 'PAUSED', 'COMPLETED'] }
+        status: { in: ['LEFT', 'PAUSED', 'COMPLETED', 'TRANSFERRED'] }
       }
     })
 
     // Efectuăm transferul
-    // 1. Marcăm elevul în grupa veche ca "LEFT"
+    // 1. Marcăm elevul în grupa veche ca "TRANSFERRED"
     await prisma.groupStudent.update({
       where: { id: groupStudentId },
       data: {
-        status: 'LEFT',
+        status: 'TRANSFERRED',
         statusNote: `Transferat în ${targetGroup.name} la ${new Date().toLocaleDateString('ro-RO')}`
       }
     })

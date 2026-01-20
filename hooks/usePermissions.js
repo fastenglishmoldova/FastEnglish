@@ -50,7 +50,7 @@ export function usePermissions() {
   /**
    * Verifică dacă utilizatorul are acces la panoul admin
    */
-  const isAdmin = ['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(user?.role)
+  const isAdmin = ['SUPERADMIN', 'ADMIN'].includes(user?.role)
 
   /**
    * Returnează permisiunile utilizatorului

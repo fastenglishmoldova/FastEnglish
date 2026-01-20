@@ -28,7 +28,7 @@ export default function TeacherForm({ teacher }) {
 
   const isSuperAdmin = session?.user?.role === 'SUPERADMIN'
   const canChangeRole = isSuperAdmin
-  const showPermissions = isSuperAdmin && (formData.role === 'ADMIN' || formData.role === 'MANAGER')
+  const showPermissions = isSuperAdmin && formData.role === 'ADMIN'
 
   const permissionsByCategory = useMemo(() => getPermissionsByCategory(), [])
 
@@ -153,7 +153,6 @@ export default function TeacherForm({ teacher }) {
   const getRoleDescription = (role) => {
     switch(role) {
       case 'TEACHER': return 'Acces doar la portalul de profesor - vedere grupe proprii, prezențe, etc.'
-      case 'MANAGER': return 'Acces la panoul admin cu permisiuni limitate definite mai jos.'
       case 'ADMIN': return 'Acces la panoul admin cu permisiuni definite mai jos.'
       default: return ''
     }
@@ -185,7 +184,6 @@ export default function TeacherForm({ teacher }) {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
               >
                 <option value="TEACHER">Profesor</option>
-                <option value="MANAGER">Manager</option>
                 <option value="ADMIN">Administrator</option>
               </select>
               <p className="mt-1 text-xs text-gray-500">
@@ -284,7 +282,7 @@ export default function TeacherForm({ teacher }) {
           </div>
         </div>
 
-        {/* Permissions Section - Only for ADMIN/MANAGER and only SUPERADMIN can edit */}
+        {/* Permissions Section - Only for ADMIN and only SUPERADMIN can edit */}
         {showPermissions && (
           <div className="border-t pt-6 space-y-4">
             <div className="flex items-center justify-between">
@@ -295,7 +293,7 @@ export default function TeacherForm({ teacher }) {
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Permisiuni</h3>
                   <p className="text-sm text-gray-500">
-                    Selectează ce poate face acest {formData.role === 'ADMIN' ? 'administrator' : 'manager'} în sistem
+                    Selectează ce poate face acest administrator în sistem
                   </p>
                 </div>
               </div>
@@ -420,15 +418,12 @@ export default function TeacherForm({ teacher }) {
             disabled={loading}
             className={`px-6 py-2 text-white rounded-lg font-medium disabled:opacity-50 ${
               formData.role === 'ADMIN' 
-                ? 'bg-red-600 hover:bg-red-700' 
-                : formData.role === 'MANAGER'
-                  ? 'bg-amber-600 hover:bg-amber-700'
-                  : 'bg-indigo-600 hover:bg-indigo-700'
+                ? 'bg-red-600 hover:bg-red-700'
+                : 'bg-indigo-600 hover:bg-indigo-700'
             }`}
           >
             {loading ? 'Se salvează...' : (teacher ? 'Actualizează' : `Creează ${
-              formData.role === 'ADMIN' ? 'administrator' : 
-              formData.role === 'MANAGER' ? 'manager' : 'profesor'
+              formData.role === 'ADMIN' ? 'administrator' : 'profesor'
             }`)}
           </button>
         </div>
@@ -439,7 +434,7 @@ export default function TeacherForm({ teacher }) {
         onClose={() => setShow2FA(false)}
         onVerify={executeSubmit}
         title="Verificare 2FA"
-        description={teacher ? 'Confirmă identitatea pentru a actualiza contul.' : `Confirmă identitatea pentru a crea contul.`}
+        description={teacher ? 'Confirmă identitatea pentru a actualiza contul.' : 'Confirmă identitatea pentru a crea contul.'}
       />
     </>
   )

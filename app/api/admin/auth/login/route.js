@@ -130,8 +130,8 @@ export async function POST(request) {
       return genericAuthError()
     }
     
-    // Check if user is admin/manager (only they can access admin panel)
-    if (!['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(user.role)) {
+    // Check if user is admin (only they can access admin panel)
+    if (!['SUPERADMIN', 'ADMIN'].includes(user.role)) {
       await auditLogin({
         userId: user.id,
         email: normalizedEmail,
@@ -191,7 +191,7 @@ export async function POST(request) {
         role: user.role,
       },
       requires2FA,
-      requires2FASetup: !user.twoFactorEnabled && ['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(user.role),
+      requires2FASetup: !user.twoFactorEnabled && ['SUPERADMIN', 'ADMIN'].includes(user.role),
     }
     
     return NextResponse.json(response)

@@ -105,7 +105,7 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 })
     }
 
-    if (group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

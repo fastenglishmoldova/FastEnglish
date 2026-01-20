@@ -97,8 +97,8 @@ export default function TeacherSidebar() {
   const [isPending, startTransition] = useTransition()
   const [pendingHref, setPendingHref] = useState(null)
   
-  // Verifică dacă utilizatorul e admin sau manager
-  const isAdmin = session?.user?.role === 'ADMIN' || session?.user?.role === 'MANAGER'
+  // Verifică dacă utilizatorul e admin
+  const isAdmin = session?.user?.role === 'ADMIN'
 
   // Handler pentru navigare cu loading state
   const handleNavigation = (href, closeMobile = false) => {

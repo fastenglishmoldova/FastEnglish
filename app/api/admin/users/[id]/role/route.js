@@ -23,7 +23,7 @@ export async function PATCH(request, { params }) {
     const { role, stepUpToken } = body
     
     // Validate role
-    const validRoles = ['ADMIN', 'MANAGER', 'TEACHER']
+    const validRoles = ['ADMIN', 'TEACHER']
     if (!role || !validRoles.includes(role)) {
       return apiError('Invalid role', 400)
     }

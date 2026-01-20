@@ -7,14 +7,14 @@ import { canStartSession } from '@/lib/schedule-utils'
 export async function POST(request) {
   const session = await getServerSession(authOptions)
   
-  if (!session || !['TEACHER', 'MANAGER', 'ADMIN'].includes(session.user.role)) {
+  if (!session || !['TEACHER', 'ADMIN'].includes(session.user.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
     const { groupId } = await request.json()
 
-    // Verify teacher owns this group (unless admin/manager)
+    // Verify teacher owns this group (unless admin)
     const group = await prisma.group.findUnique({
       where: { id: groupId },
       include: {
@@ -29,7 +29,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 })
     }
 
-    if (group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (group.teacherId !== session.user.id && !['SUPERADMIN', 'ADMIN'].includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -56,8 +56,8 @@ export async function POST(request) {
     }
 
     // Verifică dacă profesorul poate porni lecția conform programului
-    // Adminii și managerii pot porni oricând
-    if (!['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
+    // Adminii pot porni oricând
+    if (!['SUPERADMIN', 'ADMIN'].includes(session.user.role)) {
       const scheduleCheck = canStartSession(group.scheduleDays, group.scheduleTime)
       
       if (!scheduleCheck.canStart) {
@@ -88,7 +88,7 @@ export async function POST(request) {
 export async function GET(request) {
   const session = await getServerSession(authOptions)
   
-  if (!session || !['TEACHER', 'MANAGER', 'ADMIN'].includes(session.user.role)) {
+  if (!session || !['TEACHER', 'ADMIN'].includes(session.user.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -103,7 +103,7 @@ export async function GET(request) {
     }
 
     // Filter by teacher's groups unless admin
-    if (!['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
+    if (!['SUPERADMIN', 'ADMIN'].includes(session.user.role)) {
       where.group = { teacherId: session.user.id }
     }
 
