@@ -286,14 +286,16 @@ export default function AdminMakeupPage() {
           <h1 className="text-xl xs:text-2xl font-bold text-gray-900">Sesiuni de Recuperare</h1>
           <p className="text-sm xs:text-base text-gray-600 mt-0.5 xs:mt-1">Gestionează toate sesiunile de recuperare</p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center justify-center gap-1.5 xs:gap-2 px-3 xs:px-4 py-2 xs:py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm xs:text-base font-medium shadow-sm"
-        >
-          <PlusIcon className="w-4 h-4 xs:w-5 xs:h-5" />
-          <span className="hidden xs:inline">Creează Sesiune Nouă</span>
-          <span className="xs:hidden">Crează Sesiune</span>
-        </button>
+        {(hasPermission('makeup.create') || isSuperAdmin) && (
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="inline-flex items-center justify-center gap-1.5 xs:gap-2 px-3 xs:px-4 py-2 xs:py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm xs:text-base font-medium shadow-sm"
+          >
+            <PlusIcon className="w-4 h-4 xs:w-5 xs:h-5" />
+            <span className="hidden xs:inline">Creează Sesiune Nouă</span>
+            <span className="xs:hidden">Creă Sesiune</span>
+          </button>
+        )}
       </div>
 
       {/* Overall Stats */}
@@ -443,13 +445,15 @@ export default function AdminMakeupPage() {
                           Creat: {new Date(lesson.createdAt).toLocaleString('ro-RO')}
                         </p>
                       </div>
-                      <button
-                        onClick={() => handleDelete(lesson.id)}
-                        disabled={deleting === lesson.id}
-                        className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                      >
-                        {deleting === lesson.id ? 'Se șterge...' : 'Șterge'}
-                      </button>
+                      {(hasPermission('makeup.delete') || isSuperAdmin) && (
+                        <button
+                          onClick={() => handleDelete(lesson.id)}
+                          disabled={deleting === lesson.id}
+                          className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                          {deleting === lesson.id ? 'Se șterge...' : 'Șterge'}
+                        </button>
+                      )}
                     </div>
                   </div>
 
