@@ -7,7 +7,6 @@ import prisma from '@/lib/prisma'
 import TeacherForm from '@/components/admin/TeacherForm'
 import { checkPermission } from '@/lib/permissions'
 import { getCurrentUser } from '@/lib/session'
-import { isSuperAdmin } from '@/config/superadmins'
 import { 
   AcademicCapIcon, 
   UserGroupIcon, 
@@ -56,7 +55,7 @@ export default async function TeacherDetailPage({ params }) {
   }
 
   const currentUser = await getCurrentUser()
-  const userIsSuperAdmin = isSuperAdmin(currentUser?.email)
+  const userIsSuperAdmin = currentUser?.role === 'SUPERADMIN'
   
   const canEdit = await checkPermission('teachers.edit')
   

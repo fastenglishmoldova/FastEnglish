@@ -8,7 +8,6 @@ import DeleteTeacherButton from '@/components/admin/DeleteTeacherButton'
 import PermissionGuard from '@/components/admin/PermissionGuard'
 import { checkPermission } from '@/lib/permissions'
 import { getCurrentUser } from '@/lib/session'
-import { isSuperAdmin } from '@/config/superadmins'
 
 export default async function TeachersPage() {
   return (
@@ -20,7 +19,7 @@ export default async function TeachersPage() {
 
 async function TeachersPageContent() {
   const currentUser = await getCurrentUser()
-  const userIsSuperAdmin = isSuperAdmin(currentUser?.email)
+  const userIsSuperAdmin = currentUser?.role === 'SUPERADMIN'
   
   const [canCreate, canDelete] = await Promise.all([
     checkPermission('teachers.create'),
