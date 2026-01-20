@@ -116,9 +116,18 @@ export default function EditGroupDetailsButton({ group, branches }) {
           }).map(g => ({
             name: g.name,
             teacher: g.teacher?.name || 'Nealocat',
+            teacherId: g.teacherId,
             days: g.scheduleDays || [],
-            time: parseScheduleTime(g.scheduleTime, g.scheduleDays)
+            time: parseScheduleTime(g.scheduleTime, g.scheduleDays),
+            isOwn: g.teacherId === data.currentUserId // Marchează grupele profesorului curent
           }))
+
+          // Sortează: grupele proprii primele
+          filtered.sort((a, b) => {
+            if (a.isOwn && !b.isOwn) return -1
+            if (!a.isOwn && b.isOwn) return 1
+            return 0
+          })
 
           setSchedulePreview(filtered)
         }
@@ -353,29 +362,62 @@ export default function EditGroupDetailsButton({ group, branches }) {
                     <p className="text-sm text-green-700">✓ Nu există alte grupe în aceste zile</p>
                   ) : (
                     <div className="space-y-2">
-                      {schedulePreview.map((item, idx) => (
-                        <div key={idx} className="bg-white rounded p-3 text-sm">
-                          <div className="flex items-start justify-between gap-2">
-                            <div>
-                              <p className="font-semibold text-gray-900">{item.name}</p>
-                              <div className="flex items-center gap-1 text-gray-600 text-xs mt-1">
-                                <UserIcon className="w-3 h-3" />
-                                <span>{item.teacher}</span>
+                      {schedulePreview.filter(item => item.isOwn).length > 0 && (
+                        <>
+                          <p className="text-xs font-semibold text-blue-900 mb-2">📚 Grupele tale:</p>
+                          {schedulePreview.filter(item => item.isOwn).map((item, idx) => (
+                            <div key={`own-${idx}`} className="bg-indigo-50 border border-indigo-200 rounded p-3 text-sm">
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <p className="font-semibold text-indigo-900">{item.name}</p>
+                                  <div className="flex items-center gap-1 text-indigo-700 text-xs mt-1">
+                                    <UserIcon className="w-3 h-3" />
+                                    <span>{item.teacher} (tu)</span>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-medium text-indigo-600 flex items-center gap-1 justify-end">
+                                    <ClockIcon className="w-4 h-4" />
+                                    {item.time || 'Nesetată'}
+                                  </p>
+                                  <p className="text-xs text-indigo-500 flex items-center gap-1 justify-end mt-1">
+                                    <CalendarDaysIcon className="w-3 h-3" />
+                                    {item.days.join(', ') || 'Nestabilit'}
+                                  </p>
+                                </div>
                               </div>
                             </div>
-                            <div className="text-right">
-                              <p className="font-medium text-blue-600 flex items-center gap-1 justify-end">
-                                <ClockIcon className="w-4 h-4" />
-                                {item.time || 'Nesetată'}
-                              </p>
-                              <p className="text-xs text-gray-500 flex items-center gap-1 justify-end mt-1">
-                                <CalendarDaysIcon className="w-3 h-3" />
-                                {item.days.join(', ') || 'Nestabilit'}
-                              </p>
+                          ))}
+                        </>
+                      )}
+                      {schedulePreview.filter(item => !item.isOwn).length > 0 && (
+                        <>
+                          <p className="text-xs font-semibold text-gray-700 mb-2 mt-3">👥 Alte grupe:</p>
+                          {schedulePreview.filter(item => !item.isOwn).map((item, idx) => (
+                            <div key={`other-${idx}`} className="bg-white rounded p-3 text-sm">
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <p className="font-semibold text-gray-900">{item.name}</p>
+                                  <div className="flex items-center gap-1 text-gray-600 text-xs mt-1">
+                                    <UserIcon className="w-3 h-3" />
+                                    <span>{item.teacher}</span>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-medium text-blue-600 flex items-center gap-1 justify-end">
+                                    <ClockIcon className="w-4 h-4" />
+                                    {item.time || 'Nesetată'}
+                                  </p>
+                                  <p className="text-xs text-gray-500 flex items-center gap-1 justify-end mt-1">
+                                    <CalendarDaysIcon className="w-3 h-3" />
+                                    {item.days.join(', ') || 'Nestabilit'}
+                                  </p>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
-                      ))}
+                          ))}
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
