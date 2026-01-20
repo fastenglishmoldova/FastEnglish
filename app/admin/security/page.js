@@ -24,6 +24,7 @@ export default function SecurityPage() {
   const [verifyCode, setVerifyCode] = useState('')
   const [verifying, setVerifying] = useState(false)
   const [backupCodes, setBackupCodes] = useState([])
+  const [showDisable2FAModal, setShowDisable2FAModal] = useState(false)
   
   // Verifică permisiunea
   useEffect(() => {
@@ -136,12 +137,14 @@ export default function SecurityPage() {
     }
   }
 
-  // Disable 2FA
-  const disable2FA = async () => {
-    if (!confirm('Ești sigur că vrei să dezactivezi 2FA? Contul tău va fi mai puțin securizat.')) {
-      return
-    }
-    
+  // Disable 2FA - deschide modalul pentru verificare
+  const disable2FA = () => {
+    setShowDisable2FAModal(true)
+  }
+  
+  // Confirmă dezactivarea 2FA după verificare
+  const confirmDisable2FA = async () => {
+    setShowDisable2FAModal(false)
     setLoading(true)
     try {
       const res = await fetch('/api/admin/security/2fa/disable', {
@@ -450,6 +453,15 @@ export default function SecurityPage() {
           </div>
         </div>
       </div>
+      
+      {/* Modal pentru confirmare dezactivare 2FA */}
+      <TwoFactorModal
+        isOpen={showDisable2FAModal}
+        onClose={() => setShowDisable2FAModal(false)}
+        onVerify={confirmDisable2FA}
+        title="Confirmă dezactivarea 2FA"
+        description="Pentru a dezactiva autentificarea în doi pași, te rugăm să introduci codul din aplicația de autentificare."
+      />
     </div>
   )
 }
