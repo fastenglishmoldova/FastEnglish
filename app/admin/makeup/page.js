@@ -107,7 +107,9 @@ export default function AdminMakeupPage() {
     }
     
     // Get day of week from date - folosim format românesc pentru că așa sunt salvate în DB
-    const dateObj = new Date(date)
+    // Parsăm manual data pentru a evita probleme de timezone
+    const [year, month, day] = date.split('-').map(Number)
+    const dateObj = new Date(year, month - 1, day) // month is 0-indexed
     const dayNamesRo = ['Duminică', 'Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă']
     const dayOfWeek = dayNamesRo[dateObj.getDay()]
     
