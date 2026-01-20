@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import TwoFactorModal from './TwoFactorModal'
@@ -28,6 +28,8 @@ export default function GroupForm({ group, courses, teachers, branches = [] }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [show2FA, setShow2FA] = useState(false)
+  const [branchSchedule, setBranchSchedule] = useState([])
+  const [loadingSchedule, setLoadingSchedule] = useState(false)
   const [formData, setFormData] = useState({
     name: group?.name || '',
     courseId: group?.courseId || '',
@@ -47,6 +49,52 @@ export default function GroupForm({ group, courses, teachers, branches = [] }) {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }))
+    
+    // Când se schimbă filiala, fetch orar
+    if (name === 'branchId' && value) {
+      fetchBranchSchedule(value)
+    } else if (name === 'branchId' && !value) {
+      setBranchSchedule([])
+    }
+  }
+  
+  // Fetch orarul filialei selectate
+  const fetchBranchSchedule = async (branchId) => {
+    setLoadingSchedule(true)
+    try {
+      const res = await fetch('/api/admin/groups')
+      if (res.ok) {
+        const data = await res.json()
+        // Filtrez grupele active pentru filiala selectată
+        const filteredGroups = (data.groups || []).filter(
+          g => g.active && g.branchId === branchId && g.id !== group?.id
+        )
+        setBranchSchedule(filteredGroups)
+      }
+    } catch (error) {
+      console.error('Error fetching branch schedule:', error)
+    } finally {
+      setLoadingSchedule(false)
+    }
+  }
+  
+  // La editare, încarcă orarul filialei dacă există
+  useEffect(() => {
+    if (group?.branchId) {
+      fetchBranchSchedule(group.branchId)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  
+  // Parse scheduleTime pentru a obține ora pentru o zi specifică
+  const getTimeForDay = (scheduleTime, day) => {
+    if (!scheduleTime) return null
+    try {
+      const parsed = JSON.parse(scheduleTime)
+      if (typeof parsed === 'object') return parsed[day] || null
+    } catch {
+      return scheduleTime
+    }
+    return null
   }
 
   const handleDayToggle = (day) => {
@@ -218,6 +266,67 @@ export default function GroupForm({ group, courses, teachers, branches = [] }) {
                 <option key={branch.id} value={branch.id}>{branch.name}</option>
               ))}
             </select>
+            
+            {/* Orarul filialei selectate */}
+            {formData.branchId && (
+              <div className="mt-3">
+                {loadingSchedule ? (
+                  <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600 mx-auto"></div>
+                    <p className="text-xs text-gray-500 mt-2">Se încarcă orarul...</p>
+                  </div>
+                ) : branchSchedule.length > 0 ? (
+                  <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-xs font-semibold text-amber-800">Orar existent la această filială:</span>
+                    </div>
+                    <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                      {days.map(day => {
+                        const dayGroups = branchSchedule.filter(g => g.scheduleDays?.includes(day))
+                        if (dayGroups.length === 0) return null
+                        return (
+                          <div key={day} className="text-xs">
+                            <span className="font-medium text-gray-700">{day}:</span>
+                            <div className="ml-2 space-y-0.5">
+                              {dayGroups
+                                .sort((a, b) => {
+                                  const timeA = getTimeForDay(a.scheduleTime, day) || ''
+                                  const timeB = getTimeForDay(b.scheduleTime, day) || ''
+                                  return timeA.localeCompare(timeB)
+                                })
+                                .map(g => (
+                                  <div key={g.id} className="flex items-center gap-2 text-gray-600">
+                                    <span className="font-mono text-amber-700">{getTimeForDay(g.scheduleTime, day) || '-'}</span>
+                                    <span>-</span>
+                                    <span className="truncate">{g.name}</span>
+                                    {g.locationDetails && (
+                                      <span className="px-1.5 py-0.5 bg-amber-200 text-amber-800 rounded text-[10px] font-medium">
+                                        {g.locationDetails}
+                                      </span>
+                                    )}
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-xs text-green-700">Nu există alte grupe programate la această filială.</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="md:col-span-2">
