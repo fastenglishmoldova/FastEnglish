@@ -832,13 +832,6 @@ export default function AdminMakeupPage() {
                   />
                 </div>
               </div>
-                  {teachers.map(teacher => (
-                    <option key={teacher.id} value={teacher.id}>
-                      {teacher.name} ({teacher.email})
-                    </option>
-                  ))}
-                </select>
-              </div>
 
               {/* Date & Time - Compact Picker */}
               <div>
