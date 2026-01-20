@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma'
 import { requireAdmin, getCurrentUser } from '@/lib/session'
 import { require2FAToken } from '@/lib/security/action-tokens'
 import { checkPermission } from '@/lib/permissions'
+import { sendTeacherDirectMessage } from '@/lib/telegram'
 
 export async function GET() {
   try {
@@ -95,8 +96,33 @@ export async function POST(request) {
         locationDetails,
         startDate: startDate ? new Date(startDate) : null,
         active
+      },
+      include: {
+        course: { select: { title: true } },
+        branch: { select: { name: true } },
+        teacher: { select: { name: true, telegramChatId: true } }
       }
     })
+
+    // Trimite notificare pe Telegram către profesor
+    if (group.teacher?.telegramChatId && teacherId) {
+      const scheduleInfo = scheduleDays?.length > 0 
+        ? `📅 ${scheduleDays.join(', ')}${scheduleTime ? ` la ${scheduleTime}` : ''}`
+        : 'Program nestabilit'
+      
+      const message = `🎉 <b>Grupă Nouă Atribuită!</b>
+
+📚 Grupă: <b>${group.name}</b>
+🎓 Curs: ${group.course?.title || 'Nespecificat'}
+${group.branch ? `🏢 Filială: ${group.branch.name}` : ''}
+${scheduleInfo}
+${locationDetails ? `📍 Locație: ${locationDetails}` : ''}
+${locationType === 'online' ? '💻 Online' : '🏫 Fizic'}
+
+✨ Mult succes cu noua grupă!`
+
+      await sendTeacherDirectMessage(group.teacher.telegramChatId, message)
+    }
 
     return NextResponse.json(group, { status: 201 })
   } catch (error) {
