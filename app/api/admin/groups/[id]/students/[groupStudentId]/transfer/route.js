@@ -25,7 +25,7 @@ export async function POST(request, { params }) {
     const sourceGroup = await prisma.group.findUnique({
       where: { id: groupId },
       include: {
-        teacher: { select: { telegramChatId: true } }
+        teacher: { select: { telegramChatId: true, name: true } }
       }
     })
 
@@ -36,7 +36,11 @@ export async function POST(request, { params }) {
     // Verifică că elevul este în grupa sursă
     const groupStudent = await prisma.groupStudent.findUnique({
       where: { id: groupStudentId },
-      include: { student: true }
+      include: { 
+        student: {
+          select: { fullName: true, parentPhone: true, parentEmail: true }
+        }
+      }
     })
 
     if (!groupStudent || groupStudent.groupId !== groupId) {
@@ -47,7 +51,7 @@ export async function POST(request, { params }) {
     const targetGroup = await prisma.group.findUnique({
       where: { id: targetGroupId },
       include: {
-        teacher: { select: { telegramChatId: true } },
+        teacher: { select: { telegramChatId: true, name: true } },
         course: { select: { title: true } }
       }
     })
@@ -116,22 +120,29 @@ export async function POST(request, { params }) {
 
     // Notify source group teacher that student left
     if (sourceGroup.teacher?.telegramChatId) {
-      await notifyTeacherStudentRemoved(
-        sourceGroup.teacher.telegramChatId,
-        groupStudent.student.fullName || groupStudent.student.name,
-        sourceGroup.name
-      )
+      await notifyTeacherStudentRemoved({
+        teacherChatId: sourceGroup.teacher.telegramChatId,
+        studentName: groupStudent.student.fullName,
+        groupName: sourceGroup.name,
+        targetGroup: targetGroup.name,
+        targetTeacher: targetGroup.teacher?.name,
+        isTransfer: true
+      })
     }
 
     // Notify target group teacher that student was added
     if (targetGroup.teacher?.telegramChatId) {
-      await notifyTeacherNewStudent(
-        targetGroup.teacher.telegramChatId,
-        groupStudent.student.fullName || groupStudent.student.name,
-        targetGroup.name,
-        targetGroup.course?.title || 'Curs',
-        'transferat'
-      )
+      await notifyTeacherNewStudent({
+        teacherChatId: targetGroup.teacher.telegramChatId,
+        studentName: groupStudent.student.fullName,
+        groupName: targetGroup.name,
+        courseName: targetGroup.course?.title || 'Curs',
+        parentPhone: groupStudent.student.parentPhone,
+        parentEmail: groupStudent.student.parentEmail,
+        action: 'transferat',
+        previousTeacher: sourceGroup.teacher?.name,
+        previousGroup: sourceGroup.name
+      })
     }
 
     return NextResponse.json({ 

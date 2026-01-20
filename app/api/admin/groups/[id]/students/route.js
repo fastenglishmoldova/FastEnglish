@@ -36,10 +36,10 @@ export async function POST(request, { params }) {
       }
     })
 
-    // Get student details
+    // Get student details with contact info
     const student = await prisma.student.findUnique({
       where: { id: studentId },
-      select: { fullName: true }
+      select: { fullName: true, parentPhone: true, parentEmail: true }
     })
 
     const groupStudent = await prisma.groupStudent.create({
@@ -52,12 +52,15 @@ export async function POST(request, { params }) {
 
     // Notify teacher via Telegram
     if (group?.teacher?.telegramChatId && student) {
-      await notifyTeacherNewStudent(
-        group.teacher.telegramChatId,
-        student.fullName,
-        group.name,
-        group.course?.title || 'Curs'
-      )
+      await notifyTeacherNewStudent({
+        teacherChatId: group.teacher.telegramChatId,
+        studentName: student.fullName,
+        groupName: group.name,
+        courseName: group.course?.title || 'Curs',
+        parentPhone: student.parentPhone,
+        parentEmail: student.parentEmail,
+        action: 'adăugat'
+      })
     }
 
     return NextResponse.json(groupStudent, { status: 201 })
