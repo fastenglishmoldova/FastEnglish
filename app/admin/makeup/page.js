@@ -45,7 +45,7 @@ export default function AdminMakeupPage() {
   const [selectedTime, setSelectedTime] = useState('10:00')
   
   // Schedule preview state
-  const [daySchedule, setDaySchedule] = useState([])
+  const [daySchedule, setDaySchedule] = useState(null)
   const [loadingSchedule, setLoadingSchedule] = useState(false)
   
   // Verifică permisiunea
@@ -102,7 +102,7 @@ export default function AdminMakeupPage() {
   // Fetch schedule for selected date and branch
   const fetchDaySchedule = (date, branchId) => {
     if (!date) {
-      setDaySchedule([])
+      setDaySchedule(null)
       return
     }
     
@@ -111,11 +111,15 @@ export default function AdminMakeupPage() {
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
     const dayOfWeek = dayNames[dateObj.getDay()]
     
+    console.log('fetchDaySchedule:', { date, branchId, dayOfWeek, groupsCount: groups.length })
+    
     // Filter groups that have lessons on this day
     let scheduleForDay = groups.filter(group => {
       if (!group.scheduleDays || !Array.isArray(group.scheduleDays)) return false
       return group.scheduleDays.includes(dayOfWeek)
     })
+    
+    console.log('Groups for day:', scheduleForDay.length)
     
     // If branch is selected, filter by branch
     if (branchId) {
@@ -188,7 +192,7 @@ export default function AdminMakeupPage() {
         setShowCreateModal(false)
         setFormData({ groupId: '', teacherId: '', branchId: '', locationDetails: '', scheduledAt: '', notes: '', studentIds: [] })
         setGroupStudents([])
-        setDaySchedule([])
+        setDaySchedule(null)
         setSelectedDate('')
         fetchData()
       } else {
@@ -255,7 +259,7 @@ export default function AdminMakeupPage() {
         setEditingLesson(null)
         setFormData({ groupId: '', teacherId: '', branchId: '', locationDetails: '', scheduledAt: '', notes: '', studentIds: [] })
         setGroupStudents([])
-        setDaySchedule([])
+        setDaySchedule(null)
         setSelectedDate('')
         fetchData()
       } else {
@@ -814,7 +818,7 @@ export default function AdminMakeupPage() {
                     setShowCreateModal(false)
                     setFormData({ groupId: '', teacherId: '', branchId: '', locationDetails: '', scheduledAt: '', notes: '', studentIds: [] })
                     setGroupStudents([])
-                    setDaySchedule([])
+                    setDaySchedule(null)
                     setSelectedDate('')
                   }}
                   className="p-1.5 xs:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
@@ -899,35 +903,39 @@ export default function AdminMakeupPage() {
               </div>
 
               {/* Schedule Preview for Selected Day */}
-              {selectedDate && daySchedule && (daySchedule.groups?.length > 0 || daySchedule.makeups?.length > 0) && (
+              {selectedDate && daySchedule && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <p className="text-xs font-semibold text-blue-800 mb-2 flex items-center gap-1.5">
                     <CalendarIcon className="w-4 h-4" />
                     Orar {daySchedule.dayOfWeek === 'Mon' ? 'Luni' : daySchedule.dayOfWeek === 'Tue' ? 'Marți' : daySchedule.dayOfWeek === 'Wed' ? 'Miercuri' : daySchedule.dayOfWeek === 'Thu' ? 'Joi' : daySchedule.dayOfWeek === 'Fri' ? 'Vineri' : daySchedule.dayOfWeek === 'Sat' ? 'Sâmbătă' : 'Duminică'}
                     {formData.branchId && branches.find(b => b.id === formData.branchId) && ` - ${branches.find(b => b.id === formData.branchId).name}`}
                   </p>
-                  <div className="space-y-1.5 max-h-32 overflow-y-auto">
-                    {daySchedule.groups?.map(group => (
-                      <div key={group.id} className="flex items-center justify-between text-xs bg-white rounded px-2 py-1.5 border border-blue-100">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-700">{group.scheduleTime || '—'}</span>
-                          <span className="text-gray-600">{group.name}</span>
+                  {(daySchedule.groups?.length > 0 || daySchedule.makeups?.length > 0) ? (
+                    <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                      {daySchedule.groups?.map(group => (
+                        <div key={group.id} className="flex items-center justify-between text-xs bg-white rounded px-2 py-1.5 border border-blue-100">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-gray-700">{group.scheduleTime || '—'}</span>
+                            <span className="text-gray-600">{group.name}</span>
+                          </div>
+                          <span className="text-gray-500">{group.locationDetails || ''}</span>
                         </div>
-                        <span className="text-gray-500">{group.locationDetails || ''}</span>
-                      </div>
-                    ))}
-                    {daySchedule.makeups?.map(makeup => (
-                      <div key={makeup.id} className="flex items-center justify-between text-xs bg-purple-50 rounded px-2 py-1.5 border border-purple-200">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-purple-700">
-                            {new Date(makeup.scheduledAt).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                          <span className="text-purple-600">Recuperare: {makeup.group?.name}</span>
+                      ))}
+                      {daySchedule.makeups?.map(makeup => (
+                        <div key={makeup.id} className="flex items-center justify-between text-xs bg-purple-50 rounded px-2 py-1.5 border border-purple-200">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-purple-700">
+                              {new Date(makeup.scheduledAt).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            <span className="text-purple-600">Recuperare: {makeup.group?.name}</span>
+                          </div>
+                          <span className="text-purple-500">{makeup.locationDetails || ''}</span>
                         </div>
-                        <span className="text-purple-500">{makeup.locationDetails || ''}</span>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-blue-600 italic">Nu există ore programate în această zi{formData.branchId ? ' la această filială' : ''}</p>
+                  )}
                 </div>
               )}
 
@@ -1127,7 +1135,7 @@ export default function AdminMakeupPage() {
                     setShowCreateModal(false)
                     setFormData({ groupId: '', teacherId: '', branchId: '', locationDetails: '', scheduledAt: '', notes: '', studentIds: [] })
                     setGroupStudents([])
-                    setDaySchedule([])
+                    setDaySchedule(null)
                     setSelectedDate('')
                   }}
                   className="px-3 xs:px-4 py-2 text-sm xs:text-base text-gray-700 hover:bg-gray-100 rounded-lg transition-colors order-2 xs:order-1"
@@ -1171,7 +1179,7 @@ export default function AdminMakeupPage() {
                     setEditingLesson(null)
                     setFormData({ groupId: '', teacherId: '', branchId: '', locationDetails: '', scheduledAt: '', notes: '', studentIds: [] })
                     setGroupStudents([])
-                    setDaySchedule([])
+                    setDaySchedule(null)
                     setSelectedDate('')
                   }}
                   className="p-1.5 xs:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
@@ -1256,35 +1264,39 @@ export default function AdminMakeupPage() {
               </div>
 
               {/* Schedule Preview for Selected Day */}
-              {selectedDate && daySchedule && (daySchedule.groups?.length > 0 || daySchedule.makeups?.length > 0) && (
+              {selectedDate && daySchedule && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <p className="text-xs font-semibold text-blue-800 mb-2 flex items-center gap-1.5">
                     <CalendarIcon className="w-4 h-4" />
                     Orar {daySchedule.dayOfWeek === 'Mon' ? 'Luni' : daySchedule.dayOfWeek === 'Tue' ? 'Marți' : daySchedule.dayOfWeek === 'Wed' ? 'Miercuri' : daySchedule.dayOfWeek === 'Thu' ? 'Joi' : daySchedule.dayOfWeek === 'Fri' ? 'Vineri' : daySchedule.dayOfWeek === 'Sat' ? 'Sâmbătă' : 'Duminică'}
                     {formData.branchId && branches.find(b => b.id === formData.branchId) && ` - ${branches.find(b => b.id === formData.branchId).name}`}
                   </p>
-                  <div className="space-y-1.5 max-h-32 overflow-y-auto">
-                    {daySchedule.groups?.map(group => (
-                      <div key={group.id} className="flex items-center justify-between text-xs bg-white rounded px-2 py-1.5 border border-blue-100">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-700">{group.scheduleTime || '—'}</span>
-                          <span className="text-gray-600">{group.name}</span>
+                  {(daySchedule.groups?.length > 0 || daySchedule.makeups?.filter(m => m.id !== editingLesson?.id).length > 0) ? (
+                    <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                      {daySchedule.groups?.map(group => (
+                        <div key={group.id} className="flex items-center justify-between text-xs bg-white rounded px-2 py-1.5 border border-blue-100">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-gray-700">{group.scheduleTime || '—'}</span>
+                            <span className="text-gray-600">{group.name}</span>
+                          </div>
+                          <span className="text-gray-500">{group.locationDetails || ''}</span>
                         </div>
-                        <span className="text-gray-500">{group.locationDetails || ''}</span>
-                      </div>
-                    ))}
-                    {daySchedule.makeups?.filter(m => m.id !== editingLesson?.id).map(makeup => (
-                      <div key={makeup.id} className="flex items-center justify-between text-xs bg-purple-50 rounded px-2 py-1.5 border border-purple-200">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-purple-700">
-                            {new Date(makeup.scheduledAt).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                          <span className="text-purple-600">Recuperare: {makeup.group?.name}</span>
+                      ))}
+                      {daySchedule.makeups?.filter(m => m.id !== editingLesson?.id).map(makeup => (
+                        <div key={makeup.id} className="flex items-center justify-between text-xs bg-purple-50 rounded px-2 py-1.5 border border-purple-200">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-purple-700">
+                              {new Date(makeup.scheduledAt).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            <span className="text-purple-600">Recuperare: {makeup.group?.name}</span>
+                          </div>
+                          <span className="text-purple-500">{makeup.locationDetails || ''}</span>
                         </div>
-                        <span className="text-purple-500">{makeup.locationDetails || ''}</span>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-blue-600 italic">Nu există ore programate în această zi{formData.branchId ? ' la această filială' : ''}</p>
+                  )}
                 </div>
               )}
 
@@ -1484,7 +1496,7 @@ export default function AdminMakeupPage() {
                     setEditingLesson(null)
                     setFormData({ groupId: '', teacherId: '', branchId: '', locationDetails: '', scheduledAt: '', notes: '', studentIds: [] })
                     setGroupStudents([])
-                    setDaySchedule([])
+                    setDaySchedule(null)
                     setSelectedDate('')
                   }}
                   className="px-3 xs:px-4 py-2 text-sm xs:text-base text-gray-700 hover:bg-gray-100 rounded-lg transition-colors order-2 xs:order-1"
