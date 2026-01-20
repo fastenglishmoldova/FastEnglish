@@ -56,20 +56,30 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'Grupa destinație nu există' }, { status: 404 })
     }
 
-    // Verifică dacă elevul este deja în grupa destinație
+    // Verifică dacă elevul este deja ACTIV în grupa destinație
     const existingEnrollment = await prisma.groupStudent.findFirst({
       where: {
         groupId: targetGroupId,
-        studentId: groupStudent.studentId
+        studentId: groupStudent.studentId,
+        status: 'ACTIVE'
       }
     })
 
     if (existingEnrollment) {
-      return NextResponse.json({ error: 'Elevul este deja în grupa destinație' }, { status: 400 })
+      return NextResponse.json({ error: 'Elevul este deja activ în grupa destinație' }, { status: 400 })
     }
 
+    // Verifică dacă există o înregistrare veche (LEFT/PAUSED) pe care o putem reactiva
+    const oldEnrollment = await prisma.groupStudent.findFirst({
+      where: {
+        groupId: targetGroupId,
+        studentId: groupStudent.studentId,
+        status: { in: ['LEFT', 'PAUSED', 'COMPLETED'] }
+      }
+    })
+
     // Efectuăm transferul
-    // 1. Marcăm elevul în grupa veche ca "TRANSFERRED" (sau îl păstrăm cu status LEFT)
+    // 1. Marcăm elevul în grupa veche ca "LEFT"
     await prisma.groupStudent.update({
       where: { id: groupStudentId },
       data: {
@@ -78,17 +88,31 @@ export async function POST(request, { params }) {
       }
     })
 
-    // 2. Creăm înregistrarea în grupa nouă
-    const newGroupStudent = await prisma.groupStudent.create({
-      data: {
-        groupId: targetGroupId,
-        studentId: groupStudent.studentId,
-        lessonsRemaining: transferLessons ? groupStudent.lessonsRemaining : 0,
-        absences: transferAbsences ? groupStudent.absences : 0,
-        status: 'ACTIVE',
-        statusNote: `Transferat din ${sourceGroup.name} la ${new Date().toLocaleDateString('ro-RO')}`
-      }
-    })
+    let newGroupStudent
+
+    // 2. Dacă există o înregistrare veche, o reactivăm; altfel creăm una nouă
+    if (oldEnrollment) {
+      newGroupStudent = await prisma.groupStudent.update({
+        where: { id: oldEnrollment.id },
+        data: {
+          lessonsRemaining: transferLessons ? groupStudent.lessonsRemaining : oldEnrollment.lessonsRemaining,
+          absences: transferAbsences ? groupStudent.absences : 0,
+          status: 'ACTIVE',
+          statusNote: `Reactivat/Transferat din ${sourceGroup.name} la ${new Date().toLocaleDateString('ro-RO')}`
+        }
+      })
+    } else {
+      newGroupStudent = await prisma.groupStudent.create({
+        data: {
+          groupId: targetGroupId,
+          studentId: groupStudent.studentId,
+          lessonsRemaining: transferLessons ? groupStudent.lessonsRemaining : 0,
+          absences: transferAbsences ? groupStudent.absences : 0,
+          status: 'ACTIVE',
+          statusNote: `Transferat din ${sourceGroup.name} la ${new Date().toLocaleDateString('ro-RO')}`
+        }
+      })
+    }
 
     // Notify source group teacher that student left
     if (sourceGroup.teacher?.telegramChatId) {
