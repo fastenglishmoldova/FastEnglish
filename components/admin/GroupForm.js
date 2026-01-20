@@ -275,45 +275,9 @@ export default function GroupForm({ group, courses, teachers, branches = [] }) {
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600 mx-auto"></div>
                     <p className="text-xs text-gray-500 mt-2">Se încarcă orarul...</p>
                   </div>
-                ) : branchSchedule.length > 0 ? (
-                  <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span className="text-xs font-semibold text-amber-800">Orar existent la această filială:</span>
-                    </div>
-                    <div className="space-y-1.5 max-h-40 overflow-y-auto">
-                      {days.map(day => {
-                        const dayGroups = branchSchedule.filter(g => g.scheduleDays?.includes(day))
-                        if (dayGroups.length === 0) return null
-                        return (
-                          <div key={day} className="text-xs">
-                            <span className="font-medium text-gray-700">{day}:</span>
-                            <div className="ml-2 space-y-0.5">
-                              {dayGroups
-                                .sort((a, b) => {
-                                  const timeA = getTimeForDay(a.scheduleTime, day) || ''
-                                  const timeB = getTimeForDay(b.scheduleTime, day) || ''
-                                  return timeA.localeCompare(timeB)
-                                })
-                                .map(g => (
-                                  <div key={g.id} className="flex items-center gap-2 text-gray-600">
-                                    <span className="font-mono text-amber-700">{getTimeForDay(g.scheduleTime, day) || '-'}</span>
-                                    <span>-</span>
-                                    <span className="truncate">{g.name}</span>
-                                    {g.locationDetails && (
-                                      <span className="px-1.5 py-0.5 bg-amber-200 text-amber-800 rounded text-[10px] font-medium">
-                                        {g.locationDetails}
-                                      </span>
-                                    )}
-                                  </div>
-                                ))}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
+                ) : branchSchedule.length > 0 && formData.scheduleDays.length === 0 ? (
+                  <div className="p-2 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-xs text-blue-700">💡 Selectează zilele pentru a vedea orarul existent.</p>
                   </div>
                 ) : (
                   <div className="p-3 bg-green-50 rounded-lg border border-green-200">
@@ -370,6 +334,67 @@ export default function GroupForm({ group, courses, teachers, branches = [] }) {
                   ))}
                 </div>
               </div>
+            )}
+            
+            {/* Orarul filialei pentru zilele selectate */}
+            {formData.branchId && formData.scheduleDays.length > 0 && branchSchedule.length > 0 && (
+              (() => {
+                // Filtrează grupele care au cel puțin o zi comună cu zilele selectate
+                const relevantGroups = branchSchedule.filter(g => 
+                  g.scheduleDays?.some(d => formData.scheduleDays.includes(d))
+                )
+                if (relevantGroups.length === 0) return (
+                  <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-xs text-green-700">Nu există alte grupe în {formData.scheduleDays.join(', ')} la această filială.</span>
+                    </div>
+                  </div>
+                )
+                return (
+                  <div className="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      <span className="text-xs font-semibold text-amber-800">Atenție! Orar existent în zilele selectate:</span>
+                    </div>
+                    <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                      {formData.scheduleDays.map(day => {
+                        const dayGroups = relevantGroups.filter(g => g.scheduleDays?.includes(day))
+                        if (dayGroups.length === 0) return null
+                        return (
+                          <div key={day} className="text-xs">
+                            <span className="font-semibold text-amber-800">{day}:</span>
+                            <div className="ml-2 space-y-0.5">
+                              {dayGroups
+                                .sort((a, b) => {
+                                  const timeA = getTimeForDay(a.scheduleTime, day) || ''
+                                  const timeB = getTimeForDay(b.scheduleTime, day) || ''
+                                  return timeA.localeCompare(timeB)
+                                })
+                                .map(g => (
+                                  <div key={g.id} className="flex items-center gap-2 text-gray-700">
+                                    <span className="font-mono font-bold text-amber-700">{getTimeForDay(g.scheduleTime, day) || '-'}</span>
+                                    <span>-</span>
+                                    <span className="truncate">{g.name}</span>
+                                    {g.locationDetails && (
+                                      <span className="px-1.5 py-0.5 bg-amber-200 text-amber-800 rounded text-[10px] font-medium">
+                                        {g.locationDetails}
+                                      </span>
+                                    )}
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })()
             )}
           </div>
         </div>
