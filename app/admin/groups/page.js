@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import DeleteGroupButton from '@/components/admin/DeleteGroupButton'
+import { usePermissions } from '@/hooks/usePermissions'
 
 // Helper pentru a formata orarul
 const formatSchedule = (scheduleDays, scheduleTime) => {
@@ -46,6 +47,14 @@ const dayMapping = {
 const allDays = ['Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă', 'Duminică']
 
 export default function GroupsPage() {
+  const { hasPermission } = usePermissions()
+  
+  // Permisiuni
+  const canCreateGroups = hasPermission('groups.create')
+  const canEditGroups = hasPermission('groups.edit')
+  const canDeleteGroups = hasPermission('groups.delete')
+  const canViewStudents = hasPermission('groups.students.view')
+
   const [groups, setGroups] = useState([])
   const [teachers, setTeachers] = useState([])
   const [branches, setBranches] = useState([])
@@ -167,12 +176,14 @@ export default function GroupsPage() {
           <h1 className="text-xl xs:text-2xl font-bold text-gray-900">Grupe</h1>
           <p className="text-sm xs:text-base text-gray-600">Gestionează grupele de cursuri</p>
         </div>
+        {canCreateGroups && (
         <Link
           href="/admin/groups/new"
           className="px-3 xs:px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm xs:text-base font-medium hover:bg-indigo-700 transition-colors text-center"
         >
           + Adaugă grupă
         </Link>
+        )}
       </div>
 
       {/* Filtre */}
@@ -363,19 +374,25 @@ export default function GroupsPage() {
               </div>
 
               <div className="px-3 xs:px-4 md:px-6 py-2.5 xs:py-3 bg-gray-50 border-t flex gap-2 xs:gap-3">
+                {canEditGroups && (
                 <Link
                   href={`/admin/groups/${group.id}`}
                   className="text-indigo-600 hover:text-indigo-900 text-xs xs:text-sm font-medium"
                 >
                   Editează
                 </Link>
+                )}
+                {canViewStudents && (
                 <Link
                   href={`/admin/groups/${group.id}/students`}
                   className="text-indigo-600 hover:text-indigo-900 text-xs xs:text-sm font-medium"
                 >
                   Elevi
                 </Link>
+                )}
+                {canDeleteGroups && (
                 <DeleteGroupButton id={group.id} name={group.name} />
+                )}
               </div>
             </div>
           ))
