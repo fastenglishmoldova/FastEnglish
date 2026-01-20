@@ -5,11 +5,13 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Image from 'next/image'
+import { usePermissions } from '@/hooks/usePermissions'
 import TwoFactorModal from '@/components/admin/TwoFactorModal'
 
 export default function SecurityPage() {
   const { data: session } = useSession()
   const router = useRouter()
+  const { hasPermission, isSuperAdmin } = usePermissions()
   
   const [loading, setLoading] = useState(true)
   const [user2FAStatus, setUser2FAStatus] = useState(null)
@@ -22,6 +24,13 @@ export default function SecurityPage() {
   const [verifyCode, setVerifyCode] = useState('')
   const [verifying, setVerifying] = useState(false)
   const [backupCodes, setBackupCodes] = useState([])
+  
+  // Verifică permisiunea
+  useEffect(() => {
+    if (!hasPermission('security.manage') && !isSuperAdmin) {
+      router.push('/admin')
+    }
+  }, [hasPermission, isSuperAdmin, router])
 
   // Fetch 2FA status and check if verification is needed
   useEffect(() => {
