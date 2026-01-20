@@ -20,10 +20,13 @@ export async function GET() {
       include: {
         course: { select: { id: true, title: true } },
         branch: { select: { id: true, name: true } },
-        teacher: { select: { id: true, name: true, email: true } },
-        groupStudents: {
-          where: { status: { not: 'LEFT' } },
-          select: { id: true, status: true }
+        teacher: { select: { id: true, fullName: true, email: true } },
+        _count: {
+          select: {
+            groupStudents: {
+              where: { status: { not: 'LEFT' } }
+            }
+          }
         }
       },
       orderBy: { name: 'asc' }
@@ -35,8 +38,8 @@ export async function GET() {
         role: { in: ['TEACHER', 'ADMIN', 'MANAGER', 'SUPERADMIN'] },
         active: true
       },
-      select: { id: true, name: true, email: true },
-      orderBy: { name: 'asc' }
+      select: { id: true, fullName: true, email: true },
+      orderBy: { fullName: 'asc' }
     })
 
     // Fetch all branches for filter

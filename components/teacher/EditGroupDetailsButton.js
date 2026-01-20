@@ -3,9 +3,44 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
-import { PencilIcon, XMarkIcon, ClockIcon } from '@heroicons/react/24/outline'
+import { 
+  PencilIcon, 
+  XMarkIcon, 
+  ClockIcon, 
+  UserIcon,
+  UserGroupIcon,
+  CalendarDaysIcon 
+} from '@heroicons/react/24/outline'
 
 const allDays = ['Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă', 'Duminică']
+
+// Helper pentru a parsa ora din JSON sau string simplu
+function parseScheduleTime(scheduleTime, scheduleDays = []) {
+  if (!scheduleTime) return null
+  
+  // Daca e JSON
+  if (scheduleTime.startsWith('{')) {
+    try {
+      const times = JSON.parse(scheduleTime)
+      // Returneaza ore per zi
+      const entries = Object.entries(times)
+      if (entries.length === 0) return null
+      
+      // Daca toate orele sunt identice, returneaza una singura
+      const uniqueTimes = [...new Set(entries.map(([, t]) => t))]
+      if (uniqueTimes.length === 1) {
+        return uniqueTimes[0]
+      }
+      
+      // Altfel returneaza formatat
+      return entries.map(([day, time]) => `${day}: ${time}`).join(', ')
+    } catch {
+      return scheduleTime
+    }
+  }
+  
+  return scheduleTime
+}
 
 export default function EditGroupDetailsButton({ group, branches }) {
   const router = useRouter()
@@ -47,9 +82,9 @@ export default function EditGroupDetailsButton({ group, branches }) {
             return hasOverlap
           }).map(g => ({
             name: g.name,
-            teacher: data.teachers.find(t => t.id === g.teacherId)?.fullName || 'Necunoscut',
-            days: g.scheduleDays,
-            time: g.scheduleTime,
+            teacher: g.teacher?.fullName || 'Nealocat',
+            days: g.scheduleDays || [],
+            time: parseScheduleTime(g.scheduleTime, g.scheduleDays),
             studentCount: g._count?.groupStudents || 0
           }))
 
@@ -156,7 +191,7 @@ export default function EditGroupDetailsButton({ group, branches }) {
                   type="time"
                   value={formData.scheduleTime}
                   onChange={(e) => setFormData({ ...formData, scheduleTime: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
                   required
                 />
                 <p className="mt-1 text-xs text-gray-500">
@@ -201,7 +236,7 @@ export default function EditGroupDetailsButton({ group, branches }) {
                 <select
                   value={formData.branchId}
                   onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
                 >
                   <option value="">Fără filială</option>
                   {branches.map(branch => (
@@ -220,7 +255,7 @@ export default function EditGroupDetailsButton({ group, branches }) {
                   onChange={(e) => setFormData({ ...formData, locationDetails: e.target.value })}
                   rows={3}
                   placeholder="ex: Sala 12, https://zoom.us/j/..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
                 />
               </div>
 
@@ -245,11 +280,20 @@ export default function EditGroupDetailsButton({ group, branches }) {
                           <div className="flex items-start justify-between gap-2">
                             <div>
                               <p className="font-semibold text-gray-900">{item.name}</p>
-                              <p className="text-gray-600 text-xs">👨‍🏫 {item.teacher} • {item.studentCount} elevi</p>
+                              <div className="flex items-center gap-1 text-gray-600 text-xs mt-1">
+                                <UserIcon className="w-3 h-3" />
+                                <span>{item.teacher}</span>
+                              </div>
                             </div>
                             <div className="text-right">
-                              <p className="font-medium text-blue-600">{item.time}</p>
-                              <p className="text-xs text-gray-500">{item.days.join(', ')}</p>
+                              <p className="font-medium text-blue-600 flex items-center gap-1 justify-end">
+                                <ClockIcon className="w-4 h-4" />
+                                {item.time || 'Nesetată'}
+                              </p>
+                              <p className="text-xs text-gray-500 flex items-center gap-1 justify-end mt-1">
+                                <CalendarDaysIcon className="w-3 h-3" />
+                                {item.days.join(', ') || 'Nestabilit'}
+                              </p>
                             </div>
                           </div>
                         </div>
