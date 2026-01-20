@@ -114,7 +114,7 @@ export default function TwoFactorModal({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-full items-center justify-center p-4">
+      <div className="flex min-h-full items-center justify-center p-2 sm:p-4">
         {/* Backdrop */}
         <div 
           className="fixed inset-0 bg-black/50 transition-opacity"
@@ -122,32 +122,32 @@ export default function TwoFactorModal({
         />
 
         {/* Modal */}
-        <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 transform transition-all">
+        <div className="relative bg-white rounded-xl sm:rounded-2xl shadow-xl w-full max-w-md p-4 sm:p-6 transform transition-all">
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 text-gray-400 hover:text-gray-600"
           >
-            <XMarkIcon className="w-6 h-6" />
+            <XMarkIcon className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
 
           {/* Icon */}
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center">
-              <ShieldCheckIcon className="w-8 h-8 text-indigo-600" />
+          <div className="flex justify-center mb-3 sm:mb-4">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-indigo-100 rounded-full flex items-center justify-center">
+              <ShieldCheckIcon className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-600" />
             </div>
           </div>
 
           {/* Title */}
-          <h3 className="text-xl font-bold text-center text-gray-900 mb-2">
+          <h3 className="text-base sm:text-lg lg:text-xl font-bold text-center text-gray-900 mb-1 sm:mb-2">
             {title}
           </h3>
-          <p className="text-sm text-center text-gray-600 mb-6">
+          <p className="text-xs sm:text-sm text-center text-gray-600 mb-4 sm:mb-6 px-2">
             {description}
           </p>
 
           {/* Code inputs */}
-          <div className="flex justify-center gap-2 mb-4">
+          <div className="flex justify-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
             {code.map((digit, index) => (
               <input
                 key={index}
@@ -160,7 +160,7 @@ export default function TwoFactorModal({
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 onPaste={handlePaste}
                 disabled={loading}
-                className={`w-12 h-14 text-center text-2xl font-bold border-2 rounded-lg transition-colors
+                className={`w-9 h-11 sm:w-11 sm:h-13 lg:w-12 lg:h-14 text-center text-lg sm:text-xl lg:text-2xl font-bold border-2 rounded-md sm:rounded-lg transition-colors
                   ${error ? 'border-red-300 bg-red-50' : 'border-gray-300 focus:border-indigo-500'}
                   ${loading ? 'bg-gray-100' : 'bg-white'}
                   text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20`}
@@ -170,15 +170,15 @@ export default function TwoFactorModal({
 
           {/* Error */}
           {error && (
-            <div className={`mb-4 p-3 rounded-lg ${attemptsLeft !== null && attemptsLeft <= 2 ? 'bg-red-50 border border-red-200' : 'bg-gray-50'}`}>
-              <p className="text-sm text-center text-red-600">
+            <div className={`mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg ${attemptsLeft !== null && attemptsLeft <= 2 ? 'bg-red-50 border border-red-200' : 'bg-gray-50'}`}>
+              <p className="text-xs sm:text-sm text-center text-red-600">
                 {error}
               </p>
               {attemptsLeft !== null && attemptsLeft <= 2 && attemptsLeft > 0 && (
-                <div className="flex items-center justify-center gap-2 mt-2 text-red-700">
-                  <ExclamationTriangleIcon className="w-4 h-4" />
-                  <span className="text-xs font-medium">
-                    Atenție: Sesiunea va fi închisă după {attemptsLeft} {attemptsLeft === 1 ? 'încercare' : 'încercări'} eșuate!
+                <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2 text-red-700">
+                  <ExclamationTriangleIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                  <span className="text-[10px] sm:text-xs font-medium">
+                    Sesiunea va fi închisă după {attemptsLeft} {attemptsLeft === 1 ? 'încercare' : 'încercări'}!
                   </span>
                 </div>
               )}
@@ -187,13 +187,13 @@ export default function TwoFactorModal({
 
           {/* Loading indicator */}
           {loading && (
-            <div className="flex justify-center mb-4">
-              <div className="flex items-center gap-2 text-indigo-600">
-                <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+            <div className="flex justify-center mb-3 sm:mb-4">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-indigo-600">
+                <svg className="animate-spin w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                <span className="text-sm">Se verifică...</span>
+                <span className="text-xs sm:text-sm">Se verifică...</span>
               </div>
             </div>
           )}
@@ -202,7 +202,7 @@ export default function TwoFactorModal({
           <button
             onClick={onClose}
             disabled={loading}
-            className="w-full py-2.5 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 disabled:opacity-50"
+            className="w-full py-2 sm:py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm sm:text-base font-medium hover:bg-gray-50 disabled:opacity-50"
           >
             Anulează
           </button>

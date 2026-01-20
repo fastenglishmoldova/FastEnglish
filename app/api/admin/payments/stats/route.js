@@ -31,13 +31,19 @@ export async function GET(request) {
             student: true,
             group: {
               include: {
-                course: true
+                course: true,
+                branch: true
               }
             }
           }
         }
       },
       orderBy: { paymentDate: 'desc' }
+    })
+
+    // Get all branches for filter
+    const branches = await prisma.branch.findMany({
+      orderBy: { name: 'asc' }
     })
 
     // Group by month
@@ -75,7 +81,9 @@ export async function GET(request) {
         studentId: payment.groupStudent.studentId,
         studentName: payment.groupStudent.student.fullName,
         groupName: payment.groupStudent.group.name,
-        courseName: payment.groupStudent.group.course?.title
+        courseName: payment.groupStudent.group.course?.title,
+        branchId: payment.groupStudent.group.branchId,
+        branchName: payment.groupStudent.group.branch?.name || 'Fără filială'
       })
     })
 
@@ -95,7 +103,8 @@ export async function GET(request) {
     return NextResponse.json({
       year,
       months: result,
-      yearTotal
+      yearTotal,
+      branches
     })
   } catch (error) {
     console.error('GET payment stats error:', error)

@@ -149,47 +149,47 @@ export default function SecurityAlertsPage() {
   const currentPage = Math.floor(pagination.skip / pagination.limit) + 1
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Alerte de Securitate</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Monitorizare și gestionare alerte de securitate
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+      <div className="mb-4 sm:mb-6 lg:mb-8">
+        <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Alerte de Securitate</h1>
+        <p className="mt-1 text-xs sm:text-sm text-gray-500">
+          Monitorizare și gestionare alerte
         </p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-500">Total alerte</div>
-          <div className="text-2xl font-bold text-gray-900">{pagination.total}</div>
+      {/* Stats Cards - 2 cols on mobile, 4 on desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
+        <div className="bg-white rounded-lg shadow p-2 sm:p-3 lg:p-4">
+          <div className="text-[10px] sm:text-xs lg:text-sm text-gray-500">Total</div>
+          <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">{pagination.total}</div>
         </div>
-        <div className="bg-red-50 rounded-lg shadow p-4 border border-red-200">
-          <div className="text-sm text-red-600">Neconfirmate</div>
-          <div className="text-2xl font-bold text-red-700">{stats.unacknowledged}</div>
+        <div className="bg-red-50 rounded-lg shadow p-2 sm:p-3 lg:p-4 border border-red-200">
+          <div className="text-[10px] sm:text-xs lg:text-sm text-red-600">Neconfirmate</div>
+          <div className="text-lg sm:text-xl lg:text-2xl font-bold text-red-700">{stats.unacknowledged}</div>
         </div>
-        <div className="bg-orange-50 rounded-lg shadow p-4 border border-orange-200">
-          <div className="text-sm text-orange-600">Critical</div>
-          <div className="text-2xl font-bold text-orange-700">{stats.critical}</div>
+        <div className="bg-orange-50 rounded-lg shadow p-2 sm:p-3 lg:p-4 border border-orange-200">
+          <div className="text-[10px] sm:text-xs lg:text-sm text-orange-600">Critical</div>
+          <div className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-700">{stats.critical}</div>
         </div>
-        <div className="bg-green-50 rounded-lg shadow p-4 border border-green-200">
-          <div className="text-sm text-green-600">Confirmate</div>
-          <div className="text-2xl font-bold text-green-700">
+        <div className="bg-green-50 rounded-lg shadow p-2 sm:p-3 lg:p-4 border border-green-200">
+          <div className="text-[10px] sm:text-xs lg:text-sm text-green-600">Confirmate</div>
+          <div className="text-lg sm:text-xl lg:text-2xl font-bold text-green-700">
             {alerts.filter(a => a.acknowledged).length}
           </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Filters - stacked on mobile, grid on desktop */}
+      <div className="bg-white rounded-lg shadow p-2 sm:p-3 lg:p-4 mb-4 sm:mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Tip alertă
+            <label className="block text-[10px] sm:text-xs lg:text-sm font-medium text-gray-700 mb-1">
+              Tip
             </label>
             <select
               value={filters.type}
               onChange={(e) => handleFilterChange('type', e.target.value)}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-gray-700"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm text-gray-700 py-1.5 sm:py-2"
             >
               <option value="">Toate</option>
               {availableTypes.map(type => (
@@ -201,13 +201,13 @@ export default function SecurityAlertsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-[10px] sm:text-xs lg:text-sm font-medium text-gray-700 mb-1">
               Severitate
             </label>
             <select
               value={filters.severity}
               onChange={(e) => handleFilterChange('severity', e.target.value)}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-gray-700"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm text-gray-700 py-1.5 sm:py-2"
             >
               <option value="">Toate</option>
               <option value="warning">Warning</option>
@@ -216,13 +216,13 @@ export default function SecurityAlertsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-[10px] sm:text-xs lg:text-sm font-medium text-gray-700 mb-1">
               Status
             </label>
             <select
               value={filters.acknowledged}
               onChange={(e) => handleFilterChange('acknowledged', e.target.value)}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-gray-700"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm text-gray-700 py-1.5 sm:py-2"
             >
               <option value="">Toate</option>
               <option value="false">Neconfirmate</option>
@@ -236,22 +236,22 @@ export default function SecurityAlertsPage() {
                 setFilters({ type: '', severity: '', acknowledged: '' })
                 setPagination(prev => ({ ...prev, skip: 0 }))
               }}
-              className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+              className="w-full px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs lg:text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
             >
-              Resetează filtre
+              Resetează
             </button>
           </div>
         </div>
       </div>
 
       {/* Alerts List */}
-      <div className="space-y-4">
+      <div className="space-y-2 sm:space-y-3 lg:space-y-4">
         {loading ? (
-          <div className="bg-white rounded-lg shadow flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+          <div className="bg-white rounded-lg shadow flex justify-center items-center h-40 sm:h-52 lg:h-64">
+            <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-indigo-600"></div>
           </div>
         ) : alerts.length === 0 ? (
-          <div className="bg-white rounded-lg shadow text-center py-12 text-gray-500">
+          <div className="bg-white rounded-lg shadow text-center py-8 sm:py-10 lg:py-12 text-gray-500 text-sm">
             Nu există alerte pentru filtrele selectate
           </div>
         ) : (
@@ -266,38 +266,39 @@ export default function SecurityAlertsPage() {
                     : 'border-yellow-500'
               }`}
             >
-              <div className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3">
-                    <span className="text-2xl">
+              <div className="p-2 sm:p-3 lg:p-4">
+                {/* Mobile layout - stacked */}
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0">
+                  <div className="flex items-start space-x-2 sm:space-x-3 min-w-0 flex-1">
+                    <span className="text-lg sm:text-xl lg:text-2xl flex-shrink-0">
                       {TYPE_ICONS[alert.type] || '⚠️'}
                     </span>
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <h3 className="font-semibold text-gray-900">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+                        <h3 className="font-semibold text-gray-900 text-xs sm:text-sm lg:text-base truncate max-w-[150px] sm:max-w-none">
                           {alert.title}
                         </h3>
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                        <span className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium flex-shrink-0 ${
                           SEVERITY_STYLES[alert.severity] || 'bg-gray-100 text-gray-800'
                         }`}>
                           {alert.severity}
                         </span>
                         {alert.acknowledged && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                            ✓ Confirmat
+                          <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-green-100 text-green-800 flex-shrink-0">
+                            ✓
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-[10px] sm:text-xs lg:text-sm text-gray-600 mt-1 line-clamp-2 sm:line-clamp-none">
                         {alert.message}
                       </p>
-                      <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                      <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-4 gap-y-0.5 mt-1 sm:mt-2 text-[9px] sm:text-xs text-gray-500">
                         <span>{formatDate(alert.createdAt)}</span>
                         {alert.ipAddress && (
-                          <span className="font-mono">IP: {alert.ipAddress}</span>
+                          <span className="font-mono hidden sm:inline">IP: {alert.ipAddress}</span>
                         )}
                         {alert.sentVia?.length > 0 && (
-                          <span>
+                          <span className="hidden lg:inline">
                             Trimis via: {alert.sentVia.join(', ')}
                           </span>
                         )}
@@ -305,11 +306,12 @@ export default function SecurityAlertsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2">
+                  {/* Buttons - inline on mobile */}
+                  <div className="flex items-center justify-end space-x-1 sm:space-x-2 flex-shrink-0 ml-auto sm:ml-0">
                     {alert.details && (
                       <button
                         onClick={() => setSelectedAlert(alert)}
-                        className="px-3 py-1.5 text-sm text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded"
+                        className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs lg:text-sm text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded"
                       >
                         Detalii
                       </button>
@@ -318,9 +320,9 @@ export default function SecurityAlertsPage() {
                       <button
                         onClick={() => handleAcknowledge(alert.id)}
                         disabled={acknowledging === alert.id}
-                        className="px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded disabled:opacity-50"
+                        className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs lg:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded disabled:opacity-50 whitespace-nowrap"
                       >
-                        {acknowledging === alert.id ? 'Se confirmă...' : 'Confirmă'}
+                        {acknowledging === alert.id ? '...' : 'OK'}
                       </button>
                     )}
                   </div>
@@ -331,100 +333,100 @@ export default function SecurityAlertsPage() {
         )}
       </div>
 
-      {/* Pagination */}
+      {/* Pagination - compact on mobile */}
       {!loading && alerts.length > 0 && (
-        <div className="mt-6 flex items-center justify-between">
-          <p className="text-sm text-gray-700">
-            Afișare <span className="font-medium">{pagination.skip + 1}</span> -{' '}
+        <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0">
+          <p className="text-[10px] sm:text-xs lg:text-sm text-gray-700 order-2 sm:order-1">
+            <span className="font-medium">{pagination.skip + 1}</span>-
             <span className="font-medium">
               {Math.min(pagination.skip + pagination.limit, pagination.total)}
             </span>{' '}
-            din <span className="font-medium">{pagination.total}</span> alerte
+            / <span className="font-medium">{pagination.total}</span>
           </p>
-          <div className="flex space-x-2">
+          <div className="flex items-center space-x-1 sm:space-x-2 order-1 sm:order-2">
             <button
               onClick={() => handlePageChange(Math.max(0, pagination.skip - pagination.limit))}
               disabled={pagination.skip === 0}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+              className="px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs lg:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
             >
-              ← Anterior
+              ←
             </button>
-            <span className="px-4 py-2 text-sm text-gray-700">
-              {currentPage} / {totalPages}
+            <span className="px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs lg:text-sm text-gray-700">
+              {currentPage}/{totalPages}
             </span>
             <button
               onClick={() => handlePageChange(pagination.skip + pagination.limit)}
               disabled={currentPage >= totalPages}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+              className="px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs lg:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
             >
-              Următor →
+              →
             </button>
           </div>
         </div>
       )}
 
-      {/* Details Modal */}
+      {/* Details Modal - optimized for mobile */}
       {selectedAlert && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center space-x-2">
-                  <span className="text-2xl">{TYPE_ICONS[selectedAlert.type] || '⚠️'}</span>
-                  <h3 className="text-lg font-bold text-gray-900">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] sm:max-h-[80vh] overflow-auto">
+            <div className="p-3 sm:p-4 lg:p-6">
+              <div className="flex justify-between items-start mb-3 sm:mb-4">
+                <div className="flex items-center space-x-2 min-w-0 flex-1">
+                  <span className="text-lg sm:text-xl lg:text-2xl flex-shrink-0">{TYPE_ICONS[selectedAlert.type] || '⚠️'}</span>
+                  <h3 className="text-sm sm:text-base lg:text-lg font-bold text-gray-900 truncate">
                     {selectedAlert.title}
                   </h3>
                 </div>
                 <button
                   onClick={() => setSelectedAlert(null)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 flex-shrink-0 ml-2"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
 
-              <div className="space-y-4">
-                <div className="bg-gray-50 rounded p-4">
-                  <p className="text-gray-700">{selectedAlert.message}</p>
+              <div className="space-y-3 sm:space-y-4">
+                <div className="bg-gray-50 rounded p-2 sm:p-3 lg:p-4">
+                  <p className="text-gray-700 text-xs sm:text-sm lg:text-base">{selectedAlert.message}</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4 text-xs sm:text-sm">
                   <div>
-                    <div className="text-gray-500">Tip</div>
-                    <div className="font-medium text-gray-900">{TYPE_LABELS[selectedAlert.type] || selectedAlert.type}</div>
+                    <div className="text-gray-500 text-[10px] sm:text-xs">Tip</div>
+                    <div className="font-medium text-gray-900 text-xs sm:text-sm truncate">{TYPE_LABELS[selectedAlert.type] || selectedAlert.type}</div>
                   </div>
                   <div>
-                    <div className="text-gray-500">Severitate</div>
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                    <div className="text-gray-500 text-[10px] sm:text-xs">Severitate</div>
+                    <span className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium ${
                       SEVERITY_STYLES[selectedAlert.severity] || 'bg-gray-100 text-gray-800'
                     }`}>
                       {selectedAlert.severity}
                     </span>
                   </div>
                   <div>
-                    <div className="text-gray-500">Data/Ora</div>
-                    <div className="font-medium text-gray-900">{formatDate(selectedAlert.createdAt)}</div>
+                    <div className="text-gray-500 text-[10px] sm:text-xs">Data/Ora</div>
+                    <div className="font-medium text-gray-900 text-xs sm:text-sm">{formatDate(selectedAlert.createdAt)}</div>
                   </div>
                   <div>
-                    <div className="text-gray-500">IP Address</div>
-                    <div className="font-mono text-gray-700">{selectedAlert.ipAddress || '-'}</div>
+                    <div className="text-gray-500 text-[10px] sm:text-xs">IP</div>
+                    <div className="font-mono text-gray-700 text-xs sm:text-sm truncate">{selectedAlert.ipAddress || '-'}</div>
                   </div>
                   <div>
-                    <div className="text-gray-500">Trimis via</div>
-                    <div className="text-gray-700">{selectedAlert.sentVia?.join(', ') || 'Niciun canal'}</div>
+                    <div className="text-gray-500 text-[10px] sm:text-xs">Trimis via</div>
+                    <div className="text-gray-700 text-xs sm:text-sm">{selectedAlert.sentVia?.join(', ') || '-'}</div>
                   </div>
                   <div>
-                    <div className="text-gray-500">Status</div>
-                    <div className="text-gray-700">{selectedAlert.acknowledged ? '✓ Confirmat' : '○ Neconfirmat'}</div>
+                    <div className="text-gray-500 text-[10px] sm:text-xs">Status</div>
+                    <div className="text-gray-700 text-xs sm:text-sm">{selectedAlert.acknowledged ? '✓ OK' : '○ Nou'}</div>
                   </div>
                 </div>
 
                 {selectedAlert.details && (
                   <div>
-                    <div className="text-sm font-medium text-gray-700 mb-1">Detalii suplimentare</div>
-                    <pre className="bg-gray-900 text-green-400 rounded p-4 overflow-auto text-sm">
+                    <div className="text-[10px] sm:text-xs lg:text-sm font-medium text-gray-700 mb-1">Detalii</div>
+                    <pre className="bg-gray-900 text-green-400 rounded p-2 sm:p-3 lg:p-4 overflow-auto text-[9px] sm:text-xs lg:text-sm max-h-40 sm:max-h-60">
                       {JSON.stringify(selectedAlert.details, null, 2)}
                     </pre>
                   </div>

@@ -85,6 +85,7 @@ export default function PaymentsPage() {
   const [expandedMonth, setExpandedMonth] = useState(null)
   const [paymentMethodFilter, setPaymentMethodFilter] = useState('all') // 'all', 'cash', 'card', 'transfer'
   const [selectedMonths, setSelectedMonths] = useState([]) // empty = all months, otherwise array of month indices 0-11
+  const [branchFilter, setBranchFilter] = useState('all') // 'all' or branch id
 
   const MONTHS = [
     'Ianuarie', 'Februarie', 'Martie', 'Aprilie', 'Mai', 'Iunie',
@@ -148,6 +149,9 @@ export default function PaymentsPage() {
       paymentMethodFilter === 'cash' ? 'Numerar' :
       paymentMethodFilter === 'card' ? 'Card' :
       paymentMethodFilter === 'card-transfer' ? 'Card/Transfer' : 'Transfer'
+    const branchFilterText = branchFilter === 'all' ? 'Toate filialele' :
+      branchFilter === 'none' ? 'Fără filială' :
+      data?.branches?.find(b => b.id === branchFilter)?.name || branchFilter
     
     // Only include months that have payments (not filtered out)
     const visibleMonths = filteredData.months.filter(m => !m.filtered && m.totalPayments > 0)
@@ -395,6 +399,9 @@ export default function PaymentsPage() {
       paymentMethodFilter === 'cash' ? 'Numerar' :
       paymentMethodFilter === 'card' ? 'Card' :
       paymentMethodFilter === 'card-transfer' ? 'Card/Transfer' : 'Transfer'
+    const branchFilterTextHTML = branchFilter === 'all' ? 'Toate filialele' :
+      branchFilter === 'none' ? 'Fără filială' :
+      data?.branches?.find(b => b.id === branchFilter)?.name || branchFilter
     
     // Only include months that have payments (not filtered out)
     const visibleMonths = filteredData.months.filter(m => !m.filtered)
@@ -638,11 +645,25 @@ export default function PaymentsPage() {
 
   const currentMonth = new Date().getMonth()
   
-  // Filter data based on payment method and selected months
+  // Filter data based on payment method, branch, and selected months
   const filterPayment = (p) => {
-    if (paymentMethodFilter === 'all') return true
-    if (paymentMethodFilter === 'card-transfer') return p.paymentMethod === 'card' || p.paymentMethod === 'transfer'
-    return p.paymentMethod === paymentMethodFilter
+    // Filter by payment method
+    if (paymentMethodFilter !== 'all') {
+      if (paymentMethodFilter === 'card-transfer') {
+        if (p.paymentMethod !== 'card' && p.paymentMethod !== 'transfer') return false
+      } else if (p.paymentMethod !== paymentMethodFilter) {
+        return false
+      }
+    }
+    // Filter by branch
+    if (branchFilter !== 'all') {
+      if (branchFilter === 'none') {
+        if (p.branchId) return false
+      } else if (p.branchId !== branchFilter) {
+        return false
+      }
+    }
+    return true
   }
 
   const filterMonth = (monthIndex) => {
@@ -843,6 +864,46 @@ export default function PaymentsPage() {
           <span className="text-base xs:text-lg">🏦</span> <span className="hidden xs:inline">Transfer</span><span className="xs:hidden">Transf.</span>
         </button>
       </div>
+
+      {/* Branch Filter */}
+      {data?.branches && data.branches.length > 0 && (
+        <div className="flex items-center justify-center gap-2 flex-wrap px-1 xs:px-0">
+          <span className="text-gray-500 font-medium text-xs xs:text-sm w-full xs:w-auto text-center xs:text-left xs:mr-2 mb-1 xs:mb-0">Filială:</span>
+          <button
+            onClick={() => setBranchFilter('all')}
+            className={`px-3 xs:px-4 md:px-5 py-1.5 xs:py-2 md:py-2.5 rounded-lg xs:rounded-xl text-xs xs:text-sm font-medium transition-all ${
+              branchFilter === 'all'
+                ? 'bg-gradient-to-r from-gray-700 to-gray-800 text-white shadow-lg'
+                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            Toate
+          </button>
+          {data.branches.map(branch => (
+            <button
+              key={branch.id}
+              onClick={() => setBranchFilter(branch.id)}
+              className={`px-3 xs:px-4 md:px-5 py-1.5 xs:py-2 md:py-2.5 rounded-lg xs:rounded-xl text-xs xs:text-sm font-medium transition-all inline-flex items-center gap-1 xs:gap-2 ${
+                branchFilter === branch.id
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-amber-50 hover:border-amber-200'
+              }`}
+            >
+              <span className="text-base xs:text-lg">📍</span> {branch.name}
+            </button>
+          ))}
+          <button
+            onClick={() => setBranchFilter('none')}
+            className={`px-3 xs:px-4 md:px-5 py-1.5 xs:py-2 md:py-2.5 rounded-lg xs:rounded-xl text-xs xs:text-sm font-medium transition-all inline-flex items-center gap-1 xs:gap-2 ${
+              branchFilter === 'none'
+                ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg'
+                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <span className="text-base xs:text-lg">❓</span> <span className="hidden xs:inline">Fără filială</span><span className="xs:hidden">N/A</span>
+          </button>
+        </div>
+      )}
 
       {/* Month Filter */}
       <div className="bg-white rounded-xl xs:rounded-2xl shadow-sm border border-gray-100 p-3 xs:p-4">
