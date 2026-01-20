@@ -19,13 +19,19 @@ export default function AdminMakeupPage() {
   
   // Modal state
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingLesson, setEditingLesson] = useState(null)
   const [groups, setGroups] = useState([])
   const [teachers, setTeachers] = useState([])
+  const [branches, setBranches] = useState([])
   const [groupStudents, setGroupStudents] = useState([])
   const [creating, setCreating] = useState(false)
+  const [updating, setUpdating] = useState(false)
   const [formData, setFormData] = useState({
     groupId: '',
     teacherId: '',
+    branchId: '',
+    locationDetails: '',
     scheduledAt: '',
     notes: '',
     studentIds: []
@@ -48,6 +54,7 @@ export default function AdminMakeupPage() {
   useEffect(() => {
     fetchData()
     fetchGroupsAndTeachers()
+    fetchBranches()
   }, [])
 
   const fetchData = async () => {
@@ -75,6 +82,16 @@ export default function AdminMakeupPage() {
       setTeachers(Array.isArray(teachersData) ? teachersData : [])
     } catch (error) {
       console.error('Error fetching groups/teachers:', error)
+    }
+  }
+
+  const fetchBranches = async () => {
+    try {
+      const res = await fetch('/api/admin/branches')
+      const data = await res.json()
+      setBranches(data?.branches || [])
+    } catch (error) {
+      console.error('Error fetching branches:', error)
     }
   }
 
@@ -123,7 +140,7 @@ export default function AdminMakeupPage() {
       
       if (res.ok) {
         setShowCreateModal(false)
-        setFormData({ groupId: '', teacherId: '', scheduledAt: '', notes: '', studentIds: [] })
+        setFormData({ groupId: '', teacherId: '', branchId: '', locationDetails: '', scheduledAt: '', notes: '', studentIds: [] })
         setGroupStudents([])
         fetchData()
       } else {
@@ -135,6 +152,68 @@ export default function AdminMakeupPage() {
       alert('Eroare la crearea sesiunii')
     } finally {
       setCreating(false)
+    }
+  }
+
+  const openEditModal = async (lesson) => {
+    setEditingLesson(lesson)
+    
+    // Format date for the picker
+    const scheduledDate = new Date(lesson.scheduledAt)
+    const dateStr = `${scheduledDate.getFullYear()}-${String(scheduledDate.getMonth() + 1).padStart(2, '0')}-${String(scheduledDate.getDate()).padStart(2, '0')}`
+    const timeStr = `${String(scheduledDate.getHours()).padStart(2, '0')}:${String(scheduledDate.getMinutes()).padStart(2, '0')}`
+    
+    setFormData({
+      groupId: lesson.groupId,
+      teacherId: lesson.teacherId,
+      branchId: lesson.branchId || '',
+      locationDetails: lesson.locationDetails || '',
+      scheduledAt: `${dateStr}T${timeStr}`,
+      notes: lesson.notes || '',
+      studentIds: lesson.students?.map(s => s.studentId) || []
+    })
+    
+    setSelectedDate(dateStr)
+    setSelectedTime(timeStr)
+    setPickerMonth(scheduledDate.getMonth())
+    setPickerYear(scheduledDate.getFullYear())
+    
+    // Fetch group students for this lesson's group
+    await fetchGroupStudents(lesson.groupId)
+    
+    setShowEditModal(true)
+  }
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault()
+    if (!formData.groupId || !formData.teacherId || !formData.scheduledAt) {
+      alert('Te rog completează toate câmpurile obligatorii')
+      return
+    }
+    
+    setUpdating(true)
+    try {
+      const res = await fetch(`/api/admin/makeup/${editingLesson.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+      
+      if (res.ok) {
+        setShowEditModal(false)
+        setEditingLesson(null)
+        setFormData({ groupId: '', teacherId: '', branchId: '', locationDetails: '', scheduledAt: '', notes: '', studentIds: [] })
+        setGroupStudents([])
+        fetchData()
+      } else {
+        const error = await res.json()
+        alert(error.error || 'Eroare la actualizarea sesiunii')
+      }
+    } catch (error) {
+      console.error('Error updating makeup lesson:', error)
+      alert('Eroare la actualizarea sesiunii')
+    } finally {
+      setUpdating(false)
     }
   }
 
@@ -441,19 +520,34 @@ export default function AdminMakeupPage() {
                             minute: '2-digit'
                           })}
                         </p>
+                        {(lesson.branch || lesson.locationDetails) && (
+                          <p className="text-sm text-gray-500 mt-0.5">
+                            Locație: {lesson.branch?.name || ''}{lesson.branch && lesson.locationDetails ? ' - ' : ''}{lesson.locationDetails || ''}
+                          </p>
+                        )}
                         <p className="text-xs text-gray-400 mt-0.5">
                           Creat: {new Date(lesson.createdAt).toLocaleString('ro-RO')}
                         </p>
                       </div>
-                      {(hasPermission('makeup.delete') || isSuperAdmin) && (
-                        <button
-                          onClick={() => handleDelete(lesson.id)}
-                          disabled={deleting === lesson.id}
-                          className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                        >
-                          {deleting === lesson.id ? 'Se șterge...' : 'Șterge'}
-                        </button>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {(hasPermission('makeup.edit') || isSuperAdmin) && (
+                          <button
+                            onClick={() => openEditModal(lesson)}
+                            className="px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                          >
+                            Editează
+                          </button>
+                        )}
+                        {(hasPermission('makeup.delete') || isSuperAdmin) && (
+                          <button
+                            onClick={() => handleDelete(lesson.id)}
+                            disabled={deleting === lesson.id}
+                            className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                          >
+                            {deleting === lesson.id ? 'Se șterge...' : 'Șterge'}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -655,7 +749,7 @@ export default function AdminMakeupPage() {
                 <button
                   onClick={() => {
                     setShowCreateModal(false)
-                    setFormData({ groupId: '', teacherId: '', scheduledAt: '', notes: '', studentIds: [] })
+                    setFormData({ groupId: '', teacherId: '', branchId: '', locationDetails: '', scheduledAt: '', notes: '', studentIds: [] })
                     setGroupStudents([])
                   }}
                   className="p-1.5 xs:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
@@ -698,6 +792,46 @@ export default function AdminMakeupPage() {
                   required
                 >
                   <option value="">Selectează profesorul</option>
+                  {teachers.map(teacher => (
+                    <option key={teacher.id} value={teacher.id}>
+                      {teacher.name} ({teacher.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Branch Selection */}
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 xs:gap-4">
+                <div>
+                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1">
+                    Filială (opțional)
+                  </label>
+                  <select
+                    value={formData.branchId}
+                    onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
+                    className="w-full px-3 xs:px-4 py-2 xs:py-2.5 text-sm xs:text-base border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value="">Selectează filiala</option>
+                    {branches.filter(b => b.active).map(branch => (
+                      <option key={branch.id} value={branch.id}>
+                        {branch.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1">
+                    Sala (opțional)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.locationDetails}
+                    onChange={(e) => setFormData({ ...formData, locationDetails: e.target.value })}
+                    placeholder="Ex: Sala 3, Meet link, etc."
+                    className="w-full px-3 xs:px-4 py-2 xs:py-2.5 text-sm xs:text-base border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
                   {teachers.map(teacher => (
                     <option key={teacher.id} value={teacher.id}>
                       {teacher.name} ({teacher.email})
@@ -900,7 +1034,7 @@ export default function AdminMakeupPage() {
                   type="button"
                   onClick={() => {
                     setShowCreateModal(false)
-                    setFormData({ groupId: '', teacherId: '', scheduledAt: '', notes: '', studentIds: [] })
+                    setFormData({ groupId: '', teacherId: '', branchId: '', locationDetails: '', scheduledAt: '', notes: '', studentIds: [] })
                     setGroupStudents([])
                   }}
                   className="px-3 xs:px-4 py-2 text-sm xs:text-base text-gray-700 hover:bg-gray-100 rounded-lg transition-colors order-2 xs:order-1"
@@ -923,6 +1057,323 @@ export default function AdminMakeupPage() {
                       <PlusIcon className="w-3.5 h-3.5 xs:w-4 xs:h-4" />
                       Creează Sesiune
                     </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {showEditModal && editingLesson && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 xs:p-4">
+          <div className="bg-white rounded-xl xs:rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] xs:max-h-[90vh] overflow-y-auto">
+            <div className="p-3 xs:p-4 md:p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-base xs:text-lg md:text-xl font-bold text-gray-900 truncate">Editează Sesiune de Recuperare</h2>
+                <button
+                  onClick={() => {
+                    setShowEditModal(false)
+                    setEditingLesson(null)
+                    setFormData({ groupId: '', teacherId: '', branchId: '', locationDetails: '', scheduledAt: '', notes: '', studentIds: [] })
+                    setGroupStudents([])
+                  }}
+                  className="p-1.5 xs:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+                >
+                  <XMarkIcon className="w-4 h-4 xs:w-5 xs:h-5 text-gray-500" />
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="p-3 xs:p-4 md:p-6 space-y-3 xs:space-y-4 md:space-y-5">
+              {/* Group Selection */}
+              <div>
+                <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1">
+                  Grupă <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.groupId}
+                  onChange={(e) => handleGroupChange(e.target.value)}
+                  className="w-full px-3 xs:px-4 py-2 xs:py-2.5 text-sm xs:text-base border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  required
+                >
+                  <option value="">Selectează grupa</option>
+                  {groups.map(group => (
+                    <option key={group.id} value={group.id}>
+                      {group.name} - {group.course?.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Teacher Selection */}
+              <div>
+                <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1">
+                  Profesor <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.teacherId}
+                  onChange={(e) => setFormData({ ...formData, teacherId: e.target.value })}
+                  className="w-full px-3 xs:px-4 py-2 xs:py-2.5 text-sm xs:text-base border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  required
+                >
+                  <option value="">Selectează profesorul</option>
+                  {teachers.map(teacher => (
+                    <option key={teacher.id} value={teacher.id}>
+                      {teacher.name} ({teacher.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Branch Selection */}
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 xs:gap-4">
+                <div>
+                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1">
+                    Filială (opțional)
+                  </label>
+                  <select
+                    value={formData.branchId}
+                    onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
+                    className="w-full px-3 xs:px-4 py-2 xs:py-2.5 text-sm xs:text-base border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value="">Selectează filiala</option>
+                    {branches.filter(b => b.active).map(branch => (
+                      <option key={branch.id} value={branch.id}>
+                        {branch.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1">
+                    Sala (opțional)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.locationDetails}
+                    onChange={(e) => setFormData({ ...formData, locationDetails: e.target.value })}
+                    placeholder="Ex: Sala 3, Meet link, etc."
+                    className="w-full px-3 xs:px-4 py-2 xs:py-2.5 text-sm xs:text-base border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              {/* Date & Time - Compact Picker */}
+              <div>
+                <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1">
+                  Data și Ora <span className="text-red-500">*</span>
+                </label>
+                
+                {/* Trigger Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowDatePicker(!showDatePicker)}
+                  className={`w-full px-2.5 xs:px-3 py-2 xs:py-2.5 border rounded-lg text-left flex items-center justify-between transition-all text-xs xs:text-sm ${
+                    formData.scheduledAt 
+                      ? 'border-indigo-300 bg-indigo-50 text-indigo-700' 
+                      : 'border-gray-300 bg-white text-gray-500 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 xs:gap-2 min-w-0">
+                    <CalendarIcon className="w-3.5 h-3.5 xs:w-4 xs:h-4 flex-shrink-0" />
+                    {formData.scheduledAt ? (
+                      <span className="font-medium truncate">
+                        {new Date(formData.scheduledAt).toLocaleString('ro-RO', {
+                          day: 'numeric',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    ) : (
+                      <span className="truncate">Alege data și ora</span>
+                    )}
+                  </div>
+                  <ChevronRightIcon className={`w-3.5 h-3.5 xs:w-4 xs:h-4 transition-transform flex-shrink-0 ${showDatePicker ? 'rotate-90' : ''}`} />
+                </button>
+
+                {/* Compact Date/Time Picker */}
+                {showDatePicker && (
+                  <div className="mt-2 p-3 border border-gray-200 rounded-lg bg-white shadow-lg">
+                    <div className="flex gap-3">
+                      {/* Calendar Side */}
+                      <div className="flex-1">
+                        {/* Month Navigation */}
+                        <div className="flex items-center justify-between mb-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (pickerMonth === 0) { setPickerMonth(11); setPickerYear(pickerYear - 1) }
+                              else { setPickerMonth(pickerMonth - 1) }
+                            }}
+                            className="p-1 hover:bg-gray-100 rounded"
+                          >
+                            <ChevronLeftIcon className="w-4 h-4 text-gray-600" />
+                          </button>
+                          <span className="text-sm font-semibold text-gray-900">
+                            {monthNames[pickerMonth].slice(0, 3)} {pickerYear}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (pickerMonth === 11) { setPickerMonth(0); setPickerYear(pickerYear + 1) }
+                              else { setPickerMonth(pickerMonth + 1) }
+                            }}
+                            className="p-1 hover:bg-gray-100 rounded"
+                          >
+                            <ChevronRightIcon className="w-4 h-4 text-gray-600" />
+                          </button>
+                        </div>
+
+                        {/* Days Header */}
+                        <div className="grid grid-cols-7 gap-0.5 mb-1">
+                          {dayNames.map(day => (
+                            <div key={day} className="text-center text-[10px] font-medium text-gray-400 py-0.5">
+                              {day}
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Days Grid */}
+                        <div className="grid grid-cols-7 gap-0.5">
+                          {generateCalendarDays().map((day, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => handleDateSelect(day)}
+                              disabled={!day}
+                              className={`
+                                w-7 h-7 rounded text-xs font-medium transition-all
+                                ${!day ? 'invisible' : ''}
+                                ${isToday(day) && !isSelected(day) ? 'bg-gray-100' : ''}
+                                ${isSelected(day) ? 'bg-indigo-600 text-white' : 'text-gray-700 hover:bg-indigo-100'}
+                              `}
+                            >
+                              {day}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Time Side */}
+                      <div className="w-20 border-l border-gray-200 pl-3">
+                        <div className="text-[10px] font-medium text-gray-400 mb-1 flex items-center gap-1">
+                          <ClockIcon className="w-3 h-3" /> ORA
+                        </div>
+                        <input
+                          type="text"
+                          value={selectedTime}
+                          onChange={(e) => handleTimeSelect(e.target.value)}
+                          placeholder="HH:MM"
+                          pattern="[0-9]{2}:[0-9]{2}"
+                          className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Quick Confirm */}
+                    {selectedDate && selectedTime && (
+                      <button
+                        type="button"
+                        onClick={() => setShowDatePicker(false)}
+                        className="w-full mt-2 py-1.5 bg-indigo-600 text-white rounded text-xs font-medium hover:bg-indigo-700 flex items-center justify-center gap-1"
+                      >
+                        ✓ Confirmat
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1">
+                  Notițe (opțional)
+                </label>
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  placeholder="Adaugă informații suplimentare..."
+                  className="w-full px-3 xs:px-4 py-2 xs:py-2.5 text-sm xs:text-base border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  rows={3}
+                />
+              </div>
+
+              {/* Students Selection */}
+              {formData.groupId && (
+                <div>
+                  <label className="block text-xs xs:text-sm font-medium text-gray-700 mb-1.5 xs:mb-2">
+                    Elevi pentru recuperare
+                  </label>
+                  {groupStudents.length === 0 ? (
+                    <p className="text-xs xs:text-sm text-gray-500 italic p-2.5 xs:p-3 bg-gray-50 rounded-lg">
+                      Nu există elevi în această grupă
+                    </p>
+                  ) : (
+                    <div className="border border-gray-200 rounded-lg max-h-48 xs:max-h-60 overflow-y-auto">
+                      {groupStudents.map(gs => (
+                        <label
+                          key={gs.id}
+                          className="flex items-center gap-2 xs:gap-3 p-2 xs:p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.studentIds.includes(gs.studentId)}
+                            onChange={() => toggleStudent(gs.studentId)}
+                            className="w-3.5 h-3.5 xs:w-4 xs:h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 flex-shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-900 text-xs xs:text-sm truncate">{gs.student?.fullName}</p>
+                            <p className="text-[10px] xs:text-xs text-gray-500">
+                              Lecții: {gs.lessonsRemaining} • Absențe: {gs.absences}
+                            </p>
+                          </div>
+                          {gs.absences > 0 && (
+                            <span className="px-1.5 xs:px-2 py-0.5 bg-orange-100 text-orange-700 text-[10px] xs:text-xs font-medium rounded-full flex-shrink-0">
+                              {gs.absences}
+                            </span>
+                          )}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                  {formData.studentIds.length > 0 && (
+                    <p className="mt-1.5 xs:mt-2 text-xs xs:text-sm text-indigo-600">
+                      {formData.studentIds.length} elev(i) selectat(i)
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Submit */}
+              <div className="flex flex-col xs:flex-row justify-end gap-2 xs:gap-3 pt-3 xs:pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false)
+                    setEditingLesson(null)
+                    setFormData({ groupId: '', teacherId: '', branchId: '', locationDetails: '', scheduledAt: '', notes: '', studentIds: [] })
+                    setGroupStudents([])
+                  }}
+                  className="px-3 xs:px-4 py-2 text-sm xs:text-base text-gray-700 hover:bg-gray-100 rounded-lg transition-colors order-2 xs:order-1"
+                >
+                  Anulează
+                </button>
+                <button
+                  type="submit"
+                  disabled={updating}
+                  className="px-4 xs:px-6 py-2 text-sm xs:text-base bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5 xs:gap-2 order-1 xs:order-2"
+                >
+                  {updating ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3.5 w-3.5 xs:h-4 xs:w-4 border-2 border-white border-t-transparent"></div>
+                      <span className="hidden xs:inline">Se salvează...</span>
+                      <span className="xs:hidden">Salvează...</span>
+                    </>
+                  ) : (
+                    'Salvează Modificările'
                   )}
                 </button>
               </div>

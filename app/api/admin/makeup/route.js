@@ -20,7 +20,7 @@ export async function POST(request) {
 
   try {
     const body = await request.json()
-    const { groupId, teacherId, scheduledAt, notes, studentIds } = body
+    const { groupId, teacherId, branchId, locationDetails, scheduledAt, notes, studentIds } = body
 
     if (!groupId || !teacherId || !scheduledAt) {
       return NextResponse.json({ error: 'Grupă, profesor și data sunt obligatorii' }, { status: 400 })
@@ -48,6 +48,8 @@ export async function POST(request) {
       data: {
         groupId,
         teacherId,
+        branchId: branchId || null,
+        locationDetails: locationDetails || null,
         scheduledAt: scheduledDate,
         notes: notes || null,
         status: 'SCHEDULED',
@@ -64,6 +66,9 @@ export async function POST(request) {
         },
         group: {
           include: { course: true }
+        },
+        branch: {
+          select: { id: true, name: true }
         },
         students: {
           include: { student: true }
@@ -118,6 +123,12 @@ export async function GET(request) {
         group: {
           include: {
             course: true
+          }
+        },
+        branch: {
+          select: {
+            id: true,
+            name: true
           }
         },
         students: {

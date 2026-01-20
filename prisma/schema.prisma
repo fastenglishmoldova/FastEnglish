@@ -308,7 +308,8 @@ model Branch {
   updatedAt DateTime @updatedAt
 
   // Relations
-  groups    Group[]
+  groups        Group[]
+  makeupLessons MakeupLesson[]
 
   @@map("branches")
 }
@@ -438,6 +439,8 @@ model MakeupLesson {
   id                String             @id @default(auto()) @map("_id") @db.ObjectId
   groupId           String             @db.ObjectId
   teacherId         String             @db.ObjectId
+  branchId          String?            @db.ObjectId  // Filiala (opțional)
+  locationDetails   String?                          // Sala/Link
   scheduledAt       DateTime
   status            MakeupLessonStatus @default(SCHEDULED)
   notes             String?
@@ -448,6 +451,7 @@ model MakeupLesson {
   // Relations
   group           Group                 @relation(fields: [groupId], references: [id], onDelete: Cascade)
   teacher         User                  @relation("TeacherMakeups", fields: [teacherId], references: [id], onDelete: Cascade)
+  branch          Branch?               @relation(fields: [branchId], references: [id], onDelete: SetNull)
   students        MakeupLessonStudent[]
 
   @@map("makeup_lessons")
