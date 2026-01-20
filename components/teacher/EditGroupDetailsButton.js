@@ -79,7 +79,7 @@ export default function EditGroupDetailsButton({ group, branches }) {
     scheduleTimes: initialTimes, // Obiect { "Luni": "16:00", "Marți": "17:00" }
     locationDetails: group.locationDetails || '',
     branchId: group.branch?.id || group.branchId || '',
-    locationType: group.locationType || 'physical'
+    locationType: group.locationType || 'offline'
   })
 
   // Fetch schedule preview when branch or days change
@@ -100,9 +100,13 @@ export default function EditGroupDetailsButton({ group, branches }) {
           const filtered = data.groups.filter(g => {
             if (g.id === group.id) return false // Exclude current group
             
-            // Check branch match - compare branch.id or branchId
-            const groupBranchId = g.branch?.id || g.branchId
-            if (groupBranchId !== formData.branchId) return false
+            // Check branch match - compare branch.id (from API include)
+            const groupBranchId = g.branch?.id
+            const selectedBranchId = formData.branchId
+            
+            // Skip groups without branch if we selected one
+            if (!groupBranchId && selectedBranchId) return false
+            if (groupBranchId !== selectedBranchId) return false
             
             // Check if any selected day overlaps
             const hasOverlap = formData.scheduleDays.some(day => 
@@ -111,7 +115,7 @@ export default function EditGroupDetailsButton({ group, branches }) {
             return hasOverlap
           }).map(g => ({
             name: g.name,
-            teacher: g.teacher?.fullName || 'Nealocat',
+            teacher: g.teacher?.name || 'Nealocat',
             days: g.scheduleDays || [],
             time: parseScheduleTime(g.scheduleTime, g.scheduleDays)
           }))
@@ -282,8 +286,8 @@ export default function EditGroupDetailsButton({ group, branches }) {
                   <label className="flex items-center">
                     <input
                       type="radio"
-                      value="physical"
-                      checked={formData.locationType === 'physical'}
+                      value="offline"
+                      checked={formData.locationType === 'offline'}
                       onChange={(e) => setFormData({ ...formData, locationType: e.target.value })}
                       className="mr-2"
                     />
