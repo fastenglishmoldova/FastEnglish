@@ -221,9 +221,9 @@ export default function EditGroupDetailsButton({ group, branches }) {
               <h2 className="text-xl font-bold text-gray-900">Editează Detalii Grupă</h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
               >
-                <XMarkIcon className="w-5 h-5" />
+                <XMarkIcon className="w-5 h-5 text-gray-900" />
               </button>
             </div>
 
