@@ -47,49 +47,6 @@ export async function GET(request, { params }) {
   }
 }
 
-// PATCH update payment
-export async function PATCH(request, { params }) {
-  try {
-    const session = await getServerSession(authOptions)
-    if (!session || !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(session.user.role)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    
-    // Check permission
-    const permCheck = await checkPermission('groups.students.payments.edit')
-    if (!permCheck.allowed) {
-      return NextResponse.json({ error: 'Nu ai permisiunea să editezi plăți' }, { status: 403 })
-    }
-
-    const { id } = await params
-    const data = await request.json()
-    const { amount, paymentDate, paymentMethod, notes } = data
-
-    const updateData = {}
-    if (amount !== undefined) updateData.amount = parseFloat(amount)
-    if (paymentDate !== undefined) updateData.paymentDate = new Date(paymentDate)
-    if (paymentMethod !== undefined) updateData.paymentMethod = paymentMethod
-    if (notes !== undefined) updateData.notes = notes
-
-    const payment = await prisma.payment.update({
-      where: { id },
-      data: updateData,
-      include: {
-        groupStudent: {
-          include: {
-            student: true
-          }
-        }
-      }
-    })
-
-    return NextResponse.json(payment)
-  } catch (error) {
-    console.error('PATCH payment error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-}
-
 // DELETE payment
 export async function DELETE(request, { params }) {
   try {

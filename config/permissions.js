@@ -137,11 +137,6 @@ export const PERMISSIONS = {
     description: 'Poate înregistra plăți noi pentru elevi',
     category: 'Elevi în Grupe'
   },
-  'groups.students.payments.edit': {
-    label: 'Editează plăți',
-    description: 'Poate modifica plățile existente',
-    category: 'Elevi în Grupe'
-  },
   'groups.students.payments.delete': {
     label: 'Șterge plăți',
     description: 'Poate șterge plăți',

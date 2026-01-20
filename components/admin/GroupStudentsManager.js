@@ -40,7 +40,6 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
     canModifyAbsences = false,
     canViewPayments = false,
     canAddPayments = false,
-    canEditPayments = false,
     canDeletePayments = false
   } = permissions
 
