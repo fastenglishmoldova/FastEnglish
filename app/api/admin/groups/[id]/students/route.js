@@ -39,7 +39,7 @@ export async function POST(request, { params }) {
     // Get student details
     const student = await prisma.student.findUnique({
       where: { id: studentId },
-      select: { name: true }
+      select: { fullName: true }
     })
 
     const groupStudent = await prisma.groupStudent.create({
@@ -54,7 +54,7 @@ export async function POST(request, { params }) {
     if (group?.teacher?.telegramChatId && student) {
       await notifyTeacherNewStudent(
         group.teacher.telegramChatId,
-        student.name,
+        student.fullName,
         group.name,
         group.course?.title || 'Curs'
       )
