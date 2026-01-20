@@ -13,7 +13,7 @@ export async function GET(request, { params }) {
     }
     
     // Check permission
-    const permCheck = await checkPermission('payments.view')
+    const permCheck = await checkPermission('groups.students.payments.view')
     if (!permCheck.allowed) {
       return NextResponse.json({ error: 'Nu ai permisiunea să vezi plățile' }, { status: 403 })
     }
@@ -56,7 +56,7 @@ export async function PATCH(request, { params }) {
     }
     
     // Check permission
-    const permCheck = await checkPermission('payments.edit')
+    const permCheck = await checkPermission('groups.students.payments.edit')
     if (!permCheck.allowed) {
       return NextResponse.json({ error: 'Nu ai permisiunea să editezi plăți' }, { status: 403 })
     }
@@ -99,7 +99,7 @@ export async function DELETE(request, { params }) {
     }
     
     // Check permission
-    const permCheck = await checkPermission('payments.delete')
+    const permCheck = await checkPermission('groups.students.payments.delete')
     if (!permCheck.allowed) {
       return NextResponse.json({ error: 'Nu ai permisiunea să ștergi plăți' }, { status: 403 })
     }
