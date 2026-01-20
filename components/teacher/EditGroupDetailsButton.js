@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
-import { PencilIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { PencilIcon, XMarkIcon, ClockIcon } from '@heroicons/react/24/outline'
 
 const allDays = ['Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă', 'Duminică']
 
@@ -11,6 +11,8 @@ export default function EditGroupDetailsButton({ group, branches }) {
   const router = useRouter()
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [schedulePreview, setSchedulePreview] = useState([])
+  const [loadingSchedule, setLoadingSchedule] = useState(false)
   const [formData, setFormData] = useState({
     scheduleTime: group.scheduleTime || '',
     scheduleDays: group.scheduleDays || [],
@@ -18,6 +20,50 @@ export default function EditGroupDetailsButton({ group, branches }) {
     branchId: group.branchId || '',
     locationType: group.locationType || 'physical'
   })
+
+  // Fetch schedule preview when branch or days change
+  useEffect(() => {
+    if (!showModal || !formData.branchId || formData.scheduleDays.length === 0) {
+      setSchedulePreview([])
+      return
+    }
+
+    const fetchSchedule = async () => {
+      setLoadingSchedule(true)
+      try {
+        const res = await fetch('/api/teacher/schedule')
+        if (res.ok) {
+          const data = await res.json()
+          
+          // Filter groups by selected branch and days
+          const filtered = data.groups.filter(g => {
+            if (g.id === group.id) return false // Exclude current group
+            if (g.branchId !== formData.branchId) return false
+            
+            // Check if any selected day overlaps
+            const hasOverlap = formData.scheduleDays.some(day => 
+              g.scheduleDays?.includes(day)
+            )
+            return hasOverlap
+          }).map(g => ({
+            name: g.name,
+            teacher: data.teachers.find(t => t.id === g.teacherId)?.fullName || 'Necunoscut',
+            days: g.scheduleDays,
+            time: g.scheduleTime,
+            studentCount: g._count?.groupStudents || 0
+          }))
+
+          setSchedulePreview(filtered)
+        }
+      } catch (error) {
+        console.error('Failed to fetch schedule:', error)
+      } finally {
+        setLoadingSchedule(false)
+      }
+    }
+
+    fetchSchedule()
+  }, [formData.branchId, formData.scheduleDays, showModal, group.id])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -177,6 +223,41 @@ export default function EditGroupDetailsButton({ group, branches }) {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
+
+              {/* Schedule Preview */}
+              {formData.branchId && formData.scheduleDays.length > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <ClockIcon className="w-5 h-5 text-blue-600" />
+                    <h3 className="font-semibold text-blue-900">
+                      Orar {branches.find(b => b.id === formData.branchId)?.name} - {formData.scheduleDays.join(', ')}
+                    </h3>
+                  </div>
+                  
+                  {loadingSchedule ? (
+                    <p className="text-sm text-blue-600">Se încarcă orarul...</p>
+                  ) : schedulePreview.length === 0 ? (
+                    <p className="text-sm text-green-700">✓ Nu există alte grupe în aceste zile</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {schedulePreview.map((item, idx) => (
+                        <div key={idx} className="bg-white rounded p-3 text-sm">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <p className="font-semibold text-gray-900">{item.name}</p>
+                              <p className="text-gray-600 text-xs">👨‍🏫 {item.teacher} • {item.studentCount} elevi</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-medium text-blue-600">{item.time}</p>
+                              <p className="text-xs text-gray-500">{item.days.join(', ')}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Buttons */}
               <div className="flex gap-3 pt-4 border-t">
