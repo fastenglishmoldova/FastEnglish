@@ -222,11 +222,6 @@ export const PERMISSIONS = {
     description: 'Poate vedea sesiunile de curs',
     category: 'Sesiuni'
   },
-  'sessions.manage': {
-    label: 'Gestionează sesiunile',
-    description: 'Poate crea/modifica sesiuni',
-    category: 'Sesiuni'
-  },
 
   // Recuperări
   'makeup.view': {
@@ -249,21 +244,11 @@ export const PERMISSIONS = {
     description: 'Poate șterge programări de recuperare',
     category: 'Recuperări'
   },
-  'makeup.manage': {
-    label: 'Gestionează recuperările',
-    description: 'Poate aproba/respinge recuperări',
-    category: 'Recuperări'
-  },
 
   // Notificări
   'notifications.view': {
     label: 'Vezi notificările',
     description: 'Poate vedea notificările',
-    category: 'Notificări'
-  },
-  'notifications.send': {
-    label: 'Trimite notificări',
-    description: 'Poate trimite notificări',
     category: 'Notificări'
   },
 
@@ -286,11 +271,6 @@ export const PERMISSIONS = {
   'reviews.delete': {
     label: 'Șterge recenzii',
     description: 'Poate șterge recenzii',
-    category: 'Recenzii'
-  },
-  'reviews.manage': {
-    label: 'Gestionează recenziile',
-    description: 'Poate publica/șterge recenzii',
     category: 'Recenzii'
   },
 
@@ -322,11 +302,6 @@ export const PERMISSIONS = {
   'missed-sessions.view': {
     label: 'Vezi sesiunile ratate',
     description: 'Poate vedea absențele',
-    category: 'Sesiuni'
-  },
-  'missed-sessions.manage': {
-    label: 'Gestionează absențele',
-    description: 'Poate modifica absențele',
     category: 'Sesiuni'
   }
 }
