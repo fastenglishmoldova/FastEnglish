@@ -422,7 +422,7 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
                                 <button
                                   key={option.value}
                                   onClick={() => updateStatusQuick(enrollment, option.value)}
-                                  className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-gray-50 ${
+                                  className={`w-full px-3 py-2 text-left text-sm text-gray-700 flex items-center gap-2 hover:bg-gray-50 ${
                                     enrollment.status === option.value ? 'bg-gray-50 font-medium' : ''
                                   }`}
                                 >
@@ -519,7 +519,7 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
                               <button
                                 key={option.value}
                                 onClick={() => updateStatusQuick(enrollment, option.value)}
-                                className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-gray-50 ${
+                                className={`w-full px-3 py-2 text-left text-sm text-gray-700 flex items-center gap-2 hover:bg-gray-50 ${
                                   enrollment.status === option.value ? 'bg-gray-50 font-medium' : ''
                                 }`}
                               >

@@ -69,7 +69,7 @@ export async function POST(request) {
         email,
         telefon,
         clasa,
-        cursuri: cursuriArray,
+        cursuri: cursuriNume,
         mesaj: mesaj || '',
         status: 'NOU'
       }
