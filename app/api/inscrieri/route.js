@@ -5,10 +5,10 @@ import { checkRateLimit, getClientIP } from '@/lib/rate-limit'
 
 export async function POST(request) {
   try {
-    // Rate limiting: 2 requests per minute
+    // Rate limiting: 1 request per minute
     const clientIP = getClientIP(request)
     const rateLimitKey = `inscrieri:${clientIP}`
-    const { success, remaining, resetIn } = checkRateLimit(rateLimitKey, 2, 60000)
+    const { success, remaining, resetIn } = checkRateLimit(rateLimitKey, 1, 60000)
 
     if (!success) {
       return NextResponse.json(
@@ -43,6 +43,24 @@ export async function POST(request) {
       cursuriArray = []
     }
 
+    // Obține numele cursurilor din baza de date
+    let cursuriNume = []
+    for (const cursId of cursuriArray) {
+      if (cursId === 'selectam-impreuna') {
+        cursuriNume.push('Selectăm împreună')
+      } else {
+        const curs = await prisma.course.findUnique({
+          where: { id: cursId },
+          select: { title: true }
+        })
+        if (curs) {
+          cursuriNume.push(curs.title)
+        } else {
+          cursuriNume.push(cursId)
+        }
+      }
+    }
+
     // Salvare în baza de date
     const inscriere = await prisma.inscriere.create({
       data: {
@@ -63,7 +81,7 @@ export async function POST(request) {
       numeParinte,
       telefon,
       email,
-      cursuriArray.join(', '),
+      cursuriNume.join(', '),
       mesaj
     )
 

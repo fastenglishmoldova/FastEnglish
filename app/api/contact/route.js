@@ -5,10 +5,10 @@ import { checkRateLimit, getClientIP } from '@/lib/rate-limit'
 
 export async function POST(request) {
   try {
-    // Rate limiting: 2 requests per minute
+    // Rate limiting: 1 request per minute
     const clientIP = getClientIP(request)
     const rateLimitKey = `contact:${clientIP}`
-    const { success, remaining, resetIn } = checkRateLimit(rateLimitKey, 2, 60000)
+    const { success, remaining, resetIn } = checkRateLimit(rateLimitKey, 1, 60000)
 
     if (!success) {
       return NextResponse.json(

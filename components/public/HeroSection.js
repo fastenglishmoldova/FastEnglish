@@ -47,6 +47,8 @@ export default function HeroSection() {
   const [typedText, setTypedText] = useState('')
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
   const sectionRef = useRef(null)
+  const statsRef = useRef(null)
+  const [statsVisible, setStatsVisible] = useState(false)
   
   const words = ['o aventură', 'mai ușoară', 'fascinantă', 'accesibilă']
   const fullText = words[currentWordIndex]
@@ -74,12 +76,32 @@ export default function HeroSection() {
     return () => clearTimeout(timeout)
   }, [typedText, fullText, isLoaded, words.length])
 
+  // Intersection Observer for stats section
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !statsVisible) {
+            setStatsVisible(true)
+            setStudentsVisible(true)
+            setTeachersVisible(true)
+            setSuccessVisible(true)
+            setYearsVisible(true)
+          }
+        })
+      },
+      { threshold: 0.3 }
+    )
+
+    if (statsRef.current) {
+      observer.observe(statsRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [statsVisible])
+
   useEffect(() => {
     setIsLoaded(true)
-    setStudentsVisible(true)
-    setTeachersVisible(true)
-    setSuccessVisible(true)
-    setYearsVisible(true)
     
     const handleMouseMove = (e) => {
       if (!sectionRef.current) return
@@ -281,26 +303,29 @@ export default function HeroSection() {
           </div>
 
           {/* Stats Grid with animated counters */}
-          <div className={`grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 max-w-5xl mx-auto transition-all duration-1000 delay-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
+          <div 
+            ref={statsRef}
+            className={`grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 max-w-5xl mx-auto transition-all duration-1000 delay-700 ${isLoaded && statsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
+          >
             {stats.map((stat, idx) => (
               <div 
                 key={idx} 
-                className="group relative p-8 lg:p-10 rounded-3xl overflow-hidden cursor-default"
+                className="group relative p-4 sm:p-8 lg:p-10 rounded-2xl sm:rounded-3xl overflow-hidden cursor-default"
               >
                 {/* Background with glassmorphism */}
-                <div className="absolute inset-0 bg-white/[0.02] backdrop-blur-xl border border-white/[0.05] rounded-3xl" />
-                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
+                <div className="absolute inset-0 bg-white/[0.02] backdrop-blur-xl border border-white/[0.05] rounded-2xl sm:rounded-3xl" />
+                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl sm:rounded-3xl" />
                 
                 {/* Animated border on hover */}
-                <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <div className="absolute inset-0 rounded-3xl border border-emerald-500/30 animate-border-pulse" />
+                <div className="absolute inset-0 rounded-2xl sm:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="absolute inset-0 rounded-2xl sm:rounded-3xl border border-emerald-500/30 animate-border-pulse" />
                 </div>
                 
                 <div className="relative">
-                  <div className={`text-5xl lg:text-6xl font-black mb-2 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
+                  <div className={`text-2xl sm:text-5xl lg:text-6xl font-black mb-1 sm:mb-2 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
                     {stat.value}{stat.suffix}
                   </div>
-                  <div className="text-gray-500 text-sm lg:text-base font-medium tracking-wide">{stat.label}</div>
+                  <div className="text-gray-500 text-[10px] sm:text-sm lg:text-base font-medium tracking-wide">{stat.label}</div>
                 </div>
               </div>
             ))}

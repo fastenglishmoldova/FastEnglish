@@ -168,14 +168,14 @@ export default function Navbar() {
               className="flex items-center gap-3 group relative"
             >
               {/* Logo glow */}
-              <div className="absolute -inset-2 bg-emerald-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute -inset-4 bg-emerald-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
-              <div className="relative w-10 h-10 lg:w-11 lg:h-11 rounded-xl overflow-hidden ring-2 ring-white/10 group-hover:ring-emerald-500/50 transition-all duration-300">
+              <div className="relative w-12 h-12 lg:w-14 lg:h-14 group-hover:scale-110 transition-transform duration-300">
                 <Image
                   src="/pi.png"
                   alt="Pi School Logo"
                   fill
-                  className="object-contain p-1"
+                  className="object-contain"
                 />
               </div>
               <div className="relative flex flex-col">
