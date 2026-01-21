@@ -36,7 +36,7 @@ export async function GET() {
         }
       }),
       prisma.user.findMany({
-        where: { role: { in: ['TEACHER', 'ADMIN'] } },
+        where: { role: 'TEACHER' },
         select: { id: true, name: true, email: true },
         orderBy: { name: 'asc' }
       }),

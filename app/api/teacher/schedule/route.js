@@ -35,7 +35,7 @@ export async function GET() {
     // Fetch all teachers for filter
     const teachers = await prisma.user.findMany({
       where: { 
-        role: { in: ['TEACHER', 'ADMIN', 'SUPERADMIN'] },
+        role: 'TEACHER',
         active: true
       },
       select: { id: true, name: true, email: true },
