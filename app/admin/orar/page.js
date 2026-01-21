@@ -46,8 +46,14 @@ export default function OrarPage() {
   
   const [groups, setGroups] = useState([])
   const [branches, setBranches] = useState([])
+  const [teachers, setTeachers] = useState([])
   const [loading, setLoading] = useState(true)
+  
+  // Filtre
   const [selectedBranch, setSelectedBranch] = useState('')
+  const [selectedTeacher, setSelectedTeacher] = useState('')
+  const [selectedDay, setSelectedDay] = useState('')
+  const [studentSearch, setStudentSearch] = useState('')
 
   // Verifică permisiunea
   useEffect(() => {
@@ -66,6 +72,7 @@ export default function OrarPage() {
       const data = await res.json()
       setGroups(data.groups || [])
       setBranches(data.branches || [])
+      setTeachers(data.teachers || [])
     } catch (error) {
       console.error('Error fetching groups:', error)
     } finally {
@@ -87,7 +94,25 @@ export default function OrarPage() {
     })
     
     // Filtrăm grupele active
-    const activeGroups = groups.filter(g => g.active)
+    let activeGroups = groups.filter(g => g.active)
+    
+    // Filtru profesor
+    if (selectedTeacher) {
+      activeGroups = activeGroups.filter(g => g.teacherId === selectedTeacher)
+    }
+    
+    // Filtru student (caută în lista de studenți din grupă)
+    if (studentSearch.trim()) {
+      const searchLower = studentSearch.toLowerCase().trim()
+      activeGroups = activeGroups.filter(group => {
+        if (!group.groupStudents || group.groupStudents.length === 0) return false
+        return group.groupStudents.some(gs => 
+          gs.student?.fullName?.toLowerCase().includes(searchLower) ||
+          gs.student?.parentName?.toLowerCase().includes(searchLower) ||
+          gs.student?.parentPhone?.includes(searchLower)
+        )
+      })
+    }
     
     // Populăm orarul
     activeGroups.forEach(group => {
@@ -100,6 +125,9 @@ export default function OrarPage() {
       }
       
       group.scheduleDays.forEach(day => {
+        // Filtru zi specifică
+        if (selectedDay && day !== selectedDay) return
+        
         if (scheduleByDay[day]) {
           const time = getTimeForDay(group.scheduleTime, day)
           scheduleByDay[day].push({
@@ -112,7 +140,8 @@ export default function OrarPage() {
             teacherPhone: group.teacher?.phone || null,
             room: group.locationDetails || '-',
             locationType: group.locationType,
-            course: group.course?.title || '-'
+            course: group.course?.title || '-',
+            studentCount: group.groupStudents?.length || 0
           })
         }
       })
@@ -128,7 +157,7 @@ export default function OrarPage() {
     })
     
     return { scheduleByDay, todayName, tomorrowName, sortedDays }
-  }, [groups, selectedBranch])
+  }, [groups, selectedBranch, selectedTeacher, selectedDay, studentSearch])
 
   if (loading) {
     return (
@@ -138,6 +167,17 @@ export default function OrarPage() {
     )
   }
 
+  const hasActiveFilters = selectedBranch || selectedTeacher || selectedDay || studentSearch
+  const resetFilters = () => {
+    setSelectedBranch('')
+    setSelectedTeacher('')
+    setSelectedDay('')
+    setStudentSearch('')
+  }
+
+  // Calculează statistici
+  const totalLessons = schedule.sortedDays.reduce((sum, day) => sum + schedule.scheduleByDay[day].length, 0)
+
   return (
     <div className="space-y-4 xs:space-y-6">
       <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-3 xs:gap-0">
@@ -145,23 +185,92 @@ export default function OrarPage() {
           <h1 className="text-xl xs:text-2xl font-bold text-gray-900">Orar</h1>
           <p className="text-sm xs:text-base text-gray-600">Vizualizează orarul tuturor grupelor</p>
         </div>
+      </div>
         
-        {/* Filtru filială */}
-        {branches.length > 0 && (
+      {/* Panoul de filtre */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Filtru filială */}
+          {branches.length > 0 && (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Filială</label>
+              <select
+                value={selectedBranch}
+                onChange={(e) => setSelectedBranch(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="">Toate filialele</option>
+                <option value="none">Fără filială</option>
+                {branches.map(branch => (
+                  <option key={branch.id} value={branch.id}>
+                    {branch.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Filtru profesor */}
+          {teachers.length > 0 && (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Profesor</label>
+              <select
+                value={selectedTeacher}
+                onChange={(e) => setSelectedTeacher(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="">Toți profesorii</option>
+                {teachers.map(teacher => (
+                  <option key={teacher.id} value={teacher.id}>
+                    {teacher.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Filtru zi */}
           <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Zi</label>
             <select
-              value={selectedBranch}
-              onChange={(e) => setSelectedBranch(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-w-[150px]"
+              value={selectedDay}
+              onChange={(e) => setSelectedDay(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
-              <option value="">Toate filialele</option>
-              <option value="none">Fără filială</option>
-              {branches.map(branch => (
-                <option key={branch.id} value={branch.id}>
-                  {branch.name}
+              <option value="">Toate zilele</option>
+              {allDays.map(day => (
+                <option key={day} value={day}>
+                  {day}
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Search elevi */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Caută elev</label>
+            <input
+              type="text"
+              placeholder="Nume elev sau părinte..."
+              value={studentSearch}
+              onChange={(e) => setStudentSearch(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder:text-gray-400"
+            />
+          </div>
+        </div>
+
+        {/* Buton resetare și statistici */}
+        {hasActiveFilters && (
+          <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+            <button
+              onClick={resetFilters}
+              className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Resetează filtrele
+            </button>
+            <span className="text-sm text-gray-600">
+              {totalLessons} {totalLessons === 1 ? 'lecție' : 'lecții'} găsite
+            </span>
           </div>
         )}
       </div>
@@ -224,6 +333,18 @@ export default function OrarPage() {
                     <h3 className="font-semibold text-gray-900 mb-1">{item.name}</h3>
                     <p className="text-xs text-gray-500 mb-3">{item.course}</p>
 
+                    {/* Număr elevi */}
+                    {item.studentCount > 0 && (
+                      <div className="mb-3">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-full">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                          </svg>
+                          {item.studentCount} {item.studentCount === 1 ? 'elev' : 'elevi'}
+                        </span>
+                      </div>
+                    )}
+
                     {/* Profesor - cu telefon și email */}
                     <div className="space-y-1.5 mb-3 p-2 bg-gray-50 rounded-lg">
                       <div className="flex items-center gap-2">
@@ -275,8 +396,24 @@ export default function OrarPage() {
         
         {/* Mesaj dacă nu sunt grupe */}
         {schedule.sortedDays.every(day => schedule.scheduleByDay[day].length === 0) && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 xs:p-12 text-center text-gray-500">
-            Nu există grupe programate{selectedBranch ? ' pentru această filială' : ''}.
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 xs:p-12 text-center">
+            <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p className="text-gray-500">
+              {hasActiveFilters ? 
+                'Nu există grupe care să corespundă filtrelor selectate.' : 
+                'Nu există grupe programate.'
+              }
+            </p>
+            {hasActiveFilters && (
+              <button
+                onClick={resetFilters}
+                className="mt-4 px-4 py-2 text-sm text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors"
+              >
+                Resetează filtrele
+              </button>
+            )}
           </div>
         )}
       </div>
