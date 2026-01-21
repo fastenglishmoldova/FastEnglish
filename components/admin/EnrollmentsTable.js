@@ -55,8 +55,8 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
         setOpenStatusDropdown(null)
       }
       if (notesPanelRef.current && !notesPanelRef.current.contains(event.target)) {
-        // Don't close if clicking on the notes button
-        if (!event.target.closest('[data-notes-button]')) {
+        // Don't close if clicking on the notes button or inside the panel
+        if (!event.target.closest('[data-notes-button]') && !event.target.closest('[data-notes-panel]')) {
           setOpenNotesPanel(null)
           setNewNoteText('')
         }
@@ -235,7 +235,9 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
     return (
       <div 
         ref={notesPanelRef}
-        className="absolute z-30 mt-1 right-0 w-72 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden"
+        data-notes-panel
+        onClick={(e) => e.stopPropagation()}
+        className="absolute z-30 bottom-full mb-1 right-0 w-72 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden"
       >
         <div className="p-3 border-b border-gray-100 bg-gray-50">
           <h4 className="font-semibold text-sm text-gray-900">Notițe ({notes.length})</h4>
@@ -417,7 +419,7 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
                           </button>
                           
                           {openStatusDropdown === enrollment.id && (
-                            <div className="absolute z-20 mt-1 left-0 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+                            <div className="absolute z-20 bottom-full mb-1 left-0 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
                               {statusOptions.map((option) => (
                                 <button
                                   key={option.value}
@@ -514,7 +516,7 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
                         </button>
                         
                         {openStatusDropdown === enrollment.id && (
-                          <div className="absolute z-20 mt-1 right-0 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+                          <div className="absolute z-20 bottom-full mb-1 right-0 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
                             {statusOptions.map((option) => (
                               <button
                                 key={option.value}

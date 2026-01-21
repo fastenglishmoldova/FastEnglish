@@ -19,11 +19,6 @@ export const PERMISSIONS = {
     description: 'Poate șterge formularele de înscriere',
     category: 'Înscrieri'
   },
-  'inscrieri.manage': {
-    label: 'Gestionează înscrierile',
-    description: 'Poate procesa/șterge înscrierile',
-    category: 'Înscrieri'
-  },
 
   // Contact (mesaje de pe site)
   'contact.view': {
@@ -39,11 +34,6 @@ export const PERMISSIONS = {
   'contact.delete': {
     label: 'Șterge mesajele',
     description: 'Poate șterge mesajele de contact',
-    category: 'Contact'
-  },
-  'contact.manage': {
-    label: 'Gestionează mesajele',
-    description: 'Poate răspunde/șterge mesajele',
     category: 'Contact'
   },
 
