@@ -35,7 +35,7 @@ const statusOptions = Object.entries(statusLabels).map(([value, label]) => ({
 export default function EnrollmentsTable({ enrollments: initialEnrollments, courses = [] }) {
   const router = useRouter()
   const { hasPermission } = usePermissions()
-  const canEdit = hasPermission('inscrieri.edit')
+  const canView = hasPermission('inscrieri.view')
   const canDelete = hasPermission('inscrieri.delete')
   
   const [enrollments, setEnrollments] = useState(initialEnrollments)
@@ -45,6 +45,9 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
   const [newNoteText, setNewNoteText] = useState('')
   const [savingNote, setSavingNote] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [deletingId, setDeletingId] = useState(null)
+  const [show2FAModal, setShow2FAModal] = useState(false)
+  const [pending2FAAction, setPending2FAAction] = useState(null)
   const dropdownRef = useRef(null)
   const notesPanelRef = useRef(null)
 
@@ -180,7 +183,62 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
     }
   }
 
-  // Add new enrollment
+  // Delete enrollment with 2FA
+  const handleDeleteEnrollment = (enrollment) => {
+    setPending2FAAction({ type: 'delete', enrollment })
+    setShow2FAModal(true)
+  }
+
+  const executeDelete = async (enrollment) => {
+    setDeletingId(enrollment.id)
+    try {
+      const endpoint = enrollment.source === 'formular'
+        ? `/api/admin/inscrieri/${enrollment.id}`
+        : `/api/admin/enrollments/${enrollment.id}`
+
+      const res = await fetch(endpoint, {
+        method: 'DELETE'
+      })
+
+      if (res.ok) {
+        toast.success('Înscriere ștearsă!')
+        setEnrollments(prev => prev.filter(e => e.id !== enrollment.id))
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Eroare la ștergere')
+      }
+    } catch (error) {
+      toast.error('Eroare la ștergere')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const handle2FAVerify = async (code) => {
+    try {
+      const res = await fetch('/api/auth/verify-2fa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Cod invalid')
+      }
+
+      // Execute pending action
+      if (pending2FAAction?.type === 'delete') {
+        await executeDelete(pending2FAAction.enrollment)
+      }
+
+      setShow2FAModal(false)
+      setPending2FAAction(null)
+      return true
+    } catch (error) {
+      throw error
+    }
+  }
   const handleAddEnrollment = async (data) => {
     try {
       const res = await fetch('/api/admin/enrollments', {
@@ -237,14 +295,14 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
         ref={notesPanelRef}
         data-notes-panel
         onClick={(e) => e.stopPropagation()}
-        className="absolute z-30 bottom-full mb-1 right-0 w-72 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden"
+        className="absolute z-30 bottom-full mb-1 right-0 w-72 bg-white rounded-xl shadow-xl border border-gray-200"
       >
         <div className="p-3 border-b border-gray-100 bg-gray-50">
           <h4 className="font-semibold text-sm text-gray-900">Notițe ({notes.length})</h4>
         </div>
         
         {/* Add new note */}
-        {canEdit && (
+        {canView && (
           <div className="p-3 border-b border-gray-100">
             <textarea
               value={newNoteText}
@@ -322,7 +380,7 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 px-3 xs:px-4 py-2 text-sm xs:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-700 placeholder-gray-400"
         />
-        {canEdit && (
+        {canView && (
           <button
             onClick={() => setShowAddModal(true)}
             className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#30919f] text-white rounded-lg hover:bg-[#247a86] transition-colors text-sm font-medium whitespace-nowrap"
@@ -407,8 +465,8 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      {/* Status dropdown - clickable only if can edit */}
-                      {canEdit ? (
+                      {/* Status dropdown - clickable only if can view */}
+                      {canView ? (
                         <div className="relative" ref={openStatusDropdown === enrollment.id ? dropdownRef : null}>
                           <button
                             onClick={() => setOpenStatusDropdown(openStatusDropdown === enrollment.id ? null : enrollment.id)}
@@ -442,7 +500,21 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
                       )}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="relative inline-block">
+                      <div className="flex items-center justify-end gap-2">
+                        {/* Delete button */}
+                        {canDelete && (
+                          <button
+                            onClick={() => handleDeleteEnrollment(enrollment)}
+                            disabled={deletingId === enrollment.id}
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                            title="Șterge înscriere"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        )}
+                        
+                        {/* Notes button */}
+                        <div className="relative inline-block">
                         <button
                           data-notes-button
                           onClick={() => setOpenNotesPanel(openNotesPanel === enrollment.id ? null : enrollment.id)}
@@ -462,6 +534,7 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
                         {openNotesPanel === enrollment.id && (
                           <NotesPanel enrollment={enrollment} />
                         )}
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -504,8 +577,8 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
                       )}
                     </div>
                     
-                    {/* Status dropdown for mobile - only if can edit */}
-                    {canEdit ? (
+                    {/* Status dropdown for mobile - only if can view */}
+                    {canView ? (
                       <div className="relative" ref={openStatusDropdown === enrollment.id ? dropdownRef : null}>
                         <button
                           onClick={() => setOpenStatusDropdown(openStatusDropdown === enrollment.id ? null : enrollment.id)}
@@ -561,9 +634,9 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
                     </div>
                   </div>
 
-                  {/* Notes button for mobile */}
-                  <div className="pt-2 border-t border-gray-100">
-                    <div className="relative">
+                  {/* Notes and Delete buttons for mobile */}
+                  <div className="pt-2 border-t border-gray-100 flex gap-2">
+                    <div className="relative flex-1">
                       <button
                         data-notes-button
                         onClick={() => setOpenNotesPanel(openNotesPanel === enrollment.id ? null : enrollment.id)}
@@ -581,6 +654,17 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
                         <NotesPanel enrollment={enrollment} />
                       )}
                     </div>
+                    
+                    {/* Delete button for mobile */}
+                    {canDelete && (
+                      <button
+                        onClick={() => handleDeleteEnrollment(enrollment)}
+                        disabled={deletingId === enrollment.id}
+                        className="px-3 py-2 text-red-600 border border-red-200 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -595,6 +679,19 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
           onClose={() => setShowAddModal(false)} 
           onAdd={handleAddEnrollment}
           courses={courses}
+        />
+      )}
+
+      {/* 2FA Modal */}
+      {show2FAModal && (
+        <TwoFAModal
+          onClose={() => {
+            setShow2FAModal(false)
+            setPending2FAAction(null)
+          }}
+          onVerify={handle2FAVerify}
+          title="Confirmare ștergere"
+          description="Introdu codul 2FA pentru a confirma ștergerea."
         />
       )}
     </div>
@@ -764,6 +861,73 @@ function AddEnrollmentModal({ onClose, onAdd, courses }) {
                 className="flex-1 px-4 py-2 bg-[#30919f] text-white rounded-lg hover:bg-[#247a86] transition-colors disabled:opacity-50"
               >
                 {submitting ? 'Se adaugă...' : 'Adaugă înscriere'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TwoFAModal({ onClose, onVerify, title, description }) {
+  const [code, setCode] = useState('')
+  const [verifying, setVerifying] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    setVerifying(true)
+    
+    try {
+      await onVerify(code)
+    } catch (err) {
+      setError(err.message || 'Cod invalid')
+    } finally {
+      setVerifying(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/50" onClick={onClose} />
+        
+        <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">{title}</h2>
+          <p className="text-sm text-gray-500 mb-4">{description}</p>
+          
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <input
+                type="text"
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="Cod 2FA (6 cifre)"
+                className="w-full px-4 py-3 text-center text-2xl tracking-widest border border-gray-300 rounded-lg text-gray-700 focus:ring-2 focus:ring-[#30919f] focus:border-transparent"
+                autoFocus
+                maxLength={6}
+              />
+              {error && (
+                <p className="text-sm text-red-500 mt-2">{error}</p>
+              )}
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Anulează
+              </button>
+              <button
+                type="submit"
+                disabled={verifying || code.length !== 6}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {verifying ? 'Se verifică...' : 'Confirmă'}
               </button>
             </div>
           </form>

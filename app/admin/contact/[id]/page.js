@@ -8,7 +8,12 @@ export default async function ContactMessageDetailPage({ params }) {
   const { id } = await params
 
   const message = await prisma.contactMessage.findUnique({
-    where: { id }
+    where: { id },
+    include: {
+      contactNotes: {
+        orderBy: { createdAt: 'desc' }
+      }
+    }
   })
 
   if (!message) {

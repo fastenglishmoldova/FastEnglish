@@ -11,10 +11,10 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    // Check permission for creating enrollments
-    const permCheck = await checkPermission('inscrieri.edit')
+    // Check permission - view permission allows creating enrollments
+    const permCheck = await checkPermission('inscrieri.view')
     if (!permCheck.allowed) {
-      return NextResponse.json({ error: 'Nu ai permisiunea să adaugi înscrieri' }, { status: 403 })
+      return NextResponse.json({ error: 'Nu ai permisiunea să gestionezi înscrierile' }, { status: 403 })
     }
 
     const data = await request.json()

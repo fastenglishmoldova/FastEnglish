@@ -48,8 +48,8 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
     }
 
-    // Check permission
-    const permCheck = await checkPermission('inscrieri.edit')
+    // Check permission - view permission allows updating notes
+    const permCheck = await checkPermission('inscrieri.view')
     if (!permCheck.allowed) {
       return NextResponse.json({ error: 'Nu aveți permisiunea de a edita notițe' }, { status: 403 })
     }

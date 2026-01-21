@@ -13,26 +13,25 @@ export async function POST(request) {
     }
 
     // Check permission - view permission allows adding notes
-    const permCheck = await checkPermission('inscrieri.view')
+    const permCheck = await checkPermission('contact.view')
     if (!permCheck.allowed) {
       return NextResponse.json({ error: 'Nu aveți permisiunea de a adăuga notițe' }, { status: 403 })
     }
 
     const data = await request.json()
-    const { enrollmentId, inscriereId, content } = data
+    const { contactMessageId, content } = data
 
     if (!content || content.trim() === '') {
       return NextResponse.json({ error: 'Conținutul notiței este obligatoriu' }, { status: 400 })
     }
 
-    if (!enrollmentId && !inscriereId) {
-      return NextResponse.json({ error: 'ID-ul înscrierii este obligatoriu' }, { status: 400 })
+    if (!contactMessageId) {
+      return NextResponse.json({ error: 'ID-ul mesajului este obligatoriu' }, { status: 400 })
     }
 
-    const note = await prisma.enrollmentNote.create({
+    const note = await prisma.contactNote.create({
       data: {
-        enrollmentId: enrollmentId || undefined,
-        inscriereId: inscriereId || undefined,
+        contactMessageId,
         content: content.trim()
       }
     })
@@ -44,7 +43,7 @@ export async function POST(request) {
   }
 }
 
-// GET - Get notes for an enrollment
+// GET - Get notes for a contact message
 export async function GET(request) {
   try {
     const session = await getServerSession(authOptions)
@@ -53,17 +52,14 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url)
-    const enrollmentId = searchParams.get('enrollmentId')
-    const inscriereId = searchParams.get('inscriereId')
+    const contactMessageId = searchParams.get('contactMessageId')
 
-    if (!enrollmentId && !inscriereId) {
-      return NextResponse.json({ error: 'ID-ul înscrierii este obligatoriu' }, { status: 400 })
+    if (!contactMessageId) {
+      return NextResponse.json({ error: 'ID-ul mesajului este obligatoriu' }, { status: 400 })
     }
 
-    const notes = await prisma.enrollmentNote.findMany({
-      where: enrollmentId 
-        ? { enrollmentId } 
-        : { inscriereId },
+    const notes = await prisma.contactNote.findMany({
+      where: { contactMessageId },
       orderBy: { createdAt: 'desc' }
     })
 

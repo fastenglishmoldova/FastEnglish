@@ -19,10 +19,10 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    // Check permission for editing enrollments
-    const permCheck = await checkPermission('inscrieri.edit')
+    // Check permission - view permission allows status/notes updates
+    const permCheck = await checkPermission('inscrieri.view')
     if (!permCheck.allowed) {
-      return NextResponse.json({ error: 'Nu ai permisiunea să editezi înscrierile' }, { status: 403 })
+      return NextResponse.json({ error: 'Nu ai permisiunea să gestionezi înscrierile' }, { status: 403 })
     }
 
     const { id } = await params

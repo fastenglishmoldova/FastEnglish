@@ -10,9 +10,11 @@ import {
   UserIcon,
   CalendarIcon,
   ChatBubbleLeftIcon,
-  TrashIcon
+  TrashIcon,
+  PlusIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
+import { usePermissions } from '@/hooks/usePermissions'
 
 const statusOptions = [
   { value: 'NOU', label: 'Nou', color: 'bg-blue-100 text-blue-800 border-blue-300' },
@@ -23,10 +25,16 @@ const statusOptions = [
 
 export default function ContactMessageDetailClient({ message: initialMessage }) {
   const router = useRouter()
+  const { hasPermission } = usePermissions()
+  const canDelete = hasPermission('contact.delete')
+  
   const [message, setMessage] = useState(initialMessage)
-  const [notes, setNotes] = useState(initialMessage.notes || '')
+  const [contactNotes, setContactNotes] = useState(initialMessage.contactNotes || [])
+  const [newNoteText, setNewNoteText] = useState('')
   const [saving, setSaving] = useState(false)
+  const [savingNote, setSavingNote] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [show2FAModal, setShow2FAModal] = useState(false)
 
   const updateStatus = async (newStatus) => {
     setSaving(true)
@@ -48,28 +56,55 @@ export default function ContactMessageDetailClient({ message: initialMessage }) 
     }
   }
 
-  const saveNotes = async () => {
-    setSaving(true)
+  const addNote = async () => {
+    if (!newNoteText.trim()) return
+    
+    setSavingNote(true)
     try {
-      const res = await fetch(`/api/admin/contact/${message.id}`, {
-        method: 'PATCH',
+      const res = await fetch('/api/admin/contact-notes', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notes })
+        body: JSON.stringify({ 
+          contactMessageId: message.id,
+          content: newNoteText.trim()
+        })
       })
 
-      if (!res.ok) throw new Error('Eroare la salvare')
+      if (!res.ok) throw new Error('Eroare la adăugare')
 
-      toast.success('Note salvate!')
+      const newNote = await res.json()
+      setContactNotes([newNote, ...contactNotes])
+      setNewNoteText('')
+      toast.success('Notiță adăugată!')
     } catch (error) {
-      toast.error('Eroare la salvare')
+      toast.error('Eroare la adăugare')
     } finally {
-      setSaving(false)
+      setSavingNote(false)
     }
   }
 
-  const deleteMessage = async () => {
-    if (!confirm('Sigur vrei să ștergi acest mesaj?')) return
+  const deleteNote = async (noteId) => {
+    if (!confirm('Sigur vrei să ștergi această notiță?')) return
 
+    try {
+      const res = await fetch(`/api/admin/contact-notes/${noteId}`, {
+        method: 'DELETE'
+      })
+
+      if (!res.ok) throw new Error('Eroare la ștergere')
+
+      setContactNotes(contactNotes.filter(n => n.id !== noteId))
+      toast.success('Notiță ștearsă!')
+    } catch (error) {
+      toast.error('Eroare la ștergere')
+    }
+  }
+
+  const handleDeleteMessage = () => {
+    setShow2FAModal(true)
+  }
+
+  const executeDelete = async () => {
     setDeleting(true)
     try {
       const res = await fetch(`/api/admin/contact/${message.id}`, {
@@ -83,6 +118,27 @@ export default function ContactMessageDetailClient({ message: initialMessage }) 
     } catch (error) {
       toast.error('Eroare la ștergere')
       setDeleting(false)
+    }
+  }
+
+  const handle2FAVerify = async (code) => {
+    try {
+      const res = await fetch('/api/auth/verify-2fa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Cod invalid')
+      }
+
+      await executeDelete()
+      setShow2FAModal(false)
+      return true
+    } catch (error) {
+      throw error
     }
   }
 
@@ -103,13 +159,15 @@ export default function ContactMessageDetailClient({ message: initialMessage }) 
           </div>
         </div>
 
-        <button
-          onClick={deleteMessage}
-          disabled={deleting}
-          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-        >
-          <TrashIcon className="h-5 w-5" />
-        </button>
+        {canDelete && (
+          <button
+            onClick={handleDeleteMessage}
+            disabled={deleting}
+            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+          >
+            <TrashIcon className="h-5 w-5" />
+          </button>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4 xs:gap-6">
@@ -155,25 +213,19 @@ export default function ContactMessageDetailClient({ message: initialMessage }) 
           </div>
 
           {/* Acțiuni rapide */}
-          <div className="bg-white rounded-xl p-4 xs:p-6 border border-gray-200">
-            <h2 className="font-semibold text-gray-900 mb-4">Acțiuni Rapide</h2>
-            <div className="flex flex-wrap gap-3">
-              <a 
-                href={`mailto:${message.email}?subject=Re: Mesajul tău pe Bravito After School`}
-                className="px-4 py-2 bg-[#30919f] text-white rounded-lg hover:bg-[#247a86] transition-colors"
-              >
-                Răspunde prin Email
-              </a>
-              {message.phone && (
+          {message.phone && (
+            <div className="bg-white rounded-xl p-4 xs:p-6 border border-gray-200">
+              <h2 className="font-semibold text-gray-900 mb-4">Acțiuni Rapide</h2>
+              <div className="flex flex-wrap gap-3">
                 <a 
                   href={`tel:${message.phone}`}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="px-4 py-2 bg-[#30919f] text-white rounded-lg hover:bg-[#247a86] transition-colors"
                 >
                   Sună
                 </a>
-              )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Sidebar */}
@@ -199,23 +251,59 @@ export default function ContactMessageDetailClient({ message: initialMessage }) 
             </div>
           </div>
 
-          {/* Note */}
+          {/* Note interne */}
           <div className="bg-white rounded-xl p-4 xs:p-6 border border-gray-200">
             <h2 className="font-semibold text-gray-900 mb-4">Note interne</h2>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Adaugă note despre acest mesaj..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#30919f] focus:border-transparent resize-none"
-              rows={4}
-            />
-            <button
-              onClick={saveNotes}
-              disabled={saving}
-              className="mt-3 w-full px-4 py-2 bg-[#30919f] text-white rounded-lg hover:bg-[#247a86] transition-colors disabled:opacity-50"
-            >
-              {saving ? 'Se salvează...' : 'Salvează note'}
-            </button>
+            
+            {/* Adaugă notiță nouă */}
+            <div className="mb-4">
+              <textarea
+                value={newNoteText}
+                onChange={(e) => setNewNoteText(e.target.value)}
+                placeholder="Adaugă o notiță..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#30919f] focus:border-transparent resize-none text-gray-700"
+                rows={3}
+              />
+              <button
+                onClick={addNote}
+                disabled={savingNote || !newNoteText.trim()}
+                className="mt-2 w-full px-4 py-2 bg-[#30919f] text-white rounded-lg hover:bg-[#247a86] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                <PlusIcon className="h-4 w-4" />
+                {savingNote ? 'Se adaugă...' : 'Adaugă notiță'}
+              </button>
+            </div>
+
+            {/* Lista de notițe */}
+            {contactNotes.length > 0 ? (
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {contactNotes.map((note) => (
+                  <div key={note.id} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex justify-between items-start gap-2">
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap flex-1">{note.content}</p>
+                      <button
+                        onClick={() => deleteNote(note.id)}
+                        className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors flex-shrink-0"
+                        title="Șterge notiță"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2">
+                      {new Date(note.createdAt).toLocaleDateString('ro-RO', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 text-center py-4">Nicio notiță încă</p>
+            )}
           </div>
 
           {/* Data */}
@@ -233,6 +321,83 @@ export default function ContactMessageDetailClient({ message: initialMessage }) 
               })}
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* 2FA Modal */}
+      {show2FAModal && (
+        <TwoFAModal
+          onClose={() => setShow2FAModal(false)}
+          onVerify={handle2FAVerify}
+          title="Confirmare ștergere"
+          description="Introdu codul 2FA pentru a confirma ștergerea mesajului."
+        />
+      )}
+    </div>
+  )
+}
+
+function TwoFAModal({ onClose, onVerify, title, description }) {
+  const [code, setCode] = useState('')
+  const [verifying, setVerifying] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    setVerifying(true)
+    
+    try {
+      await onVerify(code)
+    } catch (err) {
+      setError(err.message || 'Cod invalid')
+    } finally {
+      setVerifying(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/50" onClick={onClose} />
+        
+        <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">{title}</h2>
+          <p className="text-sm text-gray-500 mb-4">{description}</p>
+          
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <input
+                type="text"
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="Cod 2FA (6 cifre)"
+                className="w-full px-4 py-3 text-center text-2xl tracking-widest border border-gray-300 rounded-lg text-gray-700 focus:ring-2 focus:ring-[#30919f] focus:border-transparent"
+                autoFocus
+                maxLength={6}
+              />
+              {error && (
+                <p className="text-sm text-red-500 mt-2">{error}</p>
+              )}
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Anulează
+              </button>
+              <button
+                type="submit"
+                disabled={verifying || code.length !== 6}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {verifying ? 'Se verifică...' : 'Confirmă'}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

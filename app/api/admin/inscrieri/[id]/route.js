@@ -12,22 +12,22 @@ export async function GET(request, { params }) {
     }
     
     // Check permission
-    const permCheck = await checkPermission('contact.view')
+    const permCheck = await checkPermission('inscrieri.view')
     if (!permCheck.allowed) {
-      return NextResponse.json({ error: 'Nu ai permisiunea să vezi mesajele de contact' }, { status: 403 })
+      return NextResponse.json({ error: 'Nu ai permisiunea să vezi înscrierile' }, { status: 403 })
     }
 
     const { id } = await params
 
-    const message = await prisma.contactMessage.findUnique({
+    const inscriere = await prisma.inscriere.findUnique({
       where: { id }
     })
 
-    if (!message) {
-      return NextResponse.json({ error: 'Mesaj negăsit' }, { status: 404 })
+    if (!inscriere) {
+      return NextResponse.json({ error: 'Înscriere negăsită' }, { status: 404 })
     }
 
-    return NextResponse.json(message)
+    return NextResponse.json(inscriere)
   } catch (error) {
     console.error('Eroare:', error)
     return NextResponse.json({ error: 'Eroare server' }, { status: 500 })
@@ -42,9 +42,9 @@ export async function PATCH(request, { params }) {
     }
     
     // Check permission - view permission allows status/notes updates
-    const permCheck = await checkPermission('contact.view')
+    const permCheck = await checkPermission('inscrieri.view')
     if (!permCheck.allowed) {
-      return NextResponse.json({ error: 'Nu ai permisiunea să gestionezi mesajele de contact' }, { status: 403 })
+      return NextResponse.json({ error: 'Nu ai permisiunea să gestionezi înscrierile' }, { status: 403 })
     }
 
     const { id } = await params
@@ -54,12 +54,12 @@ export async function PATCH(request, { params }) {
     if (data.status) updateData.status = data.status
     if (data.notes !== undefined) updateData.notes = data.notes
 
-    const message = await prisma.contactMessage.update({
+    const inscriere = await prisma.inscriere.update({
       where: { id },
       data: updateData
     })
 
-    return NextResponse.json(message)
+    return NextResponse.json(inscriere)
   } catch (error) {
     console.error('Eroare:', error)
     return NextResponse.json({ error: 'Eroare server' }, { status: 500 })
@@ -74,14 +74,14 @@ export async function DELETE(request, { params }) {
     }
     
     // Check permission
-    const permCheck = await checkPermission('contact.delete')
+    const permCheck = await checkPermission('inscrieri.delete')
     if (!permCheck.allowed) {
-      return NextResponse.json({ error: 'Nu ai permisiunea să ștergi mesajele de contact' }, { status: 403 })
+      return NextResponse.json({ error: 'Nu ai permisiunea să ștergi înscrierile' }, { status: 403 })
     }
 
     const { id } = await params
 
-    await prisma.contactMessage.delete({
+    await prisma.inscriere.delete({
       where: { id }
     })
 

@@ -6,34 +6,24 @@ export const PERMISSIONS = {
   // Înscrieri (formulare de pe site)
   'inscrieri.view': {
     label: 'Vezi înscrierile',
-    description: 'Poate vedea formularele de înscriere',
-    category: 'Înscrieri'
-  },
-  'inscrieri.edit': {
-    label: 'Editează înscrierile',
-    description: 'Poate modifica statusul/notele înscrierilor',
+    description: 'Poate vedea și gestiona formularele de înscriere (status, notițe)',
     category: 'Înscrieri'
   },
   'inscrieri.delete': {
     label: 'Șterge înscrierile',
-    description: 'Poate șterge formularele de înscriere',
+    description: 'Poate șterge formularele de înscriere (necesită 2FA)',
     category: 'Înscrieri'
   },
 
   // Contact (mesaje de pe site)
   'contact.view': {
     label: 'Vezi mesajele',
-    description: 'Poate vedea mesajele de contact',
-    category: 'Contact'
-  },
-  'contact.edit': {
-    label: 'Editează mesajele',
-    description: 'Poate modifica statusul mesajelor',
+    description: 'Poate vedea și gestiona mesajele de contact (status, notițe)',
     category: 'Contact'
   },
   'contact.delete': {
     label: 'Șterge mesajele',
-    description: 'Poate șterge mesajele de contact',
+    description: 'Poate șterge mesajele de contact (necesită 2FA)',
     category: 'Contact'
   },
 
