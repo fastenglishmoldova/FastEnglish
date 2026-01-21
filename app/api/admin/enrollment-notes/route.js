@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { getServerSession } from '@/lib/auth'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { checkPermission } from '@/lib/permissions'
 
 // POST - Create a new note
 export async function POST(request) {
   try {
-    const session = await getServerSession()
+    const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
     }
@@ -46,7 +47,7 @@ export async function POST(request) {
 // GET - Get notes for an enrollment
 export async function GET(request) {
   try {
-    const session = await getServerSession()
+    const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
     }

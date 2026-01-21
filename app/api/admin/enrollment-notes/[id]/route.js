@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { getServerSession } from '@/lib/auth'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { checkPermission } from '@/lib/permissions'
 
 // DELETE - Delete a note
 export async function DELETE(request, { params }) {
   try {
-    const session = await getServerSession()
+    const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
     }
@@ -42,7 +43,7 @@ export async function DELETE(request, { params }) {
 // PUT - Update a note
 export async function PUT(request, { params }) {
   try {
-    const session = await getServerSession()
+    const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Neautorizat' }, { status: 401 })
     }
