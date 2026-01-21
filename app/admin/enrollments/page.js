@@ -24,6 +24,12 @@ async function EnrollmentsPageContent() {
     orderBy: { createdAt: 'desc' }
   })
 
+  // Get all courses for the add modal
+  const courses = await prisma.course.findMany({
+    select: { id: true, title: true },
+    where: { active: true }
+  })
+
   // Transformă înscriererile din formular în același format
   const formattedInscrieri = inscrieri.map(i => ({
     id: i.id,
@@ -65,7 +71,7 @@ async function EnrollmentsPageContent() {
         <p className="text-sm xs:text-base text-gray-600">Gestionează înscrierile primite din toate sursele</p>
       </div>
 
-      <EnrollmentsTable enrollments={JSON.parse(JSON.stringify(allEnrollments))} />
+      <EnrollmentsTable enrollments={JSON.parse(JSON.stringify(allEnrollments))} courses={courses} />
     </div>
   )
 }
