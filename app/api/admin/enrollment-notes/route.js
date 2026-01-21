@@ -13,8 +13,8 @@ export async function POST(request) {
     }
 
     // Check permission
-    const hasPermission = await checkPermission(session.user.id, 'inscrieri.edit')
-    if (!hasPermission) {
+    const permCheck = await checkPermission('inscrieri.edit')
+    if (!permCheck.allowed) {
       return NextResponse.json({ error: 'Nu aveți permisiunea de a adăuga notițe' }, { status: 403 })
     }
 

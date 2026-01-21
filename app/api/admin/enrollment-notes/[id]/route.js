@@ -13,8 +13,8 @@ export async function DELETE(request, { params }) {
     }
 
     // Check permission
-    const hasPermission = await checkPermission(session.user.id, 'inscrieri.delete')
-    if (!hasPermission) {
+    const permCheck = await checkPermission('inscrieri.delete')
+    if (!permCheck.allowed) {
       return NextResponse.json({ error: 'Nu aveți permisiunea de a șterge notițe' }, { status: 403 })
     }
 
@@ -49,8 +49,8 @@ export async function PUT(request, { params }) {
     }
 
     // Check permission
-    const hasPermission = await checkPermission(session.user.id, 'inscrieri.edit')
-    if (!hasPermission) {
+    const permCheck = await checkPermission('inscrieri.edit')
+    if (!permCheck.allowed) {
       return NextResponse.json({ error: 'Nu aveți permisiunea de a edita notițe' }, { status: 403 })
     }
 

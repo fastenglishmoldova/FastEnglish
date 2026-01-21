@@ -312,7 +312,7 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
   }
 
   return (
-    <div className="bg-white rounded-xl xs:rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-xl xs:rounded-2xl shadow-sm border border-gray-100">
       {/* Search and Add button */}
       <div className="p-3 xs:p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-3">
         <input
