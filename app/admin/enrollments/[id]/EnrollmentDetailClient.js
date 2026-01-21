@@ -292,12 +292,6 @@ export default function EnrollmentDetailClient({ enrollment: initialEnrollment }
               >
                 Sună
               </a>
-              <a 
-                href={`mailto:${enrollment.parentEmail}?subject=Înscriere ${enrollment.studentName} - Bravito After School`}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Trimite email
-              </a>
             </div>
           </div>
         </div>
