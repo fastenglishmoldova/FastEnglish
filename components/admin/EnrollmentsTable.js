@@ -7,7 +7,8 @@ import {
   PlusIcon, 
   XMarkIcon, 
   ChevronDownIcon,
-  PencilIcon
+  TrashIcon,
+  ChatBubbleLeftIcon
 } from '@heroicons/react/24/outline'
 import { usePermissions } from '@/hooks/usePermissions'
 
@@ -39,19 +40,26 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
   
   const [enrollments, setEnrollments] = useState(initialEnrollments)
   const [search, setSearch] = useState('')
-  const [editingId, setEditingId] = useState(null)
-  const [editData, setEditData] = useState({})
   const [openStatusDropdown, setOpenStatusDropdown] = useState(null)
-  const [editingNotes, setEditingNotes] = useState({})
-  const [savingNotes, setSavingNotes] = useState({})
+  const [openNotesPanel, setOpenNotesPanel] = useState(null)
+  const [newNoteText, setNewNoteText] = useState('')
+  const [savingNote, setSavingNote] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
   const dropdownRef = useRef(null)
+  const notesPanelRef = useRef(null)
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setOpenStatusDropdown(null)
+      }
+      if (notesPanelRef.current && !notesPanelRef.current.contains(event.target)) {
+        // Don't close if clicking on the notes button
+        if (!event.target.closest('[data-notes-button]')) {
+          setOpenNotesPanel(null)
+          setNewNoteText('')
+        }
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -65,49 +73,7 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
     e.parentPhone.includes(search)
   )
 
-  const handleEdit = (enrollment) => {
-    setEditingId(enrollment.id)
-    setEditData({ status: enrollment.status, notes: enrollment.notes || '' })
-  }
-
-  const handleSave = async (id) => {
-    try {
-      const enrollment = enrollments.find(e => e.id === id)
-      const endpoint = enrollment.source === 'formular' 
-        ? `/api/admin/inscrieri/${id}`
-        : `/api/admin/enrollments/${id}`
-      
-      const res = await fetch(endpoint, {
-        method: enrollment.source === 'formular' ? 'PATCH' : 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(enrollment.source === 'formular' 
-          ? { 
-              status: editData.status === 'NEW' ? 'NOU' : 
-                      editData.status === 'CONTACTED' ? 'CONTACTAT' : 
-                      editData.status === 'CONFIRMED' ? 'CONFIRMAT' : 
-                      editData.status === 'REJECTED' ? 'RESPINS' : 'NOU',
-              notes: editData.notes 
-            }
-          : editData
-        )
-      })
-
-      if (res.ok) {
-        toast.success('Înscrierea a fost actualizată')
-        setEnrollments(prev => prev.map(e => 
-          e.id === id ? { ...e, ...editData } : e
-        ))
-        setEditingId(null)
-        router.refresh()
-      } else {
-        toast.error('Eroare la actualizare')
-      }
-    } catch (error) {
-      toast.error('Eroare la actualizare')
-    }
-  }
-
-  // Quick status update without entering edit mode
+  // Quick status update
   const updateStatusQuick = async (enrollment, newStatus) => {
     try {
       const endpoint = enrollment.source === 'formular' 
@@ -141,46 +107,83 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
     }
   }
 
-  // Quick notes update
-  const handleNotesChange = (enrollmentId, value) => {
-    setEditingNotes(prev => ({ ...prev, [enrollmentId]: value }))
-  }
-
-  const saveNotesQuick = async (enrollment) => {
-    const notes = editingNotes[enrollment.id]
-    if (notes === undefined) return
-
-    setSavingNotes(prev => ({ ...prev, [enrollment.id]: true }))
+  // Add new note
+  const addNote = async (enrollment) => {
+    if (!newNoteText.trim()) return
+    
+    setSavingNote(true)
     try {
-      const endpoint = enrollment.source === 'formular' 
-        ? `/api/admin/inscrieri/${enrollment.id}`
-        : `/api/admin/enrollments/${enrollment.id}`
-
-      const res = await fetch(endpoint, {
-        method: enrollment.source === 'formular' ? 'PATCH' : 'PUT',
+      const res = await fetch('/api/admin/enrollment-notes', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notes })
+        body: JSON.stringify({
+          enrollmentId: enrollment.source === 'modal' ? enrollment.id : undefined,
+          inscriereId: enrollment.source === 'formular' ? enrollment.id : undefined,
+          content: newNoteText.trim()
+        })
       })
 
       if (res.ok) {
-        toast.success('Notă salvată!')
-        setEnrollments(prev => prev.map(e => 
-          e.id === enrollment.id ? { ...e, notes } : e
-        ))
+        const newNote = await res.json()
+        toast.success('Notiță adăugată!')
+        
+        // Update local state
+        setEnrollments(prev => prev.map(e => {
+          if (e.id === enrollment.id) {
+            return {
+              ...e,
+              enrollmentNotes: [newNote, ...(e.enrollmentNotes || [])]
+            }
+          }
+          return e
+        }))
+        setNewNoteText('')
       } else {
-        toast.error('Eroare la salvare')
+        const err = await res.json()
+        toast.error(err.error || 'Eroare la adăugare')
       }
     } catch (error) {
-      toast.error('Eroare la salvare')
+      toast.error('Eroare la adăugare')
     } finally {
-      setSavingNotes(prev => ({ ...prev, [enrollment.id]: false }))
+      setSavingNote(false)
+    }
+  }
+
+  // Delete note
+  const deleteNote = async (enrollment, noteId) => {
+    if (!confirm('Sigur vrei să ștergi această notiță?')) return
+    
+    try {
+      const res = await fetch(`/api/admin/enrollment-notes/${noteId}`, {
+        method: 'DELETE'
+      })
+
+      if (res.ok) {
+        toast.success('Notiță ștearsă!')
+        
+        // Update local state
+        setEnrollments(prev => prev.map(e => {
+          if (e.id === enrollment.id) {
+            return {
+              ...e,
+              enrollmentNotes: (e.enrollmentNotes || []).filter(n => n.id !== noteId)
+            }
+          }
+          return e
+        }))
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Eroare la ștergere')
+      }
+    } catch (error) {
+      toast.error('Eroare la ștergere')
     }
   }
 
   // Add new enrollment
   const handleAddEnrollment = async (data) => {
     try {
-      const res = await fetch('/api/admin/inscrieri', {
+      const res = await fetch('/api/admin/enrollments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -208,6 +211,7 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
                 newInscriere.status === 'CONFIRMAT' ? 'CONFIRMED' : 
                 newInscriere.status === 'REJECTED' ? 'REJECTED' : 'NEW',
         notes: newInscriere.notes,
+        enrollmentNotes: [],
         createdAt: newInscriere.createdAt,
         updatedAt: newInscriere.updatedAt,
         course: null,
@@ -224,6 +228,87 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
     }
   }
 
+  // Notes panel component
+  const NotesPanel = ({ enrollment }) => {
+    const notes = enrollment.enrollmentNotes || []
+    
+    return (
+      <div 
+        ref={notesPanelRef}
+        className="absolute z-30 mt-1 right-0 w-72 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden"
+      >
+        <div className="p-3 border-b border-gray-100 bg-gray-50">
+          <h4 className="font-semibold text-sm text-gray-900">Notițe ({notes.length})</h4>
+        </div>
+        
+        {/* Add new note */}
+        {canEdit && (
+          <div className="p-3 border-b border-gray-100">
+            <textarea
+              value={newNoteText}
+              onChange={(e) => setNewNoteText(e.target.value)}
+              placeholder="Adaugă o notiță..."
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-[#30919f] focus:border-transparent resize-none"
+              rows={2}
+            />
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={() => addNote(enrollment)}
+                disabled={savingNote || !newNoteText.trim()}
+                className="flex-1 px-3 py-1.5 bg-[#30919f] text-white rounded-lg text-xs font-medium hover:bg-[#247a86] transition-colors disabled:opacity-50"
+              >
+                {savingNote ? 'Se salvează...' : 'Salvează'}
+              </button>
+              <button
+                onClick={() => {
+                  setNewNoteText('')
+                  setOpenNotesPanel(null)
+                }}
+                className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors"
+              >
+                Anulează
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {/* Notes list */}
+        <div className="max-h-60 overflow-y-auto">
+          {notes.length === 0 ? (
+            <div className="p-4 text-center text-sm text-gray-500">
+              Nu există notițe
+            </div>
+          ) : (
+            notes.map((note) => (
+              <div key={note.id} className="p-3 border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm text-gray-700 flex-1">{note.content}</p>
+                  {canDelete && (
+                    <button
+                      onClick={() => deleteNote(enrollment, note.id)}
+                      className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors flex-shrink-0"
+                      title="Șterge notiță"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  {new Date(note.createdAt).toLocaleDateString('ro-RO', { 
+                    day: 'numeric', 
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </p>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="bg-white rounded-xl xs:rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
       {/* Search and Add button */}
@@ -233,7 +318,7 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
           placeholder="Caută..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 px-3 xs:px-4 py-2 text-sm xs:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-700"
+          className="flex-1 px-3 xs:px-4 py-2 text-sm xs:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-700 placeholder-gray-400"
         />
         {canEdit && (
           <button
@@ -258,22 +343,19 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Părinte</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Note</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acțiuni</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Notițe</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredEnrollments.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
+                <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                   Nu există înscrieri
                 </td>
               </tr>
             ) : (
               filteredEnrollments.map((enrollment) => {
-                const currentNotes = editingNotes[enrollment.id] !== undefined 
-                  ? editingNotes[enrollment.id] 
-                  : (enrollment.notes || '')
+                const notesCount = (enrollment.enrollmentNotes || []).length
                 
                 return (
                   <tr key={enrollment.id} className="hover:bg-gray-50">
@@ -357,47 +439,28 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4">
-                      {/* Inline notes editing - only if can edit */}
-                      {canEdit ? (
-                        <div className="flex items-center gap-1">
-                          <input
-                            type="text"
-                            value={currentNotes}
-                            onChange={(e) => handleNotesChange(enrollment.id, e.target.value)}
-                            onBlur={() => {
-                              if (editingNotes[enrollment.id] !== undefined && editingNotes[enrollment.id] !== (enrollment.notes || '')) {
-                                saveNotesQuick(enrollment)
-                              }
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.target.blur()
-                              }
-                            }}
-                            placeholder="Notițe..."
-                            className="text-sm border border-gray-200 rounded px-2 py-1 w-32 text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-[#30919f] focus:border-transparent bg-gray-50 focus:bg-white transition-colors"
-                          />
-                          {savingNotes[enrollment.id] && (
-                            <span className="text-xs text-gray-400">...</span>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-sm text-gray-500 truncate block max-w-[120px]">
-                          {enrollment.notes || '-'}
-                        </span>
-                      )}
-                    </td>
                     <td className="px-6 py-4 text-right">
-                      {canEdit && (
+                      <div className="relative inline-block">
                         <button
-                          onClick={() => handleEdit(enrollment)}
-                          className="text-indigo-600 hover:text-indigo-900 p-1.5 hover:bg-indigo-50 rounded-lg transition-colors"
-                          title="Editează complet"
+                          data-notes-button
+                          onClick={() => setOpenNotesPanel(openNotesPanel === enrollment.id ? null : enrollment.id)}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors ${
+                            notesCount > 0 
+                              ? 'bg-[#30919f]/10 text-[#30919f] hover:bg-[#30919f]/20' 
+                              : 'text-gray-500 hover:bg-gray-100'
+                          }`}
+                          title={`${notesCount} notițe`}
                         >
-                          <PencilIcon className="h-4 w-4" />
+                          <ChatBubbleLeftIcon className="h-4 w-4" />
+                          {notesCount > 0 && (
+                            <span className="font-medium">{notesCount}</span>
+                          )}
                         </button>
-                      )}
+                        
+                        {openNotesPanel === enrollment.id && (
+                          <NotesPanel enrollment={enrollment} />
+                        )}
+                      </div>
                     </td>
                   </tr>
                 )
@@ -415,186 +478,109 @@ export default function EnrollmentsTable({ enrollments: initialEnrollments, cour
           </div>
         ) : (
           filteredEnrollments.map((enrollment) => {
-            const currentNotes = editingNotes[enrollment.id] !== undefined 
-              ? editingNotes[enrollment.id] 
-              : (enrollment.notes || '')
+            const notesCount = (enrollment.enrollmentNotes || []).length
 
             return (
               <div key={enrollment.id} className="p-3 xs:p-4 hover:bg-gray-50">
-                {editingId === enrollment.id ? (
-                  // Full Edit Mode
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm xs:text-base text-gray-900">{enrollment.studentName}</h3>
-                        <p className="text-xs xs:text-sm text-gray-500">{enrollment.course?.title || '-'}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div>
-                        <label className="block text-[10px] xs:text-xs text-gray-500 mb-1">Status</label>
-                        <select
-                          value={editData.status}
-                          onChange={(e) => setEditData(prev => ({ ...prev, status: e.target.value }))}
-                          className="w-full text-xs xs:text-sm border border-gray-300 rounded px-2 py-1.5 text-gray-700"
-                        >
-                          {Object.keys(statusLabels).map(status => (
-                            <option key={status} value={status}>{statusLabels[status]}</option>
+                <div className="space-y-2 xs:space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm xs:text-base text-gray-900 leading-tight">{enrollment.studentName}</h3>
+                      {enrollment.source === 'formular' ? (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {enrollment.cursuri?.map((curs, idx) => (
+                            <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">
+                              {curs}
+                            </span>
                           ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] xs:text-xs text-gray-500 mb-1">Note</label>
-                        <textarea
-                          value={editData.notes}
-                          onChange={(e) => setEditData(prev => ({ ...prev, notes: e.target.value }))}
-                          className="w-full text-xs xs:text-sm border border-gray-300 rounded px-2 py-1.5 text-gray-700 placeholder-gray-400 resize-none"
-                          rows={3}
-                          placeholder="Note..."
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2 pt-2">
-                      <button
-                        onClick={() => handleSave(enrollment.id)}
-                        className="flex-1 px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs xs:text-sm font-medium hover:bg-green-700"
-                      >
-                        Salvează
-                      </button>
-                      <button
-                        onClick={() => setEditingId(null)}
-                        className="flex-1 px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg text-xs xs:text-sm font-medium hover:bg-gray-50"
-                      >
-                        Anulează
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  // View Mode with inline status and notes
-                  <div className="space-y-2 xs:space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm xs:text-base text-gray-900 leading-tight">{enrollment.studentName}</h3>
-                        {enrollment.source === 'formular' ? (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {enrollment.cursuri?.map((curs, idx) => (
-                              <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">
-                                {curs}
-                              </span>
-                            ))}
-                            {enrollment.clasa && (
-                              <span className="text-xs text-gray-500">Clasa {enrollment.clasa}</span>
-                            )}
-                          </div>
-                        ) : (
-                          <p className="text-xs xs:text-sm text-gray-500">{enrollment.course?.title || '-'}</p>
-                        )}
-                      </div>
-                      
-                      {/* Status dropdown for mobile - only if can edit */}
-                      {canEdit ? (
-                        <div className="relative" ref={openStatusDropdown === enrollment.id ? dropdownRef : null}>
-                          <button
-                            onClick={() => setOpenStatusDropdown(openStatusDropdown === enrollment.id ? null : enrollment.id)}
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] xs:text-xs font-medium whitespace-nowrap flex-shrink-0 ${statusColors[enrollment.status]}`}
-                          >
-                            {statusLabels[enrollment.status]}
-                            <ChevronDownIcon className="h-3 w-3" />
-                          </button>
-                          
-                          {openStatusDropdown === enrollment.id && (
-                            <div className="absolute z-20 mt-1 right-0 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                              {statusOptions.map((option) => (
-                                <button
-                                  key={option.value}
-                                  onClick={() => updateStatusQuick(enrollment, option.value)}
-                                  className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-gray-50 ${
-                                    enrollment.status === option.value ? 'bg-gray-50 font-medium' : ''
-                                  }`}
-                                >
-                                  <span className={`w-2 h-2 rounded-full ${option.color.split(' ')[0]}`}></span>
-                                  {option.label}
-                                </button>
-                              ))}
-                            </div>
+                          {enrollment.clasa && (
+                            <span className="text-xs text-gray-500">Clasa {enrollment.clasa}</span>
                           )}
                         </div>
                       ) : (
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] xs:text-xs font-medium whitespace-nowrap flex-shrink-0 ${statusColors[enrollment.status]}`}>
-                          {statusLabels[enrollment.status]}
-                        </span>
+                        <p className="text-xs xs:text-sm text-gray-500">{enrollment.course?.title || '-'}</p>
                       )}
                     </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-xs xs:text-sm">
-                      <div>
-                        <span className="text-gray-500 block mb-0.5">Părinte</span>
-                        <span className="text-gray-900 font-medium">{enrollment.parentName}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500 block mb-0.5">Vârstă</span>
-                        <span className="text-gray-900 font-medium">{enrollment.studentAge ? `${enrollment.studentAge} ani` : '-'}</span>
-                      </div>
-                      <div className="col-span-2">
-                        <span className="text-gray-500 block mb-0.5">Contact</span>
-                        <div className="space-y-0.5">
-                          <a href={`tel:${enrollment.parentPhone}`} className="text-gray-900 font-medium block hover:text-[#30919f]">{enrollment.parentPhone}</a>
-                          <a href={`mailto:${enrollment.parentEmail}`} className="text-gray-500 text-xs break-all hover:text-[#30919f]">{enrollment.parentEmail}</a>
-                        </div>
-                      </div>
-                      <div className="col-span-2">
-                        <span className="text-gray-500 block mb-0.5">Data</span>
-                        <span className="text-gray-900">{new Date(enrollment.createdAt).toLocaleDateString('ro-RO')}</span>
-                      </div>
-                    </div>
-
-                    {/* Inline notes for mobile - only if can edit */}
+                    
+                    {/* Status dropdown for mobile - only if can edit */}
                     {canEdit ? (
-                      <div className="pt-2 border-t border-gray-100">
-                        <div className="flex gap-2">
-                          <textarea
-                            value={currentNotes}
-                            onChange={(e) => handleNotesChange(enrollment.id, e.target.value)}
-                            onBlur={() => {
-                              if (editingNotes[enrollment.id] !== undefined && editingNotes[enrollment.id] !== (enrollment.notes || '')) {
-                                saveNotesQuick(enrollment)
-                              }
-                            }}
-                            placeholder="Adaugă notițe..."
-                            className="flex-1 px-3 py-2 text-xs xs:text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#30919f] focus:border-transparent resize-none bg-gray-50 focus:bg-white transition-colors"
-                            rows={2}
-                          />
-                          {editingNotes[enrollment.id] !== undefined && editingNotes[enrollment.id] !== (enrollment.notes || '') && (
-                            <button
-                              onClick={() => saveNotesQuick(enrollment)}
-                              disabled={savingNotes[enrollment.id]}
-                              className="px-3 py-2 text-xs bg-[#30919f] text-white rounded-lg hover:bg-[#247a86] transition-colors disabled:opacity-50 self-end"
-                            >
-                              {savingNotes[enrollment.id] ? '...' : 'Salvează'}
-                            </button>
-                          )}
-                        </div>
+                      <div className="relative" ref={openStatusDropdown === enrollment.id ? dropdownRef : null}>
+                        <button
+                          onClick={() => setOpenStatusDropdown(openStatusDropdown === enrollment.id ? null : enrollment.id)}
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] xs:text-xs font-medium whitespace-nowrap flex-shrink-0 ${statusColors[enrollment.status]}`}
+                        >
+                          {statusLabels[enrollment.status]}
+                          <ChevronDownIcon className="h-3 w-3" />
+                        </button>
+                        
+                        {openStatusDropdown === enrollment.id && (
+                          <div className="absolute z-20 mt-1 right-0 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+                            {statusOptions.map((option) => (
+                              <button
+                                key={option.value}
+                                onClick={() => updateStatusQuick(enrollment, option.value)}
+                                className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-gray-50 ${
+                                  enrollment.status === option.value ? 'bg-gray-50 font-medium' : ''
+                                }`}
+                              >
+                                <span className={`w-2 h-2 rounded-full ${option.color.split(' ')[0]}`}></span>
+                                {option.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    ) : enrollment.notes ? (
-                      <div className="pt-2 border-t border-gray-100">
-                        <span className="text-gray-500 text-xs block mb-0.5">Note</span>
-                        <p className="text-gray-900 text-xs xs:text-sm">{enrollment.notes}</p>
-                      </div>
-                    ) : null}
-
-                    {canEdit && (
-                      <button
-                        onClick={() => handleEdit(enrollment)}
-                        className="w-full px-3 py-1.5 border border-gray-200 text-gray-700 rounded-lg text-xs xs:text-sm font-medium hover:bg-gray-50 mt-2 flex items-center justify-center gap-2"
-                      >
-                        <PencilIcon className="h-4 w-4" />
-                        Editează complet
-                      </button>
+                    ) : (
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] xs:text-xs font-medium whitespace-nowrap flex-shrink-0 ${statusColors[enrollment.status]}`}>
+                        {statusLabels[enrollment.status]}
+                      </span>
                     )}
                   </div>
-                )}
+
+                  <div className="grid grid-cols-2 gap-2 text-xs xs:text-sm">
+                    <div>
+                      <span className="text-gray-500 block mb-0.5">Părinte</span>
+                      <span className="text-gray-900 font-medium">{enrollment.parentName}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 block mb-0.5">Vârstă</span>
+                      <span className="text-gray-900 font-medium">{enrollment.studentAge ? `${enrollment.studentAge} ani` : '-'}</span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-gray-500 block mb-0.5">Contact</span>
+                      <div className="space-y-0.5">
+                        <a href={`tel:${enrollment.parentPhone}`} className="text-gray-900 font-medium block hover:text-[#30919f]">{enrollment.parentPhone}</a>
+                        <a href={`mailto:${enrollment.parentEmail}`} className="text-gray-500 text-xs break-all hover:text-[#30919f]">{enrollment.parentEmail}</a>
+                      </div>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-gray-500 block mb-0.5">Data</span>
+                      <span className="text-gray-900">{new Date(enrollment.createdAt).toLocaleDateString('ro-RO')}</span>
+                    </div>
+                  </div>
+
+                  {/* Notes button for mobile */}
+                  <div className="pt-2 border-t border-gray-100">
+                    <div className="relative">
+                      <button
+                        data-notes-button
+                        onClick={() => setOpenNotesPanel(openNotesPanel === enrollment.id ? null : enrollment.id)}
+                        className={`w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          notesCount > 0 
+                            ? 'bg-[#30919f]/10 text-[#30919f] hover:bg-[#30919f]/20' 
+                            : 'border border-gray-200 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <ChatBubbleLeftIcon className="h-4 w-4" />
+                        Notițe {notesCount > 0 && `(${notesCount})`}
+                      </button>
+                      
+                      {openNotesPanel === enrollment.id && (
+                        <NotesPanel enrollment={enrollment} />
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             )
           })
@@ -758,17 +744,6 @@ function AddEnrollmentModal({ onClose, onAdd, courses }) {
                 value={formData.mesaj}
                 onChange={(e) => setFormData({ ...formData, mesaj: e.target.value })}
                 rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-700 focus:ring-2 focus:ring-[#30919f] focus:border-transparent resize-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notițe interne</label>
-              <textarea
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                rows={2}
-                placeholder="Notițe vizibile doar pentru admin..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-700 focus:ring-2 focus:ring-[#30919f] focus:border-transparent resize-none"
               />
             </div>

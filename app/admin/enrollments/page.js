@@ -16,12 +16,22 @@ async function EnrollmentsPageContent() {
   // Înscrieri din modalul de pe homepage (cu curs specific)
   const enrollments = await prisma.enrollment.findMany({
     orderBy: { createdAt: 'desc' },
-    include: { course: true }
+    include: { 
+      course: true,
+      enrollmentNotes: {
+        orderBy: { createdAt: 'desc' }
+      }
+    }
   })
 
   // Înscrieri din formularul /inscriere
   const inscrieri = await prisma.inscriere.findMany({
-    orderBy: { createdAt: 'desc' }
+    orderBy: { createdAt: 'desc' },
+    include: {
+      inscriereNotes: {
+        orderBy: { createdAt: 'desc' }
+      }
+    }
   })
 
   // Get all courses for the add modal
@@ -45,6 +55,7 @@ async function EnrollmentsPageContent() {
             i.status === 'CONFIRMAT' ? 'CONFIRMED' : 
             i.status === 'RESPINS' ? 'REJECTED' : 'NEW',
     notes: i.notes,
+    enrollmentNotes: i.inscriereNotes || [],
     createdAt: i.createdAt,
     updatedAt: i.updatedAt,
     course: null,
@@ -57,6 +68,7 @@ async function EnrollmentsPageContent() {
   // Formatează enrollments să aibă source
   const formattedEnrollments = enrollments.map(e => ({
     ...e,
+    enrollmentNotes: e.enrollmentNotes || [],
     source: 'modal'
   }))
 

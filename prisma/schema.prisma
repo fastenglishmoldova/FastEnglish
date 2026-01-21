@@ -257,14 +257,29 @@ model Enrollment {
   city          String?
   observations  String?
   status        EnrollmentStatus @default(NEW)
-  notes         String?
+  notes         String?          // Legacy - kept for backwards compatibility
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
   // Relations
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course        Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  enrollmentNotes EnrollmentNote[] @relation("EnrollmentNotes")
 
   @@map("enrollments")
+}
+
+model EnrollmentNote {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  enrollmentId String   @db.ObjectId
+  inscriereId  String?  @db.ObjectId
+  content      String
+  createdAt    DateTime @default(now())
+  
+  // Relations
+  enrollment   Enrollment? @relation("EnrollmentNotes", fields: [enrollmentId], references: [id], onDelete: Cascade)
+  inscriere    Inscriere?  @relation("InscriereNotes", fields: [inscriereId], references: [id], onDelete: Cascade)
+  
+  @@map("enrollment_notes")
 }
 
 enum EnrollmentStatus {
@@ -574,9 +589,12 @@ model Inscriere {
   cursuri      String[]
   mesaj        String?
   status       InscriereStatus @default(NOU)
-  notes        String?
+  notes        String?         // Legacy - kept for backwards compatibility
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
+  
+  // Relations
+  inscriereNotes EnrollmentNote[] @relation("InscriereNotes")
 
   @@map("inscrieri")
 }
