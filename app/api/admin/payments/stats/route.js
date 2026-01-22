@@ -32,9 +32,17 @@ export async function GET(request) {
             group: {
               include: {
                 course: true,
-                branch: true
+                branch: true,
+                teacher: true
               }
             }
+          }
+        },
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            role: true
           }
         }
       },
@@ -43,6 +51,22 @@ export async function GET(request) {
 
     // Get all branches for filter
     const branches = await prisma.branch.findMany({
+      orderBy: { name: 'asc' }
+    })
+
+    // Get all teachers for filter (users with TEACHER role or who have created payments)
+    const teachers = await prisma.user.findMany({
+      where: {
+        OR: [
+          { role: 'TEACHER' },
+          { id: { in: payments.map(p => p.createdById).filter(Boolean) } }
+        ]
+      },
+      select: {
+        id: true,
+        name: true,
+        role: true
+      },
       orderBy: { name: 'asc' }
     })
 
@@ -83,7 +107,12 @@ export async function GET(request) {
         groupName: payment.groupStudent.group.name,
         courseName: payment.groupStudent.group.course?.title,
         branchId: payment.groupStudent.group.branchId,
-        branchName: payment.groupStudent.group.branch?.name || 'Fără filială'
+        branchName: payment.groupStudent.group.branch?.name || 'Fără filială',
+        teacherId: payment.groupStudent.group.teacherId,
+        teacherName: payment.groupStudent.group.teacher?.name || 'Neassignat',
+        createdById: payment.createdById,
+        createdByName: payment.createdBy?.name || 'Necunoscut',
+        createdByRole: payment.createdBy?.role || 'UNKNOWN'
       })
     })
 
@@ -100,11 +129,30 @@ export async function GET(request) {
       uniqueStudents: new Set(payments.map(p => p.groupStudent.studentId)).size
     }
 
+    // Calculate stats per teacher (who created payments)
+    const teacherStats = {}
+    payments.forEach(p => {
+      const creatorId = p.createdById || 'unknown'
+      const creatorName = p.createdBy?.name || 'Necunoscut'
+      if (!teacherStats[creatorId]) {
+        teacherStats[creatorId] = {
+          id: creatorId,
+          name: creatorName,
+          totalAmount: 0,
+          totalPayments: 0
+        }
+      }
+      teacherStats[creatorId].totalAmount += p.amount
+      teacherStats[creatorId].totalPayments += 1
+    })
+
     return NextResponse.json({
       year,
       months: result,
       yearTotal,
-      branches
+      branches,
+      teachers,
+      teacherStats: Object.values(teacherStats).sort((a, b) => b.totalAmount - a.totalAmount)
     })
   } catch (error) {
     console.error('GET payment stats error:', error)

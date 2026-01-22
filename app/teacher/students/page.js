@@ -9,8 +9,13 @@ import {
   AcademicCapIcon,
   ChevronDownIcon,
   ChevronUpIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  PlusIcon,
+  XMarkIcon,
+  BanknotesIcon,
+  UserPlusIcon
 } from '@heroicons/react/24/outline'
+import toast from 'react-hot-toast'
 
 // Helper pentru formatarea programului
 const formatSchedule = (scheduleDays, scheduleTime) => {
@@ -43,6 +48,49 @@ export default function TeacherStudentsPage() {
   const [selectedGroup, setSelectedGroup] = useState('')
   const [expandedStudent, setExpandedStudent] = useState(null)
   const [sortBy, setSortBy] = useState('name') // name, attendance, absences
+  const [updatingStatus, setUpdatingStatus] = useState(null) // groupStudentId being updated
+  
+  // Modal states
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [showAddToGroupModal, setShowAddToGroupModal] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState(null)
+  const [creating, setCreating] = useState(false)
+  const [addingPayment, setAddingPayment] = useState(false)
+  const [addingToGroup, setAddingToGroup] = useState(false)
+  
+  // Form data
+  const [studentForm, setStudentForm] = useState({
+    fullName: '',
+    age: '',
+    parentName: '',
+    parentPhone: '',
+    parentEmail: '',
+    notes: ''
+  })
+  const [paymentForm, setPaymentForm] = useState({
+    groupStudentId: '',
+    amount: '',
+    lessonsAdded: '',
+    paymentMethod: 'cash',
+    notes: ''
+  })
+  const [addToGroupForm, setAddToGroupForm] = useState({
+    groupId: ''
+  })
+
+  // Status options for students
+  const STATUS_OPTIONS = [
+    { value: 'ACTIVE', label: 'Activ', color: 'bg-green-100 text-green-700' },
+    { value: 'PAUSED', label: 'Pauză', color: 'bg-yellow-100 text-yellow-700' },
+    { value: 'LEFT', label: 'Plecat', color: 'bg-red-100 text-red-700' },
+    { value: 'COMPLETED', label: 'Terminat', color: 'bg-blue-100 text-blue-700' },
+    { value: 'TRANSFERRED', label: 'Transferat', color: 'bg-purple-100 text-purple-700' }
+  ]
+
+  const getStatusInfo = (status) => {
+    return STATUS_OPTIONS.find(s => s.value === status) || STATUS_OPTIONS[0]
+  }
 
   useEffect(() => {
     fetchData()
@@ -58,6 +106,173 @@ export default function TeacherStudentsPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Create new student
+  const handleCreateStudent = async (e) => {
+    e.preventDefault()
+    if (!studentForm.fullName.trim()) {
+      toast.error('Numele elevului este obligatoriu')
+      return
+    }
+
+    setCreating(true)
+    try {
+      const res = await fetch('/api/teacher/my-students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(studentForm)
+      })
+
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.error || 'Eroare la creare')
+      }
+
+      toast.success('Elev creat cu succes!')
+      setShowCreateModal(false)
+      setStudentForm({ fullName: '', age: '', parentName: '', parentPhone: '', parentEmail: '', notes: '' })
+      fetchData()
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  // Add payment
+  const handleAddPayment = async (e) => {
+    e.preventDefault()
+    if (!paymentForm.groupStudentId) {
+      toast.error('Selectează o grupă')
+      return
+    }
+    if (!paymentForm.amount || parseFloat(paymentForm.amount) <= 0) {
+      toast.error('Introdu o sumă validă')
+      return
+    }
+    if (!paymentForm.lessonsAdded || parseInt(paymentForm.lessonsAdded) <= 0) {
+      toast.error('Introdu numărul de lecții (minim 1)')
+      return
+    }
+
+    setAddingPayment(true)
+    try {
+      const res = await fetch('/api/teacher/my-payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          groupStudentId: paymentForm.groupStudentId,
+          amount: paymentForm.amount,
+          lessonsToAdd: paymentForm.lessonsAdded,
+          paymentMethod: paymentForm.paymentMethod,
+          notes: paymentForm.notes
+        })
+      })
+
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.error || 'Eroare la adăugare plată')
+      }
+
+      toast.success('Plată înregistrată cu succes!')
+      setShowPaymentModal(false)
+      setPaymentForm({ groupStudentId: '', amount: '', lessonsAdded: '', paymentMethod: 'cash', notes: '' })
+      setSelectedStudent(null)
+      fetchData()
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setAddingPayment(false)
+    }
+  }
+
+  // Update student status in a group
+  const handleStatusChange = async (groupStudentId, newStatus) => {
+    if (newStatus === 'TRANSFERRED') {
+      toast.error('Statusul "Transferat" este setat automat de admin')
+      return
+    }
+
+    setUpdatingStatus(groupStudentId)
+    try {
+      const res = await fetch(`/api/teacher/students/${groupStudentId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      })
+
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.error || 'Eroare la actualizarea statusului')
+      }
+
+      toast.success('Status actualizat!')
+      fetchData()
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setUpdatingStatus(null)
+    }
+  }
+
+  // Add student to group
+  const handleAddToGroup = async (e) => {
+    e.preventDefault()
+    if (!addToGroupForm.groupId || !selectedStudent) {
+      toast.error('Selectează o grupă')
+      return
+    }
+
+    setAddingToGroup(true)
+    try {
+      const res = await fetch(`/api/teacher/my-groups/${addToGroupForm.groupId}/students`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId: selectedStudent.id })
+      })
+
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.error || 'Eroare la adăugare în grupă')
+      }
+
+      toast.success('Elev adăugat în grupă!')
+      setShowAddToGroupModal(false)
+      setAddToGroupForm({ groupId: '' })
+      setSelectedStudent(null)
+      fetchData()
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setAddingToGroup(false)
+    }
+  }
+
+  // Open payment modal for a student
+  const openPaymentModal = (student) => {
+    setSelectedStudent(student)
+    setPaymentForm({ 
+      groupStudentId: student.groups[0]?.groupStudentId || '', 
+      amount: '', 
+      lessonsAdded: '', 
+      paymentMethod: 'cash', 
+      notes: '' 
+    })
+    setShowPaymentModal(true)
+  }
+
+  // Open add to group modal
+  const openAddToGroupModal = (student) => {
+    setSelectedStudent(student)
+    setAddToGroupForm({ groupId: '' })
+    setShowAddToGroupModal(true)
+  }
+
+  // Get groups where student is not enrolled
+  const getAvailableGroups = (student) => {
+    const studentGroupIds = student.groups.map(g => g.groupId)
+    return data?.groups?.filter(g => !studentGroupIds.includes(g.id)) || []
   }
 
   const filteredStudents = data?.students?.filter(student => {
@@ -111,9 +326,18 @@ export default function TeacherStudentsPage() {
   return (
     <div className="space-y-4 xs:space-y-5 md:space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-xl xs:text-2xl font-bold text-gray-900">Elevii Mei</h1>
-        <p className="text-gray-600 mt-1 text-xs xs:text-sm md:text-base">Vezi toți elevii din grupele tale și informațiile lor</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <h1 className="text-xl xs:text-2xl font-bold text-gray-900">Elevii Mei</h1>
+          <p className="text-gray-600 mt-1 text-xs xs:text-sm md:text-base">Vezi toți elevii din grupele tale și informațiile lor</p>
+        </div>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded-lg transition-colors text-sm"
+        >
+          <PlusIcon className="w-4 h-4" />
+          Elev Nou
+        </button>
       </div>
 
       {/* Stats Cards */}
@@ -400,7 +624,7 @@ export default function TeacherStudentsPage() {
                             className="bg-white rounded-lg border border-gray-200 p-2.5 xs:p-3"
                           >
                             <div className="flex items-start justify-between mb-1.5 xs:mb-2">
-                              <div className="min-w-0">
+                              <div className="min-w-0 flex-1">
                                 <Link 
                                   href={`/teacher/groups/${group.groupId}`}
                                   className="font-medium text-gray-900 hover:text-[#30919f] text-xs xs:text-sm truncate block"
@@ -412,6 +636,27 @@ export default function TeacherStudentsPage() {
                               <div className={`px-1.5 xs:px-2 py-0.5 rounded text-[10px] xs:text-xs font-medium ${getAttendanceColor(group.attendanceRate)}`}>
                                 {group.attendanceRate}%
                               </div>
+                            </div>
+
+                            {/* Status Selector */}
+                            <div className="mb-2">
+                              <select
+                                value={group.status || 'ACTIVE'}
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  handleStatusChange(group.groupStudentId, e.target.value)
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                disabled={updatingStatus === group.groupStudentId || group.status === 'TRANSFERRED'}
+                                className={`w-full px-2 py-1 rounded text-[10px] xs:text-xs font-medium border-0 cursor-pointer disabled:cursor-not-allowed ${getStatusInfo(group.status || 'ACTIVE').color}`}
+                              >
+                                {STATUS_OPTIONS.filter(s => s.value !== 'TRANSFERRED').map(s => (
+                                  <option key={s.value} value={s.value}>{s.label}</option>
+                                ))}
+                                {group.status === 'TRANSFERRED' && (
+                                  <option value="TRANSFERRED">Transferat</option>
+                                )}
+                              </select>
                             </div>
                             
                             {group.scheduleDays?.length > 0 && (
@@ -459,6 +704,26 @@ export default function TeacherStudentsPage() {
                           </div>
                         </div>
                       </div>
+
+                      {/* Action Buttons */}
+                      <div className="mt-3 xs:mt-4 flex flex-wrap gap-2">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); openPaymentModal(student); }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-xs xs:text-sm font-medium transition-colors"
+                        >
+                          <BanknotesIcon className="w-4 h-4" />
+                          Adaugă Plată
+                        </button>
+                        {getAvailableGroups(student).length > 0 && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); openAddToGroupModal(student); }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-xs xs:text-sm font-medium transition-colors"
+                          >
+                            <UserPlusIcon className="w-4 h-4" />
+                            Adaugă în Grupă
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -467,6 +732,228 @@ export default function TeacherStudentsPage() {
           )})
         )}
       </div>
+
+      {/* Create Student Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold text-gray-900">Elev Nou</h2>
+              <button onClick={() => setShowCreateModal(false)} className="p-1 hover:bg-gray-100 rounded text-gray-700">
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleCreateStudent} className="p-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Nume Complet *</label>
+                <input
+                  type="text"
+                  value={studentForm.fullName}
+                  onChange={(e) => setStudentForm({ ...studentForm, fullName: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder-gray-500"
+                  placeholder="Ex: Ion Popescu"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Vârstă</label>
+                  <input
+                    type="number"
+                    value={studentForm.age}
+                    onChange={(e) => setStudentForm({ ...studentForm, age: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder-gray-500"
+                    placeholder="Ex: 10"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Nume Părinte</label>
+                  <input
+                    type="text"
+                    value={studentForm.parentName}
+                    onChange={(e) => setStudentForm({ ...studentForm, parentName: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder-gray-500"
+                    placeholder="Ex: Maria Popescu"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Telefon Părinte</label>
+                  <input
+                    type="tel"
+                    value={studentForm.parentPhone}
+                    onChange={(e) => setStudentForm({ ...studentForm, parentPhone: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder-gray-500"
+                    placeholder="Ex: 0722123456"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Email Părinte</label>
+                  <input
+                    type="email"
+                    value={studentForm.parentEmail}
+                    onChange={(e) => setStudentForm({ ...studentForm, parentEmail: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder-gray-500"
+                    placeholder="Ex: email@exemplu.ro"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Notițe</label>
+                <textarea
+                  value={studentForm.notes}
+                  onChange={(e) => setStudentForm({ ...studentForm, notes: e.target.value })}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-gray-900 placeholder-gray-500"
+                  placeholder="Observații despre elev..."
+                />
+              </div>
+              <p className="text-xs text-gray-500">Elevul va fi creat cu 0 lecții. Adaugă-l într-o grupă și înregistrează o plată pentru a-i adăuga lecții.</p>
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => setShowCreateModal(false)} className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
+                  Anulează
+                </button>
+                <button type="submit" disabled={creating} className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50">
+                  {creating ? 'Se creează...' : 'Creează'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Modal */}
+      {showPaymentModal && selectedStudent && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold text-gray-900">Adaugă Plată</h2>
+              <button onClick={() => { setShowPaymentModal(false); setSelectedStudent(null); }} className="p-1 hover:bg-gray-100 rounded text-gray-700">
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleAddPayment} className="p-4 space-y-4">
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="font-medium text-gray-900">{selectedStudent.name}</div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Grupa *</label>
+                <select
+                  value={paymentForm.groupStudentId}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, groupStudentId: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-gray-900"
+                  required
+                >
+                  <option value="">Selectează grupa</option>
+                  {selectedStudent.groups.map(g => (
+                    <option key={g.groupStudentId} value={g.groupStudentId}>
+                      {g.groupName} ({g.remainingLessons} ore rămase)
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Sumă (MDL) *</label>
+                  <input
+                    type="number"
+                    value={paymentForm.amount}
+                    onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-gray-900"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">Lecții Adăugate *</label>
+                  <input
+                    type="number"
+                    value={paymentForm.lessonsAdded}
+                    onChange={(e) => setPaymentForm({ ...paymentForm, lessonsAdded: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-gray-900"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Metodă Plată</label>
+                <select
+                  value={paymentForm.paymentMethod}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, paymentMethod: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-gray-900"
+                >
+                  <option value="cash">Cash</option>
+                  <option value="card">Card</option>
+                  <option value="transfer">Transfer Bancar</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Notițe</label>
+                <input
+                  type="text"
+                  value={paymentForm.notes}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-gray-900"
+                  placeholder="Ex: Plată pentru luna ianuarie"
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => { setShowPaymentModal(false); setSelectedStudent(null); }} className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
+                  Anulează
+                </button>
+                <button type="submit" disabled={addingPayment} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50">
+                  {addingPayment ? 'Se adaugă...' : 'Înregistrează Plata'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add to Group Modal */}
+      {showAddToGroupModal && selectedStudent && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold">Adaugă în Grupă</h2>
+              <button onClick={() => { setShowAddToGroupModal(false); setSelectedStudent(null); }} className="p-1 hover:bg-gray-100 rounded">
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleAddToGroup} className="p-4 space-y-4">
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="font-medium">{selectedStudent.name}</div>
+                <div className="text-sm text-gray-500">
+                  Grupe actuale: {selectedStudent.groups.map(g => g.groupName).join(', ') || 'Niciuna'}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Selectează Grupa *</label>
+                <select
+                  value={addToGroupForm.groupId}
+                  onChange={(e) => setAddToGroupForm({ groupId: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 text-gray-900"
+                  required
+                >
+                  <option value="">Alege o grupă</option>
+                  {getAvailableGroups(selectedStudent).map(g => (
+                    <option key={g.id} value={g.id}>{g.name}</option>
+                  ))}
+                </select>
+              </div>
+              <p className="text-xs text-gray-500">Elevul va fi adăugat cu 0 lecții în această grupă.</p>
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => { setShowAddToGroupModal(false); setSelectedStudent(null); }} className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
+                  Anulează
+                </button>
+                <button type="submit" disabled={addingToGroup} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                  {addingToGroup ? 'Se adaugă...' : 'Adaugă în Grupă'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

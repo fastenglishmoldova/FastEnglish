@@ -83,6 +83,7 @@ export async function GET(request) {
         const studentStatus = gs.status || 'ACTIVE'
         
         studentData.groups.push({
+          groupStudentId: gs.id,
           groupId: group.id,
           groupName: group.name,
           courseName: group.course.title,
@@ -107,13 +108,45 @@ export async function GET(request) {
       }
     }
 
+    // Also get students created by this teacher who aren't in any group yet
+    const studentsCreatedByTeacher = await prisma.student.findMany({
+      where: {
+        createdById: session.user.id,
+        groupStudents: {
+          none: {}
+        }
+      }
+    })
+
+    // Add students without groups to the map
+    for (const student of studentsCreatedByTeacher) {
+      if (!studentsMap.has(student.id)) {
+        studentsMap.set(student.id, {
+          id: student.id,
+          name: student.fullName,
+          age: student.age,
+          parentName: student.parentName,
+          parentPhone: student.parentPhone,
+          parentEmail: student.parentEmail,
+          notes: student.notes,
+          groups: [],
+          totalSessions: 0,
+          totalPresent: 0,
+          totalAbsent: 0,
+          totalAbsences: 0,
+          attendanceRate: 0,
+          noGroups: true // Flag to identify students without groups
+        })
+      }
+    }
+
     // Calculate overall attendance rate for each student
     const students = Array.from(studentsMap.values()).map(student => {
       // Check if student has any active groups
       const hasActiveGroup = student.groups.some(g => g.status === 'ACTIVE')
       return {
         ...student,
-        isActive: hasActiveGroup,
+        isActive: hasActiveGroup || student.noGroups, // Students without groups should be visible
         attendanceRate: student.totalSessions > 0 
           ? Math.round((student.totalPresent / student.totalSessions) * 100) 
           : 0

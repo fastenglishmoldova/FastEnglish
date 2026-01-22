@@ -85,7 +85,8 @@ export default function PaymentsPage() {
   const [expandedMonth, setExpandedMonth] = useState(null)
   const [paymentMethodFilter, setPaymentMethodFilter] = useState('all') // 'all', 'cash', 'card', 'transfer'
   const [selectedMonths, setSelectedMonths] = useState([]) // empty = all months, otherwise array of month indices 0-11
-  const [branchFilter, setBranchFilter] = useState('all') // 'all' or branch id
+  const [selectedBranches, setSelectedBranches] = useState([]) // empty = all branches, otherwise array of branch ids
+  const [selectedTeachers, setSelectedTeachers] = useState([]) // empty = all teachers, otherwise array of teacher ids
 
   const MONTHS = [
     'Ianuarie', 'Februarie', 'Martie', 'Aprilie', 'Mai', 'Iunie',
@@ -113,6 +114,26 @@ export default function PaymentsPage() {
       Q4: [9, 10, 11]
     }
     setSelectedMonths(quarters[quarter])
+  }
+
+  const toggleBranch = (branchId) => {
+    setSelectedBranches(prev => {
+      if (prev.includes(branchId)) {
+        return prev.filter(b => b !== branchId)
+      } else {
+        return [...prev, branchId]
+      }
+    })
+  }
+
+  const toggleTeacher = (teacherId) => {
+    setSelectedTeachers(prev => {
+      if (prev.includes(teacherId)) {
+        return prev.filter(t => t !== teacherId)
+      } else {
+        return [...prev, teacherId]
+      }
+    })
   }
 
   useEffect(() => {
@@ -149,9 +170,10 @@ export default function PaymentsPage() {
       paymentMethodFilter === 'cash' ? 'Numerar' :
       paymentMethodFilter === 'card' ? 'Card' :
       paymentMethodFilter === 'card-transfer' ? 'Card/Transfer' : 'Transfer'
-    const branchFilterText = branchFilter === 'all' ? 'Toate filialele' :
-      branchFilter === 'none' ? 'Fără filială' :
-      data?.branches?.find(b => b.id === branchFilter)?.name || branchFilter
+    const branchFilterText = selectedBranches.length === 0 ? 'Toate filialele' :
+      selectedBranches.map(b => b === 'none' ? 'Fără filială' : data?.branches?.find(br => br.id === b)?.name || b).join(', ')
+    const teacherFilterText = selectedTeachers.length === 0 ? 'Toți profesorii' :
+      selectedTeachers.map(t => data?.teachers?.find(te => te.id === t)?.name || t).join(', ')
     
     // Only include months that have payments (not filtered out)
     const visibleMonths = filteredData.months.filter(m => !m.filtered && m.totalPayments > 0)
@@ -399,9 +421,10 @@ export default function PaymentsPage() {
       paymentMethodFilter === 'cash' ? 'Numerar' :
       paymentMethodFilter === 'card' ? 'Card' :
       paymentMethodFilter === 'card-transfer' ? 'Card/Transfer' : 'Transfer'
-    const branchFilterTextHTML = branchFilter === 'all' ? 'Toate filialele' :
-      branchFilter === 'none' ? 'Fără filială' :
-      data?.branches?.find(b => b.id === branchFilter)?.name || branchFilter
+    const branchFilterTextHTML = selectedBranches.length === 0 ? 'Toate filialele' :
+      selectedBranches.map(b => b === 'none' ? 'Fără filială' : data?.branches?.find(br => br.id === b)?.name || b).join(', ')
+    const teacherFilterTextHTML = selectedTeachers.length === 0 ? 'Toți profesorii' :
+      selectedTeachers.map(t => data?.teachers?.find(te => te.id === t)?.name || t).join(', ')
     
     // Only include months that have payments (not filtered out)
     const visibleMonths = filteredData.months.filter(m => !m.filtered)
@@ -645,7 +668,7 @@ export default function PaymentsPage() {
 
   const currentMonth = new Date().getMonth()
   
-  // Filter data based on payment method, branch, and selected months
+  // Filter data based on payment method, branch, teacher, and selected months
   const filterPayment = (p) => {
     // Filter by payment method
     if (paymentMethodFilter !== 'all') {
@@ -655,11 +678,25 @@ export default function PaymentsPage() {
         return false
       }
     }
-    // Filter by branch
-    if (branchFilter !== 'all') {
-      if (branchFilter === 'none') {
-        if (p.branchId) return false
-      } else if (p.branchId !== branchFilter) {
+    // Filter by branches (multiple select)
+    if (selectedBranches.length > 0) {
+      if (selectedBranches.includes('none')) {
+        // If 'none' is selected, include payments without branch OR with selected branches
+        const otherBranches = selectedBranches.filter(b => b !== 'none')
+        if (!p.branchId && otherBranches.length === 0) {
+          // Only 'none' selected - include only payments without branch
+        } else if (p.branchId && !otherBranches.includes(p.branchId)) {
+          return false
+        } else if (!p.branchId && otherBranches.length > 0) {
+          // Has other branches selected but this payment has no branch - still include
+        }
+      } else if (!selectedBranches.includes(p.branchId)) {
+        return false
+      }
+    }
+    // Filter by teachers (who created the payment)
+    if (selectedTeachers.length > 0) {
+      if (!selectedTeachers.includes(p.createdById)) {
         return false
       }
     }
@@ -865,14 +902,16 @@ export default function PaymentsPage() {
         </button>
       </div>
 
-      {/* Branch Filter */}
+      {/* Branch Filter - Multi-select */}
       {data?.branches && data.branches.length > 0 && (
         <div className="flex items-center justify-center gap-2 flex-wrap px-1 xs:px-0">
-          <span className="text-gray-500 font-medium text-xs xs:text-sm w-full xs:w-auto text-center xs:text-left xs:mr-2 mb-1 xs:mb-0">Filială:</span>
+          <span className="text-gray-500 font-medium text-xs xs:text-sm w-full xs:w-auto text-center xs:text-left xs:mr-2 mb-1 xs:mb-0">
+            Filiale: {selectedBranches.length === 0 ? '(toate)' : `(${selectedBranches.length})`}
+          </span>
           <button
-            onClick={() => setBranchFilter('all')}
+            onClick={() => setSelectedBranches([])}
             className={`px-3 xs:px-4 md:px-5 py-1.5 xs:py-2 md:py-2.5 rounded-lg xs:rounded-xl text-xs xs:text-sm font-medium transition-all ${
-              branchFilter === 'all'
+              selectedBranches.length === 0
                 ? 'bg-gradient-to-r from-gray-700 to-gray-800 text-white shadow-lg'
                 : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
             }`}
@@ -882,9 +921,9 @@ export default function PaymentsPage() {
           {data.branches.map(branch => (
             <button
               key={branch.id}
-              onClick={() => setBranchFilter(branch.id)}
+              onClick={() => toggleBranch(branch.id)}
               className={`px-3 xs:px-4 md:px-5 py-1.5 xs:py-2 md:py-2.5 rounded-lg xs:rounded-xl text-xs xs:text-sm font-medium transition-all inline-flex items-center gap-1 xs:gap-2 ${
-                branchFilter === branch.id
+                selectedBranches.includes(branch.id)
                   ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30'
                   : 'bg-white text-gray-600 border border-gray-200 hover:bg-amber-50 hover:border-amber-200'
               }`}
@@ -893,15 +932,47 @@ export default function PaymentsPage() {
             </button>
           ))}
           <button
-            onClick={() => setBranchFilter('none')}
+            onClick={() => toggleBranch('none')}
             className={`px-3 xs:px-4 md:px-5 py-1.5 xs:py-2 md:py-2.5 rounded-lg xs:rounded-xl text-xs xs:text-sm font-medium transition-all inline-flex items-center gap-1 xs:gap-2 ${
-              branchFilter === 'none'
+              selectedBranches.includes('none')
                 ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg'
                 : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
             }`}
           >
             <span className="text-base xs:text-lg">❓</span> <span className="hidden xs:inline">Fără filială</span><span className="xs:hidden">N/A</span>
           </button>
+        </div>
+      )}
+
+      {/* Teacher Filter - Multi-select */}
+      {data?.teachers && data.teachers.length > 0 && (
+        <div className="flex items-center justify-center gap-2 flex-wrap px-1 xs:px-0">
+          <span className="text-gray-500 font-medium text-xs xs:text-sm w-full xs:w-auto text-center xs:text-left xs:mr-2 mb-1 xs:mb-0">
+            Profesori: {selectedTeachers.length === 0 ? '(toți)' : `(${selectedTeachers.length})`}
+          </span>
+          <button
+            onClick={() => setSelectedTeachers([])}
+            className={`px-3 xs:px-4 md:px-5 py-1.5 xs:py-2 md:py-2.5 rounded-lg xs:rounded-xl text-xs xs:text-sm font-medium transition-all ${
+              selectedTeachers.length === 0
+                ? 'bg-gradient-to-r from-gray-700 to-gray-800 text-white shadow-lg'
+                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            Toți
+          </button>
+          {data.teachers.map(teacher => (
+            <button
+              key={teacher.id}
+              onClick={() => toggleTeacher(teacher.id)}
+              className={`px-3 xs:px-4 md:px-5 py-1.5 xs:py-2 md:py-2.5 rounded-lg xs:rounded-xl text-xs xs:text-sm font-medium transition-all inline-flex items-center gap-1 xs:gap-2 ${
+                selectedTeachers.includes(teacher.id)
+                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/30'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-indigo-50 hover:border-indigo-200'
+              }`}
+            >
+              <span className="text-base xs:text-lg">👨‍🏫</span> {teacher.name}
+            </button>
+          ))}
         </div>
       )}
 
@@ -1047,6 +1118,73 @@ export default function PaymentsPage() {
                     : 0} <span className="text-xs xs:text-sm md:text-lg text-gray-400">MDL</span>
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Teacher Stats - Who created payments / profit per teacher */}
+      {data?.teacherStats && data.teacherStats.length > 0 && (
+        <div className="bg-white rounded-xl xs:rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-3 xs:p-4 md:p-6 border-b border-gray-100">
+            <h2 className="text-sm xs:text-base md:text-lg font-bold text-gray-900 flex items-center gap-2">
+              <span className="text-lg">👨‍🏫</span>
+              Profit adus de profesori
+            </h2>
+            <p className="text-xs text-gray-500 mt-1">Plățile înregistrate de fiecare profesor</p>
+          </div>
+          <div className="p-3 xs:p-4 md:p-6">
+            <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 xs:gap-4">
+              {data.teacherStats.map((teacher, idx) => {
+                const maxAmount = data.teacherStats[0]?.totalAmount || 1
+                const percentage = Math.round((teacher.totalAmount / maxAmount) * 100)
+                
+                return (
+                  <div 
+                    key={teacher.id} 
+                    className={`relative p-3 xs:p-4 rounded-xl border transition-all cursor-pointer hover:shadow-md ${
+                      selectedTeachers.includes(teacher.id)
+                        ? 'border-indigo-300 bg-indigo-50'
+                        : 'border-gray-200 hover:border-indigo-200'
+                    }`}
+                    onClick={() => toggleTeacher(teacher.id)}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ${
+                        idx === 0 ? 'bg-gradient-to-br from-yellow-400 to-amber-500' :
+                        idx === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-400' :
+                        idx === 2 ? 'bg-gradient-to-br from-amber-600 to-amber-700' :
+                        'bg-gradient-to-br from-indigo-400 to-purple-500'
+                      }`}>
+                        {idx < 3 ? ['🥇', '🥈', '🥉'][idx] : teacher.name.charAt(0)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-gray-900 text-sm truncate">{teacher.name}</p>
+                        <p className="text-xs text-gray-500">{teacher.totalPayments} plăți</p>
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-lg font-bold text-emerald-600">{teacher.totalAmount.toLocaleString('ro-RO')}</span>
+                        <span className="text-xs text-gray-400">MDL</span>
+                      </div>
+                      <div className="mt-1.5 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-emerald-400 to-green-500 rounded-full transition-all"
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                    {selectedTeachers.includes(teacher.id) && (
+                      <div className="absolute top-2 right-2 w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>

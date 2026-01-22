@@ -7,7 +7,7 @@ import { notifyLowLessons } from '@/lib/telegram'
 export async function POST(request) {
   const session = await getServerSession(authOptions)
   
-  if (!session || !['TEACHER', 'ADMIN'].includes(session.user.role)) {
+  if (!session || !['TEACHER', 'ADMIN', 'SUPERADMIN'].includes(session.user.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -20,7 +20,11 @@ export async function POST(request) {
       include: {
         group: {
           include: {
-            groupStudents: true
+            groupStudents: {
+              where: {
+                status: { notIn: ['LEFT', 'TRANSFERRED'] }  // Only active students
+              }
+            }
           }
         },
         attendances: true

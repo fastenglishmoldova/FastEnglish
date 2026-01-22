@@ -103,21 +103,9 @@ export async function POST(request) {
     }
 
     const data = await request.json()
-    const { groupStudentId, amount, paymentDate, paymentMethod, notes, lessonsAdded, actionToken } = data
+    const { groupStudentId, amount, paymentDate, paymentMethod, notes, lessonsAdded } = data
 
-    // Verify 2FA if user has it enabled
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { twoFactorEnabled: true }
-    })
-    
-    const twoFACheck = require2FAToken(actionToken, session.user.email, currentUser?.twoFactorEnabled)
-    if (!twoFACheck.valid && !twoFACheck.skip) {
-      return NextResponse.json({ 
-        error: twoFACheck.error, 
-        requires2FA: true 
-      }, { status: 403 })
-    }
+    // 2FA is not required for adding payments - only for sensitive actions
 
     if (!groupStudentId || amount === undefined) {
       return NextResponse.json({ error: 'groupStudentId și amount sunt obligatorii' }, { status: 400 })

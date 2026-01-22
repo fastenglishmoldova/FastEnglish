@@ -49,6 +49,12 @@ export default async function SessionDetailPage({ params }) {
   const sessionDate = new Date(lessonSession.date)
   const hoursElapsed = (Date.now() - sessionDate.getTime()) / (1000 * 60 * 60)
   const isExpired = hoursElapsed >= 24
+  
+  // Check if session date has passed midnight (for "Neefectuat" status)
+  const now = new Date()
+  const sessionEndOfDay = new Date(sessionDate)
+  sessionEndOfDay.setHours(23, 59, 59, 999)
+  const isPastDue = !lessonSession.lessonsDeducted && now > sessionEndOfDay
 
   // Prepare attendance data
   const attendanceMap = {}
@@ -90,12 +96,21 @@ export default async function SessionDetailPage({ params }) {
             <span className="px-2.5 xs:px-3 py-1 bg-green-100 text-green-800 text-xs xs:text-sm font-medium rounded-full">
               ✓ Lecții Deduse
             </span>
+          ) : isPastDue ? (
+            <span className="px-2.5 xs:px-3 py-1 bg-red-100 text-red-800 text-xs xs:text-sm font-medium rounded-full">
+              ✗ Neefectuat
+            </span>
           ) : (
             <span className="px-2.5 xs:px-3 py-1 bg-amber-100 text-amber-800 text-xs xs:text-sm font-medium rounded-full">
               În Așteptare
             </span>
           )}
         </div>
+        {isPastDue && (
+          <p className="text-sm text-red-600 mt-2">
+            Sesiunea nu a fost finalizată la timp. Lecțiile nu au fost deduse.
+          </p>
+        )}
       </div>
 
       {/* Attendance Manager */}

@@ -47,6 +47,13 @@ export default async function TeacherAttendancePage() {
             const presentCount = sess.attendances.filter(a => a.status === 'PRESENT').length
             const absentCount = sess.attendances.filter(a => a.status === 'ABSENT').length
             
+            // Check if session date has passed midnight
+            const sessionDate = new Date(sess.date)
+            const now = new Date()
+            const sessionEndOfDay = new Date(sessionDate)
+            sessionEndOfDay.setHours(23, 59, 59, 999)
+            const isPastDue = !sess.lessonsDeducted && now > sessionEndOfDay
+            
             return (
               <Link
                 key={sess.id}
@@ -86,6 +93,10 @@ export default async function TeacherAttendancePage() {
                     {sess.lessonsDeducted ? (
                       <span className="px-2 xs:px-2.5 py-1 xs:py-1.5 bg-green-100 text-green-700 text-[10px] xs:text-xs font-medium rounded-lg">
                         ✓ Finalizat
+                      </span>
+                    ) : isPastDue ? (
+                      <span className="px-2 xs:px-2.5 py-1 xs:py-1.5 bg-red-100 text-red-700 text-[10px] xs:text-xs font-medium rounded-lg">
+                        ✗ Neefectuat
                       </span>
                     ) : (
                       <span className="px-2 xs:px-2.5 py-1 xs:py-1.5 bg-amber-100 text-amber-700 text-[10px] xs:text-xs font-medium rounded-lg">

@@ -378,7 +378,15 @@ export default async function TeacherGroupDetailPage({ params }) {
           <p className="text-gray-500 text-center py-6 xs:py-8 text-xs xs:text-sm md:text-base">Nu sunt sesiuni înregistrate.</p>
         ) : (
           <div className="space-y-2 xs:space-y-3">
-            {group.lessonSessions.map(sess => (
+            {group.lessonSessions.map(sess => {
+              // Check if session date has passed midnight
+              const sessionDate = new Date(sess.date)
+              const now = new Date()
+              const sessionEndOfDay = new Date(sessionDate)
+              sessionEndOfDay.setHours(23, 59, 59, 999)
+              const isPastDue = !sess.lessonsDeducted && now > sessionEndOfDay
+              
+              return (
               <Link
                 key={sess.id}
                 href={`/teacher/groups/${group.id}/session/${sess.id}`}
@@ -402,6 +410,10 @@ export default async function TeacherGroupDetailPage({ params }) {
                     <span className="px-2 py-1 bg-green-100 text-green-800 text-[10px] xs:text-xs font-medium rounded-full">
                       ✓ Finalizat
                     </span>
+                  ) : isPastDue ? (
+                    <span className="px-2 py-1 bg-red-100 text-red-800 text-[10px] xs:text-xs font-medium rounded-full">
+                      ✗ Neefectuat
+                    </span>
                   ) : (
                     <span className="px-2 py-1 bg-amber-100 text-amber-800 text-[10px] xs:text-xs font-medium rounded-full">
                       În așteptare
@@ -410,7 +422,7 @@ export default async function TeacherGroupDetailPage({ params }) {
                   <span className="text-teal-600 font-medium text-xs xs:text-sm">Detalii →</span>
                 </div>
               </Link>
-            ))}
+            )})}
           </div>
         )}
       </div>

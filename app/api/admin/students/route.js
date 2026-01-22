@@ -10,7 +10,7 @@ export async function GET() {
     
     // Verifică permisiunea de vizualizare elevi
     const canView = await checkPermission('students.view')
-    if (!canView) {
+    if (!canView.allowed) {
       return NextResponse.json({ error: 'Nu ai permisiunea de a vedea elevii' }, { status: 403 })
     }
     
@@ -32,7 +32,7 @@ export async function POST(request) {
     
     // Verifică permisiunea de creare elevi
     const canCreate = await checkPermission('students.create')
-    if (!canCreate) {
+    if (!canCreate.allowed) {
       return NextResponse.json({ error: 'Nu ai permisiunea de a crea elevi' }, { status: 403 })
     }
     

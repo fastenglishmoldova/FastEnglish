@@ -10,7 +10,7 @@ export async function GET() {
     await requireAdmin()
     
     const canView = await checkPermission('groups.view')
-    if (!canView) {
+    if (!canView.allowed) {
       return NextResponse.json({ error: 'Nu ai permisiunea de a vedea grupele' }, { status: 403 })
     }
     
@@ -60,7 +60,7 @@ export async function POST(request) {
     await requireAdmin()
     
     const canCreate = await checkPermission('groups.create')
-    if (!canCreate) {
+    if (!canCreate.allowed) {
       return NextResponse.json({ error: 'Nu ai permisiunea de a crea grupe' }, { status: 403 })
     }
     

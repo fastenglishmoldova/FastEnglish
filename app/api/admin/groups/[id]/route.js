@@ -9,7 +9,7 @@ export async function GET(request, { params }) {
     await requireAdmin()
     
     const canView = await checkPermission('groups.view')
-    if (!canView) {
+    if (!canView.allowed) {
       return NextResponse.json({ error: 'Nu ai permisiunea de a vedea grupele' }, { status: 403 })
     }
     
@@ -53,7 +53,7 @@ export async function PUT(request, { params }) {
     await requireAdmin()
     
     const canEdit = await checkPermission('groups.edit')
-    if (!canEdit) {
+    if (!canEdit.allowed) {
       return NextResponse.json({ error: 'Nu ai permisiunea de a edita grupele' }, { status: 403 })
     }
     
@@ -109,7 +109,7 @@ export async function DELETE(request, { params }) {
     await requireAdmin()
     
     const canDelete = await checkPermission('groups.delete')
-    if (!canDelete) {
+    if (!canDelete.allowed) {
       return NextResponse.json({ error: 'Nu ai permisiunea de a șterge grupele' }, { status: 403 })
     }
     

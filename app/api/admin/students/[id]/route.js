@@ -9,7 +9,7 @@ export async function GET(request, { params }) {
     await requireAdmin()
     
     const canView = await checkPermission('students.view')
-    if (!canView) {
+    if (!canView.allowed) {
       return NextResponse.json({ error: 'Nu ai permisiunea de a vedea elevii' }, { status: 403 })
     }
     
@@ -34,7 +34,7 @@ export async function PUT(request, { params }) {
     await requireAdmin()
     
     const canEdit = await checkPermission('students.edit')
-    if (!canEdit) {
+    if (!canEdit.allowed) {
       return NextResponse.json({ error: 'Nu ai permisiunea de a edita elevii' }, { status: 403 })
     }
     
@@ -78,7 +78,7 @@ export async function DELETE(request, { params }) {
     await requireAdmin()
     
     const canDelete = await checkPermission('students.delete')
-    if (!canDelete) {
+    if (!canDelete.allowed) {
       return NextResponse.json({ error: 'Nu ai permisiunea de a șterge elevii' }, { status: 403 })
     }
     

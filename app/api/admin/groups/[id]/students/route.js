@@ -9,7 +9,7 @@ export async function POST(request, { params }) {
     await requireAdmin()
     
     const canAdd = await checkPermission('groups.students.add')
-    if (!canAdd) {
+    if (!canAdd.allowed) {
       return NextResponse.json({ error: 'Nu ai permisiunea de a adăuga elevi în grupe' }, { status: 403 })
     }
     
