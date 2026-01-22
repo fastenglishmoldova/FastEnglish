@@ -13,7 +13,8 @@ import {
   ArrowDownTrayIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  UserGroupIcon
 } from '@heroicons/react/24/outline'
 import { usePermissions } from '@/hooks/usePermissions'
 import TwoFactorModal from '@/components/admin/TwoFactorModal'
@@ -970,7 +971,7 @@ export default function PaymentsPage() {
                   : 'bg-white text-gray-600 border border-gray-200 hover:bg-indigo-50 hover:border-indigo-200'
               }`}
             >
-              <span className="text-base xs:text-lg">👨‍🏫</span> {teacher.name}
+              <UserGroupIcon className="w-4 h-4 xs:w-5 xs:h-5" /> {teacher.name}
             </button>
           ))}
         </div>
@@ -1128,7 +1129,7 @@ export default function PaymentsPage() {
         <div className="bg-white rounded-xl xs:rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-3 xs:p-4 md:p-6 border-b border-gray-100">
             <h2 className="text-sm xs:text-base md:text-lg font-bold text-gray-900 flex items-center gap-2">
-              <span className="text-lg">👨‍🏫</span>
+              <UserGroupIcon className="w-5 h-5 text-indigo-500" />
               Profit adus de profesori
             </h2>
             <p className="text-xs text-gray-500 mt-1">Plățile înregistrate de fiecare profesor</p>
@@ -1156,7 +1157,7 @@ export default function PaymentsPage() {
                         idx === 2 ? 'bg-gradient-to-br from-amber-600 to-amber-700' :
                         'bg-gradient-to-br from-indigo-400 to-purple-500'
                       }`}>
-                        {idx < 3 ? ['🥇', '🥈', '🥉'][idx] : teacher.name.charAt(0)}
+                        {idx < 3 ? idx + 1 : teacher.name.charAt(0)}
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-gray-900 text-sm truncate">{teacher.name}</p>

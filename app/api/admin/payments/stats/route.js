@@ -111,7 +111,7 @@ export async function GET(request) {
         teacherId: payment.groupStudent.group.teacherId,
         teacherName: payment.groupStudent.group.teacher?.name || 'Neassignat',
         createdById: payment.createdById,
-        createdByName: payment.createdBy?.name || 'Necunoscut',
+        createdByName: payment.createdBy?.name || 'Administratori',
         createdByRole: payment.createdBy?.role || 'UNKNOWN'
       })
     })
@@ -133,7 +133,7 @@ export async function GET(request) {
     const teacherStats = {}
     payments.forEach(p => {
       const creatorId = p.createdById || 'unknown'
-      const creatorName = p.createdBy?.name || 'Necunoscut'
+      const creatorName = p.createdBy?.name || 'Administratori'
       if (!teacherStats[creatorId]) {
         teacherStats[creatorId] = {
           id: creatorId,
