@@ -110,7 +110,7 @@ export async function GET(request) {
         branchName: payment.groupStudent.group.branch?.name || 'Fără filială',
         teacherId: payment.groupStudent.group.teacherId,
         teacherName: payment.groupStudent.group.teacher?.name || 'Neassignat',
-        createdById: payment.createdById,
+        createdById: payment.createdById || 'unknown',
         createdByName: payment.createdBy?.name || 'Administratori',
         createdByRole: payment.createdBy?.role || 'UNKNOWN'
       })
