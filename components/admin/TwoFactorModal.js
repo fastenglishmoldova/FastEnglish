@@ -11,54 +11,45 @@ export default function TwoFactorModal({
   title = 'Verificare 2FA',
   description = 'Introdu codul din aplicația de autentificare pentru a continua.'
 }) {
-  const [code, setCode] = useState(['', '', '', '', '', ''])
+  const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [attemptsLeft, setAttemptsLeft] = useState(null)
-  const inputRefs = useRef([])
+  const inputRef = useRef(null)
 
   useEffect(() => {
     if (isOpen) {
-      setCode(['', '', '', '', '', ''])
+      setCode('')
       setError('')
       setAttemptsLeft(null)
-      // Focus first input after modal opens
-      setTimeout(() => inputRefs.current[0]?.focus(), 100)
+      // Focus input after modal opens
+      setTimeout(() => inputRef.current?.focus(), 100)
     }
   }, [isOpen])
 
-  const handleChange = (index, value) => {
-    if (!/^\d*$/.test(value)) return // Only digits
-    
-    const newCode = [...code]
-    newCode[index] = value.slice(-1) // Only last character
-    setCode(newCode)
+  const handleChange = (e) => {
+    const value = e.target.value.replace(/\D/g, '').slice(0, 6) // Only digits, max 6
+    setCode(value)
     setError('')
 
-    // Auto-focus next input
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus()
-    }
-
-    // Auto-submit when all filled
-    if (newCode.every(c => c !== '')) {
-      handleSubmit(newCode.join(''))
-    }
-  }
-
-  const handleKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !code[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus()
+    // Auto-submit when 6 digits entered
+    if (value.length === 6) {
+      handleSubmit(value)
     }
   }
 
   const handlePaste = (e) => {
     e.preventDefault()
     const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+    setCode(pastedData)
     if (pastedData.length === 6) {
-      const newCode = pastedData.split('')
-      setCode(newCode)
       handleSubmit(pastedData)
+    }
+  }
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && code.length === 6) {
+      handleSubmit(code)
     }
   }
 
@@ -99,12 +90,12 @@ export default function TwoFactorModal({
         if (data.attemptsLeft !== undefined) {
           setAttemptsLeft(data.attemptsLeft)
         }
-        setCode(['', '', '', '', '', ''])
-        inputRefs.current[0]?.focus()
+        setCode('')
+        inputRef.current?.focus()
       }
     } catch (err) {
       setError('Eroare la verificare')
-      setCode(['', '', '', '', '', ''])
+      setCode('')
     } finally {
       setLoading(false)
     }
@@ -146,26 +137,25 @@ export default function TwoFactorModal({
             {description}
           </p>
 
-          {/* Code inputs */}
-          <div className="flex justify-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-            {code.map((digit, index) => (
-              <input
-                key={index}
-                ref={el => inputRefs.current[index] = el}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleChange(index, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(index, e)}
-                onPaste={handlePaste}
-                disabled={loading}
-                className={`w-9 h-11 sm:w-11 sm:h-13 lg:w-12 lg:h-14 text-center text-lg sm:text-xl lg:text-2xl font-bold border-2 rounded-md sm:rounded-lg transition-colors
-                  ${error ? 'border-red-300 bg-red-50' : 'border-gray-300 focus:border-indigo-500'}
-                  ${loading ? 'bg-gray-100' : 'bg-white'}
-                  text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20`}
-              />
-            ))}
+          {/* Code input - single input for easy paste */}
+          <div className="flex justify-center mb-3 sm:mb-4">
+            <input
+              ref={inputRef}
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              value={code}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              disabled={loading}
+              placeholder="000000"
+              autoComplete="one-time-code"
+              className={`w-full max-w-[200px] h-14 sm:h-16 text-center text-2xl sm:text-3xl font-bold tracking-[0.3em] border-2 rounded-xl transition-colors
+                ${error ? 'border-red-300 bg-red-50' : 'border-gray-300 focus:border-indigo-500'}
+                ${loading ? 'bg-gray-100' : 'bg-white'}
+                text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 placeholder:text-gray-300 placeholder:tracking-[0.3em]`}
+            />
           </div>
 
           {/* Error */}
