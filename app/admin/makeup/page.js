@@ -137,10 +137,19 @@ export default function AdminMakeupPage() {
     console.log('Groups for day:', scheduleForDay.length, scheduleForDay.map(g => ({ name: g.name, scheduleTime: g.scheduleTime })))
     
     // Also get makeup lessons scheduled for this date and branch
+    // Only include SCHEDULED or IN_PROGRESS lessons (not completed or canceled)
     const makeupForDay = data?.makeupLessons?.filter(lesson => {
-      const lessonDate = new Date(lesson.scheduledAt).toISOString().split('T')[0]
-      const selectedDateStr = date
-      if (lessonDate !== selectedDateStr) return false
+      // Only show active makeup lessons
+      if (!['SCHEDULED', 'IN_PROGRESS'].includes(lesson.status)) return false
+      
+      // Extract date parts from UTC stored date
+      const lessonDate = new Date(lesson.scheduledAt)
+      const lessonYear = lessonDate.getUTCFullYear()
+      const lessonMonth = lessonDate.getUTCMonth() + 1
+      const lessonDay = lessonDate.getUTCDate()
+      const lessonDateStr = `${lessonYear}-${String(lessonMonth).padStart(2, '0')}-${String(lessonDay).padStart(2, '0')}`
+      
+      if (lessonDateStr !== date) return false
       if (lesson.branchId !== branchId) return false
       return true
     }) || []
