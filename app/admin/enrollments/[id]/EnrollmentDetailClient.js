@@ -310,26 +310,20 @@ export default function EnrollmentDetailClient({ enrollment: initialEnrollment }
           {/* Status */}
           <div className="bg-white rounded-xl p-4 xs:p-6 border border-gray-200">
             <h2 className="font-semibold text-gray-900 mb-4">Status</h2>
-            <div className="space-y-2">
+            <select
+              value={enrollment.status}
+              onChange={(e) => updateStatus(e.target.value)}
+              disabled={saving}
+              className={`w-full px-4 py-3 rounded-lg border-2 text-sm font-medium transition-all cursor-pointer focus:ring-2 focus:ring-[#30919f] focus:border-[#30919f] ${
+                statusOptions.find(o => o.value === enrollment.status)?.color || 'bg-gray-50 text-gray-600 border-gray-300'
+              } disabled:opacity-50`}
+            >
               {statusOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => updateStatus(option.value)}
-                  disabled={saving}
-                  className={`w-full px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
-                    enrollment.status === option.value || 
-                    (enrollment.status === 'NEW' && option.value === 'NOU') ||
-                    (enrollment.status === 'CONTACTED' && option.value === 'CONTACTAT') ||
-                    (enrollment.status === 'CONFIRMED' && option.value === 'CONFIRMAT') ||
-                    (enrollment.status === 'REJECTED' && option.value === 'RESPINS')
-                      ? `${option.color} border-current`
-                      : 'bg-gray-50 text-gray-600 border-transparent hover:bg-gray-100'
-                  } disabled:opacity-50`}
-                >
+                <option key={option.value} value={option.value}>
                   {option.label}
-                </button>
+                </option>
               ))}
-            </div>
+            </select>
           </div>
 
           {/* Sursă */}

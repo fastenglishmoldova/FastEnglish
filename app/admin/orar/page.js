@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { usePermissions } from '@/hooks/usePermissions'
 
 // Mapare zi săptămână JS -> română
@@ -311,10 +312,11 @@ export default function OrarPage() {
               {/* Card-uri */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {daySchedule.map((item, idx) => (
-                  <div 
+                  <Link 
                     key={`${item.id}-${idx}`} 
-                    className={`bg-white rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow ${
-                      isToday ? 'border-indigo-200' : 'border-gray-100'
+                    href={`/admin/groups/${item.id}/students`}
+                    className={`block bg-white rounded-xl border p-4 shadow-sm hover:shadow-md transition-all hover:scale-[1.01] cursor-pointer ${
+                      isToday ? 'border-indigo-200 hover:border-indigo-300' : 'border-gray-100 hover:border-gray-200'
                     }`}
                   >
                     {/* Header card - oră și filială */}
@@ -387,7 +389,7 @@ export default function OrarPage() {
                       )}
                       <span className="truncate">{item.room}</span>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
