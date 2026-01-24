@@ -108,20 +108,9 @@ export async function PATCH(request, { params }) {
 
     // Handle scheduledAt conversion
     if (scheduledAt !== undefined) {
-      const [datePart, timePart] = scheduledAt.split('T')
-      const [year, month, day] = datePart.split('-').map(Number)
-      const [hours, minutes] = timePart.split(':').map(Number)
-      
-      const scheduledDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0))
-      const isDST = (date) => {
-        const jan = new Date(date.getFullYear(), 0, 1).getTimezoneOffset()
-        const jul = new Date(date.getFullYear(), 6, 1).getTimezoneOffset()
-        return Math.max(jan, jul) !== date.getTimezoneOffset()
-      }
-      const romaniaOffset = isDST(new Date(year, month - 1, day)) ? 3 : 2
-      scheduledDate.setUTCHours(scheduledDate.getUTCHours() - romaniaOffset)
-      
-      updateData.scheduledAt = scheduledDate
+      // Store the time exactly as the user entered it (no timezone conversion)
+      // We append 'Z' to make JavaScript interpret it as UTC
+      updateData.scheduledAt = new Date(scheduledAt + 'Z')
     }
 
     // Update makeup lesson

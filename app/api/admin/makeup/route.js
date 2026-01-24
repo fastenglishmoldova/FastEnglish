@@ -26,22 +26,11 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Grupă, profesor și data sunt obligatorii' }, { status: 400 })
     }
 
-    // Parse the scheduledAt as local Romania time
-    // The frontend sends format like "2025-01-02T19:30"
-    const [datePart, timePart] = scheduledAt.split('T')
-    const [year, month, day] = datePart.split('-').map(Number)
-    const [hours, minutes] = timePart.split(':').map(Number)
-    
-    // Create date in UTC but representing Romania local time
-    const scheduledDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0))
-    // Adjust for Romania timezone (UTC+2 in winter, UTC+3 in summer)
-    const isDST = (date) => {
-      const jan = new Date(date.getFullYear(), 0, 1).getTimezoneOffset()
-      const jul = new Date(date.getFullYear(), 6, 1).getTimezoneOffset()
-      return Math.max(jan, jul) !== date.getTimezoneOffset()
-    }
-    const romaniaOffset = isDST(new Date(year, month - 1, day)) ? 3 : 2
-    scheduledDate.setUTCHours(scheduledDate.getUTCHours() - romaniaOffset)
+    // Parse the scheduledAt - frontend sends format like "2025-01-24T10:00"
+    // Store the time exactly as the user entered it (no timezone conversion)
+    // We append 'Z' to make JavaScript interpret it as UTC, so when displayed
+    // it shows the exact time entered (without local timezone conversion)
+    const scheduledDate = new Date(scheduledAt + 'Z')
 
     // Create makeup lesson
     const makeupLesson = await prisma.makeupLesson.create({

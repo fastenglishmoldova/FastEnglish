@@ -202,8 +202,9 @@ export default function OrarPage() {
       if (scheduleByDay[makeupDayName]) {
         scheduleByDay[makeupDayName].push({
           id: makeup.id,
-          name: `🔄 ${makeup.group?.name || 'Recuperare'}`,
+          name: makeup.group?.name || 'Recuperare',
           time: timeStr,
+          isMakeup: true,
           branch: makeup.branch?.name || '-',
           teacherName: makeup.teacher?.name || '-',
           teacherEmail: makeup.teacher?.email || '-',

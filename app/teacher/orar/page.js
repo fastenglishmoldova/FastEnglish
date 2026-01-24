@@ -172,7 +172,7 @@ export default function TeacherOrarPage() {
       if (scheduleByDay[makeupDayName]) {
         scheduleByDay[makeupDayName].push({
           id: makeup.id,
-          name: `🔄 ${makeup.group?.name || 'Recuperare'}`,
+          name: makeup.group?.name || 'Recuperare',
           time: time,
           branch: makeup.branch?.name || '-',
           branchId: makeup.branchId,
@@ -379,12 +379,22 @@ export default function TeacherOrarPage() {
                       </div>
                       <div className="flex items-center gap-1 flex-wrap justify-end">
                         {item.isMakeup && (
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 ${
                             item.makeupStatus === 'IN_PROGRESS' 
                               ? 'bg-green-100 text-green-800 animate-pulse' 
                               : 'bg-amber-100 text-amber-800'
                           }`}>
-                            {item.makeupStatus === 'IN_PROGRESS' ? '▶️ În curs' : '🔄 Recuperare'}
+                            {item.makeupStatus === 'IN_PROGRESS' ? (
+                              <>
+                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" /></svg>
+                                În curs
+                              </>
+                            ) : (
+                              <>
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                Recuperare
+                              </>
+                            )}
                           </span>
                         )}
                         {item.isMyGroup && !item.isMakeup && (

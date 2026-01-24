@@ -126,19 +126,60 @@ export default function MakeupLessonsPage() {
       const dayNames = ['Duminică', 'Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă']
       const selectedDayName = dayNames[date.getDay()]
       
+      // Format selected date for comparison
+      const selectedDateStr = date.toISOString().split('T')[0]
+      
+      // Helper to parse scheduleTime (can be JSON or simple string)
+      const parseTimeForDay = (scheduleTime, dayName) => {
+        if (!scheduleTime) return null
+        try {
+          const parsed = JSON.parse(scheduleTime)
+          if (typeof parsed === 'object') {
+            return parsed[dayName] || null
+          }
+        } catch {
+          // Not JSON, return as-is
+          return scheduleTime
+        }
+        return scheduleTime
+      }
+      
       // Filter groups that have sessions on this day
       const scheduleForDay = []
       data.groups?.forEach(group => {
         if (group.scheduleDays?.includes(selectedDayName)) {
-          const time = group.scheduleTimes?.[selectedDayName] || group.scheduleTime || ''
+          const time = parseTimeForDay(group.scheduleTime, selectedDayName)
           scheduleForDay.push({
             id: group.id,
             name: group.name,
             course: group.course?.title,
-            time: time,
+            time: time || '--:--',
             branch: group.branch?.name,
             locationDetails: group.locationDetails,
-            teacher: group.teacher?.name
+            teacher: group.teacher?.name,
+            isMakeup: false
+          })
+        }
+      })
+      
+      // Add makeup lessons scheduled for this specific date
+      data.makeupLessons?.forEach(makeup => {
+        const makeupDate = new Date(makeup.scheduledAt)
+        const makeupDateStr = makeupDate.toISOString().split('T')[0]
+        
+        if (makeupDateStr === selectedDateStr) {
+          const hours = String(makeupDate.getUTCHours()).padStart(2, '0')
+          const minutes = String(makeupDate.getUTCMinutes()).padStart(2, '0')
+          scheduleForDay.push({
+            id: makeup.id,
+            name: makeup.group?.name || 'Recuperare',
+            course: 'Recuperare',
+            time: `${hours}:${minutes}`,
+            branch: makeup.branch?.name,
+            locationDetails: makeup.locationDetails,
+            teacher: makeup.teacher?.name,
+            isMakeup: true,
+            status: makeup.status
           })
         }
       })
@@ -789,16 +830,47 @@ export default function MakeupLessonsPage() {
                       Orar pentru {selectedDate.toLocaleDateString('ro-RO', { weekday: 'long', day: 'numeric', month: 'short' })}
                     </p>
                   </div>
-                  <div className="p-2 sm:p-3 space-y-1.5 max-h-32 overflow-y-auto">
+                  <div className="p-2 sm:p-3 space-y-2 max-h-48 overflow-y-auto">
                     {daySchedule.map(item => (
-                      <div key={item.id} className="flex items-center justify-between text-xs sm:text-sm bg-white rounded-lg px-2 py-1.5 border border-amber-100">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="font-semibold text-amber-700 whitespace-nowrap">{item.time || '--:--'}</span>
-                          <span className="text-gray-700 truncate">{item.name}</span>
+                      <div key={item.id} className={`rounded-lg px-3 py-2 border ${
+                        item.isMakeup 
+                          ? 'bg-amber-50 border-amber-200' 
+                          : 'bg-white border-gray-200'
+                      }`}>
+                        {/* Row 1: Time and Name */}
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`font-bold text-sm whitespace-nowrap ${item.isMakeup ? 'text-amber-600' : 'text-indigo-600'}`}>
+                            {item.time}
+                          </span>
+                          {item.isMakeup && (
+                            <svg className="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                          )}
+                          <span className="font-medium text-gray-900 text-sm truncate">{item.name}</span>
+                          {item.isMakeup && (
+                            <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] shrink-0">Recup.</span>
+                          )}
                         </div>
-                        <div className="flex items-center gap-1.5 text-gray-500 text-[10px] sm:text-xs shrink-0">
-                          {item.branch && <span className="px-1.5 py-0.5 bg-gray-100 rounded">{item.branch}</span>}
-                          {item.locationDetails && <span className="hidden sm:inline">{item.locationDetails}</span>}
+                        {/* Row 2: Location info */}
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          {item.branch && (
+                            <span className="flex items-center gap-1">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                              <span className="font-medium text-gray-700">{item.branch}</span>
+                            </span>
+                          )}
+                          {item.locationDetails && (
+                            <span className="text-gray-500">• {item.locationDetails}</span>
+                          )}
+                          {item.teacher && (
+                            <span className="text-gray-400 ml-auto truncate">
+                              {item.teacher}
+                            </span>
+                          )}
                         </div>
                       </div>
                     ))}
