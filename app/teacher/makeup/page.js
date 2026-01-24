@@ -126,8 +126,10 @@ export default function MakeupLessonsPage() {
       const dayNames = ['Duminică', 'Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă']
       const selectedDayName = dayNames[date.getDay()]
       
-      // Format selected date for comparison
-      const selectedDateStr = date.toISOString().split('T')[0]
+      // Format selected date for comparison (use local date parts to avoid timezone issues)
+      const selectedYear = date.getFullYear()
+      const selectedMonth = date.getMonth()
+      const selectedDay = date.getDate()
       
       // Helper to parse scheduleTime (can be JSON or simple string)
       const parseTimeForDay = (scheduleTime, dayName) => {
@@ -163,11 +165,15 @@ export default function MakeupLessonsPage() {
       })
       
       // Add makeup lessons scheduled for this specific date
+      // Makeup lessons are stored with time as UTC (the time value itself, not converted)
       data.makeupLessons?.forEach(makeup => {
         const makeupDate = new Date(makeup.scheduledAt)
-        const makeupDateStr = makeupDate.toISOString().split('T')[0]
+        // Compare using UTC values since that's how we store the date/time
+        const makeupYear = makeupDate.getUTCFullYear()
+        const makeupMonth = makeupDate.getUTCMonth()
+        const makeupDay = makeupDate.getUTCDate()
         
-        if (makeupDateStr === selectedDateStr) {
+        if (makeupYear === selectedYear && makeupMonth === selectedMonth && makeupDay === selectedDay) {
           const hours = String(makeupDate.getUTCHours()).padStart(2, '0')
           const minutes = String(makeupDate.getUTCMinutes()).padStart(2, '0')
           scheduleForDay.push({

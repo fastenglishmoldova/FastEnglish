@@ -594,7 +594,8 @@ export default function AdminMakeupPage() {
                             month: 'long',
                             year: 'numeric',
                             hour: '2-digit',
-                            minute: '2-digit'
+                            minute: '2-digit',
+                            timeZone: 'UTC'
                           })}
                         </p>
                         {(lesson.branch || lesson.locationDetails) && (
@@ -934,7 +935,7 @@ export default function AdminMakeupPage() {
                         <div key={makeup.id} className="flex items-center justify-between text-xs bg-purple-50 rounded px-2 py-1.5 border border-purple-200">
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-purple-700">
-                              {new Date(makeup.scheduledAt).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' })}
+                              {new Date(makeup.scheduledAt).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}
                             </span>
                             <span className="text-purple-600">Recuperare: {makeup.group?.name}</span>
                           </div>
@@ -1294,7 +1295,7 @@ export default function AdminMakeupPage() {
                         <div key={makeup.id} className="flex items-center justify-between text-xs bg-purple-50 rounded px-2 py-1.5 border border-purple-200">
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-purple-700">
-                              {new Date(makeup.scheduledAt).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' })}
+                              {new Date(makeup.scheduledAt).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}
                             </span>
                             <span className="text-purple-600">Recuperare: {makeup.group?.name}</span>
                           </div>
