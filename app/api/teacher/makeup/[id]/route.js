@@ -219,8 +219,29 @@ export async function PATCH(request, { params }) {
             }
           })
 
-          // If student was PRESENT, decrement their absences AND lessonsRemaining
+          // If student was PRESENT, decrement their lessonsRemaining
+          // Only decrement absences if they have absences > 0
           if (attendance.status === 'PRESENT') {
+            // First get current absences count
+            const currentGroupStudent = await prisma.groupStudent.findUnique({
+              where: {
+                groupId_studentId: {
+                  groupId: makeupLesson.groupId,
+                  studentId: ms.studentId
+                }
+              },
+              select: { absences: true }
+            })
+            
+            const updateData = {
+              lessonsRemaining: { decrement: 1 }
+            }
+            
+            // Only decrement absences if student has absences > 0
+            if (currentGroupStudent && currentGroupStudent.absences > 0) {
+              updateData.absences = { decrement: 1 }
+            }
+            
             await prisma.groupStudent.update({
               where: {
                 groupId_studentId: {
@@ -228,10 +249,7 @@ export async function PATCH(request, { params }) {
                   studentId: ms.studentId
                 }
               },
-              data: {
-                absences: { decrement: 1 },
-                lessonsRemaining: { decrement: 1 }
-              }
+              data: updateData
             })
           }
         }
