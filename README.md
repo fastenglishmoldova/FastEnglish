@@ -1,4 +1,4 @@
-# Bravito After School
+# PISchool
 
 Platformă de management pentru cursuri after-school, dezvoltată cu Next.js 15, Prisma și MongoDB.
 
