@@ -14,6 +14,7 @@ import {
   InboxIcon
 } from '@heroicons/react/24/outline'
 import PermissionGuard from '@/components/admin/PermissionGuard'
+import StatusFilter from '@/components/admin/StatusFilter'
 
 const statusConfig = {
   // New statuses
@@ -37,24 +38,53 @@ const statusConfig = {
   ARHIVAT: { label: '⚫ Finalizat Lecția', color: 'bg-slate-200 text-slate-800' }
 }
 
-export default async function ContactMessagesPage() {
+// Map legacy statuses to new ones for filtering
+const statusMappings = {
+  'NOU': ['NOU', 'LEAD'],
+  'LEAD': ['NOU', 'LEAD'],
+  'CITIT': ['CITIT', 'CONTACTAT'],
+  'CONTACTAT': ['CITIT', 'CONTACTAT'],
+  'RASPUNS': ['RASPUNS', 'PRIMA_LECTIE'],
+  'PRIMA_LECTIE': ['RASPUNS', 'PRIMA_LECTIE'],
+  'ARHIVAT': ['ARHIVAT', 'FINALIZAT_LECTIA'],
+  'FINALIZAT_LECTIA': ['ARHIVAT', 'FINALIZAT_LECTIA'],
+}
+
+export default async function ContactMessagesPage({ searchParams }) {
   return (
     <PermissionGuard permission="contact.view">
-      <ContactMessagesPageContent />
+      <ContactMessagesPageContent searchParams={searchParams} />
     </PermissionGuard>
   )
 }
 
-async function ContactMessagesPageContent() {
+async function ContactMessagesPageContent({ searchParams }) {
+  const statusFilter = (await searchParams)?.status || ''
+  
+  // Build where clause for filtering
+  let whereClause = {}
+  if (statusFilter) {
+    const statusesToMatch = statusMappings[statusFilter] || [statusFilter]
+    whereClause = {
+      status: { in: statusesToMatch }
+    }
+  }
+  
   const messages = await prisma.contactMessage.findMany({
+    where: whereClause,
     orderBy: { createdAt: 'desc' }
+  })
+  
+  // Get total counts (without filter) for stats
+  const allMessages = await prisma.contactMessage.findMany({
+    select: { status: true }
   })
 
   const stats = {
-    total: messages.length,
-    lead: messages.filter(m => m.status === 'LEAD' || m.status === 'NOU').length,
-    contactat: messages.filter(m => m.status === 'CONTACTAT' || m.status === 'CITIT').length,
-    programat: messages.filter(m => m.status === 'PROGRAMAT' || m.status === 'PRIMA_LECTIE').length
+    total: allMessages.length,
+    lead: allMessages.filter(m => m.status === 'LEAD' || m.status === 'NOU').length,
+    contactat: allMessages.filter(m => m.status === 'CONTACTAT' || m.status === 'CITIT').length,
+    programat: allMessages.filter(m => m.status === 'PROGRAMAT' || m.status === 'PRIMA_LECTIE').length
   }
 
   return (
@@ -83,12 +113,15 @@ async function ContactMessagesPageContent() {
           <p className="text-xl xs:text-2xl font-bold text-orange-600">{stats.programat}</p>
         </div>
       </div>
+      
+      {/* Status Filter */}
+      <StatusFilter basePath="/admin/contact" />
 
       {/* Lista mesaje */}
       {messages.length === 0 ? (
         <div className="bg-white rounded-xl p-8 text-center border border-gray-200">
           <InboxIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">Nu există mesaje încă</p>
+          <p className="text-gray-500">{statusFilter ? 'Nu există mesaje cu acest status' : 'Nu există mesaje încă'}</p>
         </div>
       ) : (
         <div className="space-y-3">

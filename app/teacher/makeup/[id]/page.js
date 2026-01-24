@@ -240,9 +240,31 @@ export default function MakeupSessionPage({ params }) {
   const isCanceled = makeup.status === 'CANCELED'
   
   // Check if scheduled time has passed
+  // scheduledAt is stored in UTC with 'Z' suffix
+  // The time entered (e.g., 13:00) is stored as 13:00 UTC
+  // But user expects it to mean 13:00 LOCAL time
+  // So we need to compare: is current LOCAL time >= scheduled time shown?
   const scheduledTime = new Date(makeup.scheduledAt)
   const now = new Date()
-  const canFinalize = now >= scheduledTime
+  
+  // Get current local time components
+  const nowLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 
+                           now.getHours(), now.getMinutes(), now.getSeconds())
+  
+  // Get scheduled time in UTC components but treat them as local
+  // scheduledTime is in UTC, but we displayed it with timeZone: 'UTC', so user sees the raw UTC values
+  // User entered 13:00, it was stored as 13:00Z, displayed as 13:00
+  // So we need to compare: local time >= UTC time value interpreted as local
+  const scheduledLocal = new Date(
+    scheduledTime.getUTCFullYear(),
+    scheduledTime.getUTCMonth(),
+    scheduledTime.getUTCDate(),
+    scheduledTime.getUTCHours(),
+    scheduledTime.getUTCMinutes(),
+    scheduledTime.getUTCSeconds()
+  )
+  
+  const canFinalize = nowLocal >= scheduledLocal
 
   return (
     <div className="space-y-3 xs:space-y-4 md:space-y-6">

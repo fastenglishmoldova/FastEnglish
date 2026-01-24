@@ -12,6 +12,7 @@ import {
   InboxIcon
 } from '@heroicons/react/24/outline'
 import PermissionGuard from '@/components/admin/PermissionGuard'
+import StatusFilter from '@/components/admin/StatusFilter'
 
 const statusConfig = {
   // New statuses
@@ -38,17 +39,48 @@ const statusConfig = {
   REJECTED: { label: '🔴 Plecat', color: 'bg-red-100 text-red-800' }
 }
 
-export default async function EnrollmentsPage() {
+// Map legacy statuses to new ones for filtering
+const statusMappings = {
+  'NOU': ['NOU', 'NEW', 'LEAD'],
+  'NEW': ['NOU', 'NEW', 'LEAD'],
+  'LEAD': ['NOU', 'NEW', 'LEAD'],
+  'CONTACTED': ['CONTACTED', 'CONTACTAT'],
+  'CONTACTAT': ['CONTACTED', 'CONTACTAT'],
+  'CONFIRMAT': ['CONFIRMAT', 'CONFIRMED', 'PRIMA_LECTIE'],
+  'CONFIRMED': ['CONFIRMAT', 'CONFIRMED', 'PRIMA_LECTIE'],
+  'PRIMA_LECTIE': ['CONFIRMAT', 'CONFIRMED', 'PRIMA_LECTIE'],
+  'RESPINS': ['RESPINS', 'REJECTED', 'PLECAT'],
+  'REJECTED': ['RESPINS', 'REJECTED', 'PLECAT'],
+  'PLECAT': ['RESPINS', 'REJECTED', 'PLECAT'],
+}
+
+export default async function EnrollmentsPage({ searchParams }) {
   return (
     <PermissionGuard permission="inscrieri.view">
-      <EnrollmentsPageContent />
+      <EnrollmentsPageContent searchParams={searchParams} />
     </PermissionGuard>
   )
 }
 
-async function EnrollmentsPageContent() {
+async function EnrollmentsPageContent({ searchParams }) {
+  const statusFilter = (await searchParams)?.status || ''
+  
+  // Build where clause for filtering
+  let enrollmentWhereClause = {}
+  let inscriereWhereClause = {}
+  if (statusFilter) {
+    const statusesToMatch = statusMappings[statusFilter] || [statusFilter]
+    enrollmentWhereClause = {
+      status: { in: statusesToMatch }
+    }
+    inscriereWhereClause = {
+      status: { in: statusesToMatch }
+    }
+  }
+  
   // Înscrieri din modalul de pe homepage (cu curs specific)
   const enrollments = await prisma.enrollment.findMany({
+    where: enrollmentWhereClause,
     orderBy: { createdAt: 'desc' },
     include: { 
       course: true
@@ -57,7 +89,16 @@ async function EnrollmentsPageContent() {
 
   // Înscrieri din formularul /inscriere
   const inscrieri = await prisma.inscriere.findMany({
+    where: inscriereWhereClause,
     orderBy: { createdAt: 'desc' }
+  })
+  
+  // Get all data for stats (without filter)
+  const allEnrollmentsForStats = await prisma.enrollment.findMany({
+    select: { status: true }
+  })
+  const allInscrieriForStats = await prisma.inscriere.findMany({
+    select: { status: true }
   })
 
   // Transformă înscriererile din formular în același format
@@ -85,12 +126,15 @@ async function EnrollmentsPageContent() {
   // Combină și sortează după dată
   const allEnrollments = [...formattedEnrollments, ...formattedInscrieri]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    
+  // Combine all for stats
+  const allForStats = [...allEnrollmentsForStats, ...allInscrieriForStats]
 
   const stats = {
-    total: allEnrollments.length,
-    noi: allEnrollments.filter(e => e.status === 'NOU' || e.status === 'NEW').length,
-    contactati: allEnrollments.filter(e => e.status === 'CONTACTAT' || e.status === 'CONTACTED').length,
-    confirmati: allEnrollments.filter(e => e.status === 'CONFIRMAT' || e.status === 'CONFIRMED').length
+    total: allForStats.length,
+    noi: allForStats.filter(e => e.status === 'NOU' || e.status === 'NEW' || e.status === 'LEAD').length,
+    contactati: allForStats.filter(e => e.status === 'CONTACTAT' || e.status === 'CONTACTED').length,
+    confirmati: allForStats.filter(e => e.status === 'CONFIRMAT' || e.status === 'CONFIRMED' || e.status === 'PRIMA_LECTIE').length
   }
 
   return (
@@ -107,24 +151,27 @@ async function EnrollmentsPageContent() {
           <p className="text-xl xs:text-2xl font-bold text-gray-900">{stats.total}</p>
         </div>
         <div className="bg-white rounded-xl p-3 xs:p-4 border border-gray-200">
-          <p className="text-xs xs:text-sm text-gray-500">Noi</p>
+          <p className="text-xs xs:text-sm text-gray-500">🔵 Lead</p>
           <p className="text-xl xs:text-2xl font-bold text-blue-600">{stats.noi}</p>
         </div>
         <div className="bg-white rounded-xl p-3 xs:p-4 border border-gray-200">
-          <p className="text-xs xs:text-sm text-gray-500">Contactați</p>
+          <p className="text-xs xs:text-sm text-gray-500">🟡 Contactați</p>
           <p className="text-xl xs:text-2xl font-bold text-yellow-600">{stats.contactati}</p>
         </div>
         <div className="bg-white rounded-xl p-3 xs:p-4 border border-gray-200">
-          <p className="text-xs xs:text-sm text-gray-500">Confirmați</p>
+          <p className="text-xs xs:text-sm text-gray-500">🟢 Confirmați</p>
           <p className="text-xl xs:text-2xl font-bold text-green-600">{stats.confirmati}</p>
         </div>
       </div>
+      
+      {/* Status Filter */}
+      <StatusFilter basePath="/admin/enrollments" />
 
       {/* Lista înscrieri */}
       {allEnrollments.length === 0 ? (
         <div className="bg-white rounded-xl p-8 text-center border border-gray-200">
           <InboxIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">Nu există înscrieri încă</p>
+          <p className="text-gray-500">{statusFilter ? 'Nu există înscrieri cu acest status' : 'Nu există înscrieri încă'}</p>
         </div>
       ) : (
         <div className="space-y-3">

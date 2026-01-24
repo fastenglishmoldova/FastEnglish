@@ -68,7 +68,7 @@ export default function ContactSection() {
     {
       city: 'Măgdăcești',
       branches: [
-        { name: 'Centru', address: 'Str. Petre Magciu 10', mapQuery: 'Magdacesti,+Criuleni,+Moldova' },
+        { name: 'Centru', address: 'Str. Petre Magciu 10', mapQuery: '47.145099,28.830158' },
       ]
     }
   ]

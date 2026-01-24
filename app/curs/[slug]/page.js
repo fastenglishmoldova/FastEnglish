@@ -6,7 +6,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Navbar from '@/components/public/Navbar'
 import Footer from '@/components/public/Footer'
-import EnrollmentModal from '@/components/public/EnrollmentModal'
 
 const LEVEL_CONFIG = {
   'începător': { gradient: 'from-emerald-500 to-teal-500', label: 'Începător' },
@@ -19,7 +18,6 @@ export default function CourseDetailPage() {
   const [course, setCourse] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
@@ -392,9 +390,9 @@ export default function CourseDetailPage() {
                   </div>
 
                   {/* CTA Button */}
-                  <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg relative overflow-hidden group"
+                  <Link
+                    href="/inscriere"
+                    className="w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg relative overflow-hidden group block"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300 group-hover:scale-105" />
                     <span className="relative z-10 flex items-center justify-center gap-2 text-white">
@@ -403,7 +401,7 @@ export default function CourseDetailPage() {
                       </svg>
                       Înscrie-te acum
                     </span>
-                  </button>
+                  </Link>
 
                   {/* Features List */}
                   <div className="mt-4 sm:mt-8 space-y-2 sm:space-y-4">
@@ -511,12 +509,6 @@ export default function CourseDetailPage() {
       )}
 
       <Footer />
-
-      <EnrollmentModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        course={course}
-      />
     </>
   )
 }
