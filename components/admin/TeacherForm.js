@@ -94,17 +94,27 @@ export default function TeacherForm({ teacher }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setShow2FA(true)
+    // Check if user has 2FA enabled
+    if (session?.user?.twoFactorEnabled) {
+      setShow2FA(true)
+    } else {
+      // No 2FA - execute directly
+      executeSubmit(null)
+    }
   }
 
   const executeSubmit = async (actionToken) => {
+    setShow2FA(false)
     setLoading(true)
 
     try {
       const url = teacher ? `/api/admin/teachers/${teacher.id}` : '/api/admin/teachers'
       const method = teacher ? 'PUT' : 'POST'
 
-      const payload = { ...formData, actionToken }
+      const payload = { ...formData }
+      if (actionToken) {
+        payload.actionToken = actionToken
+      }
       if (teacher && !payload.password) {
         delete payload.password
       }
@@ -115,32 +125,12 @@ export default function TeacherForm({ teacher }) {
         body: JSON.stringify(payload)
       })
 
-      const data = await res.json()
-
-      if (res.status === 403 && data.requires2FA) {
-        delete payload.actionToken
-        const retryRes = await fetch(url, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        })
-        
-        if (retryRes.ok) {
-          toast.success(teacher ? 'Contul a fost actualizat' : 'Contul a fost creat')
-          router.push('/admin/teachers')
-          router.refresh()
-        } else {
-          const retryData = await retryRes.json()
-          toast.error(retryData.error || 'A apărut o eroare')
-        }
-        return
-      }
-
       if (res.ok) {
         toast.success(teacher ? 'Contul a fost actualizat' : 'Contul a fost creat')
         router.push('/admin/teachers')
         router.refresh()
       } else {
+        const data = await res.json()
         toast.error(data.error || 'A apărut o eroare')
       }
     } catch (error) {

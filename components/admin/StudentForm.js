@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import toast from 'react-hot-toast'
 import TwoFactorModal from './TwoFactorModal'
 
 export default function StudentForm({ student }) {
   const router = useRouter()
+  const { data: session } = useSession()
   const [loading, setLoading] = useState(false)
   const [show2FA, setShow2FA] = useState(false)
   const [pendingAction, setPendingAction] = useState(null)
@@ -26,57 +28,43 @@ export default function StudentForm({ student }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    // Store the action and show 2FA modal
+    // Store the action and check 2FA
     setPendingAction({ type: 'submit' })
-    setShow2FA(true)
+    if (session?.user?.twoFactorEnabled) {
+      setShow2FA(true)
+    } else {
+      executeSubmit(null)
+    }
   }
 
   const executeSubmit = async (actionToken) => {
+    setShow2FA(false)
     setLoading(true)
 
     try {
       const url = student ? `/api/admin/students/${student.id}` : '/api/admin/students'
       const method = student ? 'PUT' : 'POST'
 
+      const payload = {
+        ...formData,
+        age: formData.age ? parseInt(formData.age) : null
+      }
+      if (actionToken) {
+        payload.actionToken = actionToken
+      }
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          age: formData.age ? parseInt(formData.age) : null,
-          actionToken
-        })
+        body: JSON.stringify(payload)
       })
-
-      const data = await res.json()
-
-      if (res.status === 403 && data.requires2FA) {
-        // User doesn't have 2FA set up - proceed without token
-        const retryRes = await fetch(url, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ...formData,
-            age: formData.age ? parseInt(formData.age) : null
-          })
-        })
-        
-        if (retryRes.ok) {
-          toast.success(student ? 'Elevul a fost actualizat' : 'Elevul a fost adăugat')
-          router.push('/admin/students')
-          router.refresh()
-        } else {
-          const retryData = await retryRes.json()
-          toast.error(retryData.error || 'A apărut o eroare')
-        }
-        return
-      }
 
       if (res.ok) {
         toast.success(student ? 'Elevul a fost actualizat' : 'Elevul a fost adăugat')
         router.push('/admin/students')
         router.refresh()
       } else {
+        const data = await res.json()
         toast.error(data.error || 'A apărut o eroare')
       }
     } catch (error) {

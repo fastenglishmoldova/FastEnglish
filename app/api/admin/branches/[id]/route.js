@@ -118,9 +118,8 @@ export async function DELETE(request, { params }) {
     const sessionUser = await getCurrentUser()
     const { id } = await params
 
-    // Check for action token in query params or body
-    const { searchParams } = new URL(request.url)
-    const actionToken = searchParams.get('actionToken')
+    // Check for action token in header or query params
+    const actionToken = request.headers.get('x-action-token') || new URL(request.url).searchParams.get('actionToken')
 
     // Verify 2FA if user has it enabled
     const currentUser = await prisma.user.findUnique({

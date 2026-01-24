@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import toast from 'react-hot-toast'
 import TwoFactorModal from './TwoFactorModal'
 
@@ -9,40 +10,39 @@ export default function DeleteTeacherButton({ id, name, className = '' }) {
   const [loading, setLoading] = useState(false)
   const [show2FA, setShow2FA] = useState(false)
   const router = useRouter()
+  const { data: session } = useSession()
 
   const handleDelete = async () => {
     if (!confirm(`Ești sigur că vrei să ștergi "${name}"? Aceasta va șterge și toate datele asociate.`)) return
-    setShow2FA(true)
+    
+    // Check if user has 2FA enabled
+    if (session?.user?.twoFactorEnabled) {
+      setShow2FA(true)
+    } else {
+      // No 2FA - execute directly
+      executeDelete(null)
+    }
   }
 
   const executeDelete = async (actionToken) => {
     setLoading(true)
+    setShow2FA(false)
     try {
+      const headers = {}
+      if (actionToken) {
+        headers['x-action-token'] = actionToken
+      }
+      
       const res = await fetch(`/api/admin/teachers/${id}`, { 
         method: 'DELETE',
-        headers: {
-          'x-action-token': actionToken || ''
-        }
+        headers
       })
-      
-      const data = await res.json()
-      
-      if (res.status === 403 && data.requires2FA) {
-        // User doesn't have 2FA - proceed without token
-        const retryRes = await fetch(`/api/admin/teachers/${id}`, { method: 'DELETE' })
-        if (retryRes.ok) {
-          toast.success('Contul a fost șters')
-          router.refresh()
-        } else {
-          toast.error('Eroare la ștergere')
-        }
-        return
-      }
       
       if (res.ok) {
         toast.success('Contul a fost șters')
         router.refresh()
       } else {
+        const data = await res.json()
         toast.error(data.error || 'Eroare la ștergere')
       }
     } catch (error) {

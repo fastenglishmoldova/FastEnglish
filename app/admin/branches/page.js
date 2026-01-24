@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import TwoFactorModal from '@/components/admin/TwoFactorModal'
@@ -9,6 +10,7 @@ import { usePermissions } from '@/hooks/usePermissions'
 
 export default function BranchesPage() {
   const router = useRouter()
+  const { data: session } = useSession()
   const { hasPermission, isSuperAdmin } = usePermissions()
   
   const [branches, setBranches] = useState([])
@@ -73,10 +75,17 @@ export default function BranchesPage() {
   const handleSubmit = (e) => {
     e.preventDefault()
     setPendingAction({ type: 'save' })
-    setShow2FA(true)
+    // Check if user has 2FA enabled
+    if (session?.user?.twoFactorEnabled) {
+      setShow2FA(true)
+    } else {
+      // No 2FA - execute directly
+      executeSave(null)
+    }
   }
 
   const executeSave = async (actionToken) => {
+    setShow2FA(false)
     setSaving(true)
     try {
       const url = editingBranch 
@@ -84,9 +93,9 @@ export default function BranchesPage() {
         : '/api/admin/branches'
       const method = editingBranch ? 'PUT' : 'POST'
 
-      const payload = {
-        ...formData,
-        actionToken
+      const payload = { ...formData }
+      if (actionToken) {
+        payload.actionToken = actionToken
       }
 
       const res = await fetch(url, {
@@ -95,33 +104,12 @@ export default function BranchesPage() {
         body: JSON.stringify(payload)
       })
 
-      const data = await res.json()
-
-      if (res.status === 403 && data.requires2FA) {
-        // User doesn't have 2FA - retry without token
-        delete payload.actionToken
-        const retryRes = await fetch(url, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        })
-        
-        if (retryRes.ok) {
-          toast.success(editingBranch ? 'Filiala a fost actualizată' : 'Filiala a fost creată')
-          closeModal()
-          fetchBranches()
-        } else {
-          const retryData = await retryRes.json()
-          toast.error(retryData.error || 'A apărut o eroare')
-        }
-        return
-      }
-
       if (res.ok) {
         toast.success(editingBranch ? 'Filiala a fost actualizată' : 'Filiala a fost creată')
         closeModal()
         fetchBranches()
       } else {
+        const data = await res.json()
         toast.error(data.error || 'A apărut o eroare')
       }
     } catch (error) {
@@ -137,44 +125,41 @@ export default function BranchesPage() {
       return
     }
     setPendingAction({ type: 'delete', branchId: branch.id, branchName: branch.name })
-    setShow2FA(true)
+    // Check if user has 2FA enabled
+    if (session?.user?.twoFactorEnabled) {
+      setShow2FA(true)
+    } else {
+      // No 2FA - execute directly (need to call after setting pendingAction)
+      executeDelete(null)
+    }
   }
 
   const executeDelete = async (actionToken) => {
-    if (pendingAction?.type !== 'delete') return
+    if (pendingAction?.type !== 'delete' && !actionToken) return
+    setShow2FA(false)
     
     try {
-      const res = await fetch(`/api/admin/branches/${pendingAction.branchId}?actionToken=${actionToken}`, {
-        method: 'DELETE'
-      })
-
-      const data = await res.json()
-
-      if (res.status === 403 && data.requires2FA) {
-        // User doesn't have 2FA - retry without token
-        const retryRes = await fetch(`/api/admin/branches/${pendingAction.branchId}`, {
-          method: 'DELETE'
-        })
-        
-        if (retryRes.ok) {
-          toast.success('Filiala a fost ștearsă')
-          fetchBranches()
-        } else {
-          const retryData = await retryRes.json()
-          toast.error(retryData.error || 'A apărut o eroare')
-        }
-        return
+      const headers = {}
+      if (actionToken) {
+        headers['x-action-token'] = actionToken
       }
+      
+      const res = await fetch(`/api/admin/branches/${pendingAction.branchId}`, {
+        method: 'DELETE',
+        headers
+      })
 
       if (res.ok) {
         toast.success('Filiala a fost ștearsă')
         fetchBranches()
       } else {
+        const data = await res.json()
         toast.error(data.error || 'A apărut o eroare')
       }
     } catch (error) {
       toast.error('A apărut o eroare')
     }
+    setPendingAction(null)
   }
 
   const handle2FAVerify = async (token) => {
@@ -186,7 +171,6 @@ export default function BranchesPage() {
     } else if (pendingAction?.type === 'delete') {
       await executeDelete(token)
     }
-    setPendingAction(null)
   }
 
   if (loading) {

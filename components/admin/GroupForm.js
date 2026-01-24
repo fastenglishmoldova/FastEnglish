@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import toast from 'react-hot-toast'
 import TwoFactorModal from './TwoFactorModal'
 
@@ -26,6 +27,7 @@ const parseScheduleTime = (scheduleTime, scheduleDays) => {
 
 export default function GroupForm({ group, courses, teachers, branches = [] }) {
   const router = useRouter()
+  const { data: session } = useSession()
   const [loading, setLoading] = useState(false)
   const [show2FA, setShow2FA] = useState(false)
   const [branchSchedule, setBranchSchedule] = useState([])
@@ -131,10 +133,17 @@ export default function GroupForm({ group, courses, teachers, branches = [] }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setShow2FA(true)
+    // Check if user has 2FA enabled
+    if (session?.user?.twoFactorEnabled) {
+      setShow2FA(true)
+    } else {
+      // No 2FA - execute directly
+      executeSubmit(null)
+    }
   }
 
   const executeSubmit = async (actionToken) => {
+    setShow2FA(false)
     setLoading(true)
 
     try {
@@ -156,8 +165,10 @@ export default function GroupForm({ group, courses, teachers, branches = [] }) {
         locationType: formData.locationType,
         locationDetails: formData.locationDetails,
         startDate: formData.startDate ? new Date(formData.startDate).toISOString() : null,
-        active: formData.active,
-        actionToken
+        active: formData.active
+      }
+      if (actionToken) {
+        payload.actionToken = actionToken
       }
 
       const res = await fetch(url, {
@@ -166,33 +177,12 @@ export default function GroupForm({ group, courses, teachers, branches = [] }) {
         body: JSON.stringify(payload)
       })
 
-      const data = await res.json()
-
-      if (res.status === 403 && data.requires2FA) {
-        // User doesn't have 2FA set up - proceed without token
-        delete payload.actionToken
-        const retryRes = await fetch(url, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        })
-        
-        if (retryRes.ok) {
-          toast.success(group ? 'Grupa a fost actualizată' : 'Grupa a fost creată')
-          router.push('/admin/groups')
-          router.refresh()
-        } else {
-          const retryData = await retryRes.json()
-          toast.error(retryData.error || 'A apărut o eroare')
-        }
-        return
-      }
-
       if (res.ok) {
         toast.success(group ? 'Grupa a fost actualizată' : 'Grupa a fost creată')
         router.push('/admin/groups')
         router.refresh()
       } else {
+        const data = await res.json()
         toast.error(data.error || 'A apărut o eroare')
       }
     } catch (error) {
