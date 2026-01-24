@@ -52,9 +52,9 @@ async function ContactMessagesPageContent() {
 
   const stats = {
     total: messages.length,
-    noi: messages.filter(m => m.status === 'NOU').length,
-    citite: messages.filter(m => m.status === 'CITIT').length,
-    raspuns: messages.filter(m => m.status === 'RASPUNS').length
+    lead: messages.filter(m => m.status === 'LEAD' || m.status === 'NOU').length,
+    contactat: messages.filter(m => m.status === 'CONTACTAT' || m.status === 'CITIT').length,
+    programat: messages.filter(m => m.status === 'PROGRAMAT' || m.status === 'PRIMA_LECTIE').length
   }
 
   return (
@@ -71,16 +71,16 @@ async function ContactMessagesPageContent() {
           <p className="text-xl xs:text-2xl font-bold text-gray-900">{stats.total}</p>
         </div>
         <div className="bg-white rounded-xl p-3 xs:p-4 border border-gray-200">
-          <p className="text-xs xs:text-sm text-gray-500">Noi</p>
-          <p className="text-xl xs:text-2xl font-bold text-blue-600">{stats.noi}</p>
+          <p className="text-xs xs:text-sm text-gray-500">🔵 Lead</p>
+          <p className="text-xl xs:text-2xl font-bold text-blue-600">{stats.lead}</p>
         </div>
         <div className="bg-white rounded-xl p-3 xs:p-4 border border-gray-200">
-          <p className="text-xs xs:text-sm text-gray-500">Citite</p>
-          <p className="text-xl xs:text-2xl font-bold text-yellow-600">{stats.citite}</p>
+          <p className="text-xs xs:text-sm text-gray-500">🟡 Contactat</p>
+          <p className="text-xl xs:text-2xl font-bold text-yellow-600">{stats.contactat}</p>
         </div>
         <div className="bg-white rounded-xl p-3 xs:p-4 border border-gray-200">
-          <p className="text-xs xs:text-sm text-gray-500">Răspuns</p>
-          <p className="text-xl xs:text-2xl font-bold text-green-600">{stats.raspuns}</p>
+          <p className="text-xs xs:text-sm text-gray-500">🟠 Programat</p>
+          <p className="text-xl xs:text-2xl font-bold text-orange-600">{stats.programat}</p>
         </div>
       </div>
 

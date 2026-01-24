@@ -610,7 +610,7 @@ model Inscriere {
   clasa        String
   cursuri      String[]
   mesaj        String?
-  status       InscriereStatus @default(NOU)
+  status       InscriereStatus @default(LEAD)
   notes        String?         // Legacy - kept for backwards compatibility
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
@@ -650,7 +650,7 @@ model ContactMessage {
   email     String
   phone     String?
   message   String
-  status    ContactMessageStatus @default(NOU)
+  status    ContactMessageStatus @default(LEAD)
   notes     String?              // Legacy - kept for backwards compatibility
   createdAt DateTime             @default(now())
   updatedAt DateTime             @updatedAt
