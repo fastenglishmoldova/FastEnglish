@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, Fragment } from 'react'
+import { useState, Fragment, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import TwoFactorModal from './TwoFactorModal'
 import { 
   PlusIcon, 
   MinusIcon, 
@@ -67,6 +68,25 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
     lessonsAdded: ''
   })
   const [savingPayment, setSavingPayment] = useState(false)
+  const [show2FAModal, setShow2FAModal] = useState(false)
+  const [pendingPayment, setPendingPayment] = useState(null)
+  const [user2FAEnabled, setUser2FAEnabled] = useState(false)
+
+  // Check if current user has 2FA enabled
+  useEffect(() => {
+    async function check2FAStatus() {
+      try {
+        const res = await fetch('/api/admin/security/2fa/status')
+        if (res.ok) {
+          const data = await res.json()
+          setUser2FAEnabled(data.enabled || false)
+        }
+      } catch (error) {
+        console.error('Error checking 2FA status:', error)
+      }
+    }
+    check2FAStatus()
+  }, [])
 
   const assignedStudentIds = group.groupStudents.map(gs => gs.studentId)
   const availableStudents = allStudents.filter(s => !assignedStudentIds.includes(s.id))
@@ -193,17 +213,30 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
       return
     }
 
+    const paymentData = {
+      groupStudentId: showPaymentModal.id,
+      amount: parseFloat(paymentForm.amount),
+      paymentDate: paymentForm.paymentDate,
+      paymentMethod: paymentForm.paymentMethod,
+      notes: paymentForm.notes,
+      lessonsAdded: paymentForm.lessonsAdded ? parseInt(paymentForm.lessonsAdded) : null
+    }
+
+    // If user has 2FA enabled, require verification
+    if (user2FAEnabled) {
+      setPendingPayment(paymentData)
+      setShow2FAModal(true)
+    } else {
+      // No 2FA, save directly
+      await executePayment(paymentData)
+    }
+  }
+
+  const executePayment = async (paymentData, actionToken = null) => {
     setSavingPayment(true)
 
     try {
-      const payload = {
-        groupStudentId: showPaymentModal.id,
-        amount: parseFloat(paymentForm.amount),
-        paymentDate: paymentForm.paymentDate,
-        paymentMethod: paymentForm.paymentMethod,
-        notes: paymentForm.notes,
-        lessonsAdded: paymentForm.lessonsAdded ? parseInt(paymentForm.lessonsAdded) : null
-      }
+      const payload = actionToken ? { ...paymentData, actionToken } : paymentData
 
       const res = await fetch('/api/admin/payments', {
         method: 'POST',
@@ -224,6 +257,8 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
           lessonsAdded: ''
         })
         setShowPaymentModal(null)
+        setShow2FAModal(false)
+        setPendingPayment(null)
         router.refresh()
       } else {
         toast.error(data.error || 'Eroare la salvarea plății')
@@ -232,6 +267,12 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
       toast.error('Eroare la salvarea plății')
     } finally {
       setSavingPayment(false)
+    }
+  }
+
+  const handle2FAVerify = async (token) => {
+    if (pendingPayment) {
+      await executePayment(pendingPayment, token)
     }
   }
 
@@ -1449,6 +1490,18 @@ export default function GroupStudentsManager({ group, allStudents, allGroups = [
           </div>
         </div>
       )}
+
+      {/* 2FA Modal for Payment */}
+      <TwoFactorModal
+        isOpen={show2FAModal}
+        onClose={() => {
+          setShow2FAModal(false)
+          setPendingPayment(null)
+        }}
+        onVerify={handle2FAVerify}
+        title="Verificare 2FA"
+        description="Confirmă identitatea pentru a înregistra plata."
+      />
     </div>
   )
 }
