@@ -117,12 +117,9 @@ export async function POST(request) {
     // Create makeup lesson
     // Parse the scheduledAt - frontend sends format like "2025-01-24T10:00:00"
     // Store the time exactly as the user entered it (no timezone conversion)
-    const [datePart, timePart] = scheduledAt.split('T')
-    const [year, month, day] = datePart.split('-').map(Number)
-    const [hours, minutes] = (timePart || '10:00').split(':').map(Number)
-    
-    // Create date with exact hours as entered by user
-    const scheduledDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0))
+    // We append 'Z' to make JavaScript interpret it as UTC, so when displayed
+    // it shows the exact time entered (without local timezone conversion)
+    const scheduledDate = new Date(scheduledAt + 'Z')
 
     const makeupLesson = await prisma.makeupLesson.create({
       data: {

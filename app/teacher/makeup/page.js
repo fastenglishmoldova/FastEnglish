@@ -690,7 +690,7 @@ export default function MakeupLessonsPage() {
                       onChange={(e) => setSelectedMinute(e.target.value)}
                       className="w-full px-2 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl bg-white text-gray-900 font-medium focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-sm"
                     >
-                      {['00', '15', '30', '45'].map(m => (
+                      {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0')).map(m => (
                         <option key={m} value={m}>{m}</option>
                       ))}
                     </select>
