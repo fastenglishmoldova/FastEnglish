@@ -116,27 +116,13 @@ export async function POST(request) {
 
     // Create makeup lesson
     // Parse the scheduledAt - frontend sends format like "2025-01-24T10:00:00"
-    // This represents LOCAL time (Romania = Europe/Bucharest)
-    // We need to convert this to UTC for storage
+    // Store the time exactly as the user entered it (no timezone conversion)
     const [datePart, timePart] = scheduledAt.split('T')
     const [year, month, day] = datePart.split('-').map(Number)
     const [hours, minutes] = (timePart || '10:00').split(':').map(Number)
     
-    // Determine Romania timezone offset (UTC+2 winter, UTC+3 summer DST)
-    // DST in Romania: last Sunday of March to last Sunday of October
-    const testDate = new Date(year, month - 1, day)
-    const marchLastSunday = new Date(year, 2, 31)
-    marchLastSunday.setDate(31 - marchLastSunday.getDay())
-    const octoberLastSunday = new Date(year, 9, 31)
-    octoberLastSunday.setDate(31 - octoberLastSunday.getDay())
-    
-    const isDST = testDate >= marchLastSunday && testDate < octoberLastSunday
-    const romaniaOffsetHours = isDST ? 3 : 2
-    
-    // Convert local Romania time to UTC
-    // If user selected 10:00 Romania time (UTC+2), we store 08:00 UTC
-    const utcHours = hours - romaniaOffsetHours
-    const scheduledDate = new Date(Date.UTC(year, month - 1, day, utcHours, minutes, 0))
+    // Create date with exact hours as entered by user
+    const scheduledDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0))
 
     const makeupLesson = await prisma.makeupLesson.create({
       data: {
