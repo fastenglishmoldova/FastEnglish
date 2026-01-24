@@ -154,6 +154,8 @@ export default function AdminMakeupPage() {
       return true
     }) || []
     
+    console.log('Makeup for day:', makeupForDay.length, makeupForDay.map(m => ({ id: m.id, group: m.group?.name, location: m.locationDetails })))
+    
     // Sort by time
     scheduleForDay = scheduleForDay.sort((a, b) => {
       const timeA = a.scheduleTime || '00:00'
