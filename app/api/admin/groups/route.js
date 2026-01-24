@@ -84,7 +84,7 @@ export async function GET(request) {
     })
 
     // Get teachers and branches for filters (always return all)
-    const [teachers, branches] = await Promise.all([
+    const [teachers, branches, makeupLessons] = await Promise.all([
       prisma.user.findMany({
         where: { role: 'TEACHER' },
         select: { id: true, name: true, email: true },
@@ -93,6 +93,23 @@ export async function GET(request) {
       prisma.branch.findMany({
         where: { active: true },
         orderBy: { name: 'asc' }
+      }),
+      // Fetch scheduled makeup lessons for schedule view
+      prisma.makeupLesson.findMany({
+        where: {
+          status: { in: ['SCHEDULED', 'IN_PROGRESS'] }
+        },
+        include: {
+          group: { select: { id: true, name: true } },
+          branch: { select: { id: true, name: true } },
+          teacher: { select: { id: true, name: true, email: true } },
+          students: {
+            include: {
+              student: { select: { id: true, fullName: true } }
+            }
+          }
+        },
+        orderBy: { scheduledAt: 'asc' }
       })
     ])
     
@@ -100,6 +117,7 @@ export async function GET(request) {
       groups, 
       teachers, 
       branches,
+      makeupLessons,
       pagination: {
         page,
         totalPages,

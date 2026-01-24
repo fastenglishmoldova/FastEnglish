@@ -99,7 +99,7 @@ export async function POST(request) {
   }
 
   try {
-    const { groupId, scheduledAt, notes, studentIds } = await request.json()
+    const { groupId, scheduledAt, notes, studentIds, branchId, locationDetails } = await request.json()
 
     // Verify the group exists and teacher has access
     const group = await prisma.group.findUnique({
@@ -125,6 +125,8 @@ export async function POST(request) {
       data: {
         groupId,
         teacherId: session.user.id,
+        branchId: branchId || null,
+        locationDetails: locationDetails || null,
         scheduledAt: scheduledDate,
         notes,
         status: 'SCHEDULED',
@@ -144,7 +146,8 @@ export async function POST(request) {
         },
         group: {
           include: { course: true }
-        }
+        },
+        branch: true
       }
     })
 

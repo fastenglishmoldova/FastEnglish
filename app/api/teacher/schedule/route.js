@@ -45,11 +45,32 @@ export async function GET() {
       select: { id: true, name: true },
       orderBy: { name: 'asc' }
     })
+    
+    // Fetch scheduled makeup lessons (SCHEDULED or IN_PROGRESS)
+    const makeupLessons = await prisma.makeupLesson.findMany({
+      where: {
+        status: { in: ['SCHEDULED', 'IN_PROGRESS'] }
+      },
+      include: {
+        group: { 
+          select: { id: true, name: true } 
+        },
+        branch: { select: { id: true, name: true } },
+        teacher: { select: { id: true, name: true, email: true } },
+        students: {
+          include: {
+            student: { select: { id: true, fullName: true } }
+          }
+        }
+      },
+      orderBy: { scheduledAt: 'asc' }
+    })
 
     return NextResponse.json({ 
       groups,
       teachers,
       branches,
+      makeupLessons,
       currentUserId: session.user.id
     })
   } catch (error) {

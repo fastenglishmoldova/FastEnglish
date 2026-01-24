@@ -48,6 +48,7 @@ export default function OrarPage() {
   const [groups, setGroups] = useState([])
   const [branches, setBranches] = useState([])
   const [teachers, setTeachers] = useState([])
+  const [makeupLessons, setMakeupLessons] = useState([])
   const [loading, setLoading] = useState(true)
   
   // Filtre
@@ -74,6 +75,7 @@ export default function OrarPage() {
       setGroups(data.groups || [])
       setBranches(data.branches || [])
       setTeachers(data.teachers || [])
+      setMakeupLessons(data.makeupLessons || [])
     } catch (error) {
       console.error('Error fetching groups:', error)
     } finally {
@@ -157,8 +159,76 @@ export default function OrarPage() {
       })
     })
     
+    // Adăugăm lecțiile de recuperare programate
+    makeupLessons.forEach(makeup => {
+      if (!makeup.scheduledAt) return
+      
+      const scheduledDate = new Date(makeup.scheduledAt)
+      const makeupDayName = dayMapping[scheduledDate.getDay()]
+      
+      // Filtru profesor
+      if (selectedTeacher && makeup.teacherId !== selectedTeacher) return
+      
+      // Filtru filială
+      if (selectedBranch) {
+        if (selectedBranch === 'none' && makeup.branchId) return
+        if (selectedBranch !== 'none' && makeup.branchId !== selectedBranch) return
+      }
+      
+      // Filtru zi
+      if (selectedDay && makeupDayName !== selectedDay) return
+      
+      // Filtru student
+      if (studentSearch.trim()) {
+        const searchLower = studentSearch.toLowerCase().trim()
+        const hasMatchingStudent = makeup.students?.some(ms => 
+          ms.student?.fullName?.toLowerCase().includes(searchLower)
+        )
+        if (!hasMatchingStudent) return
+      }
+      
+      // Extract time from UTC date
+      const hours = scheduledDate.getUTCHours().toString().padStart(2, '0')
+      const minutes = scheduledDate.getUTCMinutes().toString().padStart(2, '0')
+      const timeStr = `${hours}:${minutes}`
+      
+      // Format date for display
+      const dateStr = scheduledDate.toLocaleDateString('ro-RO', {
+        day: 'numeric',
+        month: 'short',
+        timeZone: 'UTC'
+      })
+      
+      if (scheduleByDay[makeupDayName]) {
+        scheduleByDay[makeupDayName].push({
+          id: makeup.id,
+          name: `🔄 ${makeup.group?.name || 'Recuperare'}`,
+          time: timeStr,
+          branch: makeup.branch?.name || '-',
+          teacherName: makeup.teacher?.name || '-',
+          teacherEmail: makeup.teacher?.email || '-',
+          teacherPhone: makeup.teacher?.phone || null,
+          room: makeup.locationDetails || '-',
+          locationType: 'offline',
+          course: makeup.group?.name ? 'Lecție de recuperare' : '-',
+          studentCount: makeup.students?.length || 0,
+          isMakeup: true,
+          makeupDate: dateStr,
+          makeupStatus: makeup.status,
+          groupId: makeup.groupId
+        })
+        
+        // Re-sortăm ziua
+        scheduleByDay[makeupDayName].sort((a, b) => {
+          if (!a.time || a.time === '-') return 1
+          if (!b.time || b.time === '-') return -1
+          return a.time.localeCompare(b.time)
+        })
+      }
+    })
+    
     return { scheduleByDay, todayName, tomorrowName, sortedDays }
-  }, [groups, selectedBranch, selectedTeacher, selectedDay, studentSearch])
+  }, [groups, makeupLessons, selectedBranch, selectedTeacher, selectedDay, studentSearch])
 
   if (loading) {
     return (
@@ -314,21 +384,32 @@ export default function OrarPage() {
                 {daySchedule.map((item, idx) => (
                   <Link 
                     key={`${item.id}-${idx}`} 
-                    href={`/admin/groups/${item.id}/students`}
+                    href={item.isMakeup ? `/admin/makeup` : `/admin/groups/${item.id}/students`}
                     className={`block bg-white rounded-xl border p-4 shadow-sm hover:shadow-md transition-all hover:scale-[1.01] cursor-pointer ${
-                      isToday ? 'border-indigo-200 hover:border-indigo-300' : 'border-gray-100 hover:border-gray-200'
+                      item.isMakeup 
+                        ? 'border-amber-200 hover:border-amber-300 bg-amber-50/30' 
+                        : isToday 
+                          ? 'border-indigo-200 hover:border-indigo-300' 
+                          : 'border-gray-100 hover:border-gray-200'
                     }`}
                   >
                     {/* Header card - oră și filială */}
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xl font-bold text-indigo-600">
+                      <span className={`text-xl font-bold ${item.isMakeup ? 'text-amber-600' : 'text-indigo-600'}`}>
                         {item.time}
                       </span>
-                      {item.branch !== '-' && (
-                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                          {item.branch}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {item.isMakeup && (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                            {item.makeupDate}
+                          </span>
+                        )}
+                        {item.branch !== '-' && (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            {item.branch}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Numele grupei */}

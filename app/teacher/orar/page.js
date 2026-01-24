@@ -40,6 +40,7 @@ export default function TeacherOrarPage() {
   const [groups, setGroups] = useState([])
   const [teachers, setTeachers] = useState([])
   const [branches, setBranches] = useState([])
+  const [makeupLessons, setMakeupLessons] = useState([])
   const [currentUserId, setCurrentUserId] = useState(null)
   const [loading, setLoading] = useState(true)
   
@@ -61,6 +62,7 @@ export default function TeacherOrarPage() {
       setGroups(data.groups || [])
       setTeachers(data.teachers || [])
       setBranches(data.branches || [])
+      setMakeupLessons(data.makeupLessons || [])
       setCurrentUserId(data.currentUserId)
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -128,10 +130,64 @@ export default function TeacherOrarPage() {
             teacher: group.teacher?.name || group.teacher?.email || '-',
             teacherId: group.teacherId,
             studentsCount: group.groupStudents?.filter(gs => gs.status === 'ACTIVE' || !gs.status)?.length || 0,
-            isMyGroup: group.teacherId === currentUserId
+            isMyGroup: group.teacherId === currentUserId,
+            isMakeup: false
           })
         }
       })
+    })
+    
+    // Adaugă lecțiile de recuperare programate
+    makeupLessons.forEach(makeup => {
+      // Filtru "doar ale mele"
+      if (showOnlyMine && makeup.teacherId !== currentUserId) return
+      
+      // Filtru profesor
+      if (selectedTeacher && makeup.teacherId !== selectedTeacher) return
+      
+      // Filtru filială
+      if (selectedBranch) {
+        if (selectedBranch === 'none' && makeup.branchId) return
+        if (selectedBranch !== 'none' && makeup.branchId !== selectedBranch) return
+      }
+      
+      const scheduledDate = new Date(makeup.scheduledAt)
+      const makeupDayName = dayMapping[scheduledDate.getDay()]
+      
+      // Filtru zi
+      if (selectedDay && makeupDayName !== selectedDay) return
+      
+      // Extrage ora din scheduledAt (care e stocat în UTC)
+      const hours = String(scheduledDate.getUTCHours()).padStart(2, '0')
+      const minutes = String(scheduledDate.getUTCMinutes()).padStart(2, '0')
+      const time = `${hours}:${minutes}`
+      
+      // Formatează data pentru afișare
+      const dateStr = scheduledDate.toLocaleDateString('ro-RO', {
+        timeZone: 'UTC',
+        day: 'numeric',
+        month: 'short'
+      })
+      
+      if (scheduleByDay[makeupDayName]) {
+        scheduleByDay[makeupDayName].push({
+          id: makeup.id,
+          name: `🔄 ${makeup.group?.name || 'Recuperare'}`,
+          time: time,
+          branch: makeup.branch?.name || '-',
+          branchId: makeup.branchId,
+          room: makeup.locationDetails || '-',
+          locationType: 'offline',
+          course: 'Recuperare',
+          teacher: makeup.teacher?.name || makeup.teacher?.email || '-',
+          teacherId: makeup.teacherId,
+          studentsCount: makeup.students?.length || 0,
+          isMyGroup: makeup.teacherId === currentUserId,
+          isMakeup: true,
+          makeupDate: dateStr,
+          makeupStatus: makeup.status
+        })
+      }
     })
     
     // Sortăm fiecare zi după oră
@@ -144,7 +200,7 @@ export default function TeacherOrarPage() {
     })
     
     return { scheduleByDay, todayName, tomorrowName, sortedDays }
-  }, [filteredGroups, selectedDay, currentUserId])
+  }, [filteredGroups, makeupLessons, selectedDay, selectedTeacher, selectedBranch, showOnlyMine, currentUserId])
 
   const resetFilters = () => {
     setSelectedTeacher('')
@@ -300,18 +356,38 @@ export default function TeacherOrarPage() {
                   <div 
                     key={`${item.id}-${idx}`} 
                     className={`bg-white rounded-xl border p-4 shadow-sm hover:shadow-md transition-shadow ${
-                      item.isMyGroup 
-                        ? 'border-indigo-300 ring-1 ring-indigo-200' 
-                        : isToday ? 'border-indigo-200' : 'border-gray-100'
+                      item.isMakeup
+                        ? 'border-amber-300 ring-1 ring-amber-200 bg-amber-50/30'
+                        : item.isMyGroup 
+                          ? 'border-indigo-300 ring-1 ring-indigo-200' 
+                          : isToday ? 'border-indigo-200' : 'border-gray-100'
                     }`}
                   >
                     {/* Header card - oră și badge-uri */}
                     <div className="flex items-center justify-between mb-3">
-                      <span className={`text-xl font-bold ${item.isMyGroup ? 'text-indigo-600' : 'text-gray-700'}`}>
-                        {item.time}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xl font-bold ${
+                          item.isMakeup ? 'text-amber-600' : item.isMyGroup ? 'text-indigo-600' : 'text-gray-700'
+                        }`}>
+                          {item.time}
+                        </span>
+                        {item.isMakeup && item.makeupDate && (
+                          <span className="text-xs text-amber-600 font-medium">
+                            ({item.makeupDate})
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-1 flex-wrap justify-end">
-                        {item.isMyGroup && (
+                        {item.isMakeup && (
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                            item.makeupStatus === 'IN_PROGRESS' 
+                              ? 'bg-green-100 text-green-800 animate-pulse' 
+                              : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {item.makeupStatus === 'IN_PROGRESS' ? '▶️ În curs' : '🔄 Recuperare'}
+                          </span>
+                        )}
+                        {item.isMyGroup && !item.isMakeup && (
                           <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                             Mea
                           </span>
@@ -330,7 +406,9 @@ export default function TeacherOrarPage() {
                     </div>
 
                     {/* Numele grupei */}
-                    <h3 className="font-semibold text-gray-900 mb-1">{item.name}</h3>
+                    <h3 className={`font-semibold mb-1 ${item.isMakeup ? 'text-amber-800' : 'text-gray-900'}`}>
+                      {item.name}
+                    </h3>
                     <p className="text-xs text-gray-500 mb-2">{item.course}</p>
                     
                     {/* Profesor */}
@@ -360,13 +438,17 @@ export default function TeacherOrarPage() {
                       <span className="truncate">{item.room}</span>
                     </div>
 
-                    {/* Link la grupă (doar pentru grupele mele) */}
+                    {/* Link la grupă/recuperare (doar pentru grupele mele) */}
                     {item.isMyGroup && (
                       <Link
-                        href={`/teacher/groups/${item.id}`}
-                        className="mt-3 block text-center text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                        href={item.isMakeup ? `/teacher/makeup/${item.id}` : `/teacher/groups/${item.id}`}
+                        className={`mt-3 block text-center text-xs font-medium ${
+                          item.isMakeup 
+                            ? 'text-amber-600 hover:text-amber-800' 
+                            : 'text-indigo-600 hover:text-indigo-800'
+                        }`}
                       >
-                        Vezi grupa →
+                        {item.isMakeup ? 'Vezi recuperarea →' : 'Vezi grupa →'}
                       </Link>
                     )}
                   </div>

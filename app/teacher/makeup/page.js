@@ -28,7 +28,9 @@ export default function MakeupLessonsPage() {
     groupId: '',
     scheduledAt: '',
     notes: '',
-    studentIds: []
+    studentIds: [],
+    branchId: '',
+    locationDetails: ''
   })
   const [submitting, setSubmitting] = useState(false)
   
@@ -40,10 +42,22 @@ export default function MakeupLessonsPage() {
 
   // Groups with absences for the modal
   const [groupsWithAbsences, setGroupsWithAbsences] = useState([])
+  
+  // Branches and schedule for modal
+  const [branches, setBranches] = useState([])
+  const [daySchedule, setDaySchedule] = useState([])
 
   useEffect(() => {
     fetchData()
+    fetchBranches()
   }, [])
+  
+  // Fetch schedule when date changes
+  useEffect(() => {
+    if (selectedDate) {
+      fetchDaySchedule(selectedDate)
+    }
+  }, [selectedDate])
 
   // Update formData when date/time changes
   useEffect(() => {
@@ -92,17 +106,65 @@ export default function MakeupLessonsPage() {
       setLoading(false)
     }
   }
+  
+  const fetchBranches = async () => {
+    try {
+      const res = await fetch('/api/teacher/branches')
+      const data = await res.json()
+      setBranches(data.branches || [])
+    } catch (error) {
+      console.error('Error fetching branches:', error)
+    }
+  }
+  
+  const fetchDaySchedule = async (date) => {
+    try {
+      const res = await fetch('/api/teacher/schedule')
+      const data = await res.json()
+      
+      // Map day index to Romanian name
+      const dayNames = ['Duminică', 'Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă']
+      const selectedDayName = dayNames[date.getDay()]
+      
+      // Filter groups that have sessions on this day
+      const scheduleForDay = []
+      data.groups?.forEach(group => {
+        if (group.scheduleDays?.includes(selectedDayName)) {
+          const time = group.scheduleTimes?.[selectedDayName] || group.scheduleTime || ''
+          scheduleForDay.push({
+            id: group.id,
+            name: group.name,
+            course: group.course?.title,
+            time: time,
+            branch: group.branch?.name,
+            locationDetails: group.locationDetails,
+            teacher: group.teacher?.name
+          })
+        }
+      })
+      
+      // Sort by time
+      scheduleForDay.sort((a, b) => (a.time || '').localeCompare(b.time || ''))
+      setDaySchedule(scheduleForDay)
+    } catch (error) {
+      console.error('Error fetching schedule:', error)
+      setDaySchedule([])
+    }
+  }
 
   const openModal = (groupId = '') => {
     setSelectedDate(null)
     setSelectedHour('10')
     setSelectedMinute('00')
     setCurrentMonth(new Date())
+    setDaySchedule([])
     setFormData({
       groupId: groupId,
       scheduledAt: '',
       notes: '',
-      studentIds: []
+      studentIds: [],
+      branchId: '',
+      locationDetails: ''
     })
     setShowModal(true)
   }
@@ -129,7 +191,9 @@ export default function MakeupLessonsPage() {
           groupId: formData.groupId,
           scheduledAt: formData.scheduledAt,
           notes: formData.notes,
-          studentIds: formData.studentIds
+          studentIds: formData.studentIds,
+          branchId: formData.branchId || null,
+          locationDetails: formData.locationDetails || null
         })
       })
 
@@ -714,6 +778,65 @@ export default function MakeupLessonsPage() {
                     </div>
                   </div>
                 )}
+              </div>
+              
+              {/* Schedule Preview for Selected Day */}
+              {selectedDate && daySchedule.length > 0 && (
+                <div className="border border-amber-200 rounded-lg sm:rounded-xl overflow-hidden bg-amber-50/50">
+                  <div className="px-3 py-2 bg-amber-100/50 border-b border-amber-200">
+                    <p className="text-xs sm:text-sm font-medium text-amber-800 flex items-center gap-1.5">
+                      <ClockIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      Orar pentru {selectedDate.toLocaleDateString('ro-RO', { weekday: 'long', day: 'numeric', month: 'short' })}
+                    </p>
+                  </div>
+                  <div className="p-2 sm:p-3 space-y-1.5 max-h-32 overflow-y-auto">
+                    {daySchedule.map(item => (
+                      <div key={item.id} className="flex items-center justify-between text-xs sm:text-sm bg-white rounded-lg px-2 py-1.5 border border-amber-100">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="font-semibold text-amber-700 whitespace-nowrap">{item.time || '--:--'}</span>
+                          <span className="text-gray-700 truncate">{item.name}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-gray-500 text-[10px] sm:text-xs shrink-0">
+                          {item.branch && <span className="px-1.5 py-0.5 bg-gray-100 rounded">{item.branch}</span>}
+                          {item.locationDetails && <span className="hidden sm:inline">{item.locationDetails}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Branch and Location */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-1.5 sm:mb-2">
+                    Filiala <span className="text-gray-400 font-normal text-xs">(opțional)</span>
+                  </label>
+                  <select
+                    value={formData.branchId}
+                    onChange={(e) => setFormData({ ...formData, branchId: e.target.value })}
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-gray-900 bg-white text-sm"
+                  >
+                    <option value="">-- Alege filiala --</option>
+                    {branches.map(branch => (
+                      <option key={branch.id} value={branch.id}>
+                        {branch.name} {branch.address ? `(${branch.address})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-1.5 sm:mb-2">
+                    Sala / Locație <span className="text-gray-400 font-normal text-xs">(opțional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.locationDetails}
+                    onChange={(e) => setFormData({ ...formData, locationDetails: e.target.value })}
+                    placeholder="Ex: Sala 3, Etaj 2..."
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-gray-900 bg-white text-sm"
+                  />
+                </div>
               </div>
 
               {/* Notes */}
