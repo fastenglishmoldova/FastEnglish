@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import toast from 'react-hot-toast'
 import TwoFactorModal from './TwoFactorModal'
 
@@ -9,35 +10,34 @@ export default function DeleteGroupButton({ id, name }) {
   const [loading, setLoading] = useState(false)
   const [show2FA, setShow2FA] = useState(false)
   const router = useRouter()
+  const { data: session } = useSession()
 
   const handleDelete = async () => {
     if (!confirm(`Ești sigur că vrei să ștergi grupa "${name}"? Aceasta va șterge și toate înregistrările asociate.`)) return
-    setShow2FA(true)
+    
+    // If user has 2FA enabled, show modal; otherwise execute directly
+    if (session?.user?.twoFactorEnabled) {
+      setShow2FA(true)
+    } else {
+      executeDelete(null)
+    }
   }
 
   const executeDelete = async (actionToken) => {
+    setShow2FA(false)
     setLoading(true)
     try {
+      const headers = {}
+      if (actionToken) {
+        headers['x-action-token'] = actionToken
+      }
+      
       const res = await fetch(`/api/admin/groups/${id}`, { 
         method: 'DELETE',
-        headers: {
-          'x-action-token': actionToken || ''
-        }
+        headers
       })
       
       const data = await res.json()
-      
-      if (res.status === 403 && data.requires2FA) {
-        // User doesn't have 2FA - proceed without token
-        const retryRes = await fetch(`/api/admin/groups/${id}`, { method: 'DELETE' })
-        if (retryRes.ok) {
-          toast.success('Grupa a fost ștearsă')
-          router.refresh()
-        } else {
-          toast.error('Eroare la ștergerea grupei')
-        }
-        return
-      }
       
       if (res.ok) {
         toast.success('Grupa a fost ștearsă')
