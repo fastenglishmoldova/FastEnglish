@@ -115,30 +115,28 @@ export async function POST(request) {
     }
 
     // Create makeup lesson
-    // Parse the scheduledAt as local Romania time
-    // The frontend sends format like "2025-01-02T19:30"
-    // We need to interpret this as Europe/Bucharest timezone
-    const localDate = new Date(scheduledAt)
-    // If no timezone info, the Date constructor treats it as local time on the server
-    // Vercel servers run in UTC, so we need to adjust
-    // Romania is UTC+2 (winter) or UTC+3 (summer/DST)
-    // Create a proper UTC date by treating the input as Romania time
+    // Parse the scheduledAt - frontend sends format like "2025-01-24T10:00:00"
+    // This represents LOCAL time (Romania = Europe/Bucharest)
+    // We need to convert this to UTC for storage
     const [datePart, timePart] = scheduledAt.split('T')
     const [year, month, day] = datePart.split('-').map(Number)
-    const [hours, minutes] = timePart.split(':').map(Number)
+    const [hours, minutes] = (timePart || '10:00').split(':').map(Number)
     
-    // Create date in UTC but representing Romania local time
-    // We'll store the exact time the user selected
-    const scheduledDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0))
-    // Adjust for Romania timezone (UTC+2 in winter, UTC+3 in summer)
-    // Check if date is in DST (last Sunday of March to last Sunday of October)
-    const isDST = (date) => {
-      const jan = new Date(date.getFullYear(), 0, 1).getTimezoneOffset()
-      const jul = new Date(date.getFullYear(), 6, 1).getTimezoneOffset()
-      return Math.max(jan, jul) !== date.getTimezoneOffset()
-    }
-    const romaniaOffset = isDST(new Date(year, month - 1, day)) ? 3 : 2
-    scheduledDate.setUTCHours(scheduledDate.getUTCHours() - romaniaOffset)
+    // Determine Romania timezone offset (UTC+2 winter, UTC+3 summer DST)
+    // DST in Romania: last Sunday of March to last Sunday of October
+    const testDate = new Date(year, month - 1, day)
+    const marchLastSunday = new Date(year, 2, 31)
+    marchLastSunday.setDate(31 - marchLastSunday.getDay())
+    const octoberLastSunday = new Date(year, 9, 31)
+    octoberLastSunday.setDate(31 - octoberLastSunday.getDay())
+    
+    const isDST = testDate >= marchLastSunday && testDate < octoberLastSunday
+    const romaniaOffsetHours = isDST ? 3 : 2
+    
+    // Convert local Romania time to UTC
+    // If user selected 10:00 Romania time (UTC+2), we store 08:00 UTC
+    const utcHours = hours - romaniaOffsetHours
+    const scheduledDate = new Date(Date.UTC(year, month - 1, day, utcHours, minutes, 0))
 
     const makeupLesson = await prisma.makeupLesson.create({
       data: {

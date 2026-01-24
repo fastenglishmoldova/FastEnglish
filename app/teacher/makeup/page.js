@@ -48,9 +48,12 @@ export default function MakeupLessonsPage() {
   // Update formData when date/time changes
   useEffect(() => {
     if (selectedDate) {
-      const dateTime = new Date(selectedDate)
-      dateTime.setHours(parseInt(selectedHour), parseInt(selectedMinute), 0, 0)
-      setFormData(prev => ({ ...prev, scheduledAt: dateTime.toISOString() }))
+      const year = selectedDate.getFullYear()
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0')
+      const day = String(selectedDate.getDate()).padStart(2, '0')
+      // Creăm ISO string manual pentru a păstra ora locală
+      const isoString = `${year}-${month}-${day}T${selectedHour}:${selectedMinute}:00`
+      setFormData(prev => ({ ...prev, scheduledAt: isoString }))
     }
   }, [selectedDate, selectedHour, selectedMinute])
 
@@ -669,26 +672,28 @@ export default function MakeupLessonsPage() {
                 {/* Time Picker */}
                 <div className="mt-3 sm:mt-4 flex items-center gap-2 sm:gap-3">
                   <div className="flex-1">
-                    <label className="block text-[10px] sm:text-xs font-medium text-gray-600 mb-1 sm:mb-1.5">Ora și Minute</label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={`${selectedHour}:${selectedMinute}`}
-                        onChange={(e) => {
-                          const [h, m] = e.target.value.split(':')
-                          if (h && m) {
-                            setSelectedHour(h.padStart(2, '0'))
-                            setSelectedMinute(m.padStart(2, '0'))
-                          }
-                        }}
-                        placeholder="HH:MM"
-                        pattern="[0-9]{2}:[0-9]{2}"
-                        className="w-full px-2 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl bg-white text-gray-900 font-medium focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-sm"
-                      />
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:pr-3 pointer-events-none">
-                        <ClockIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-                      </div>
-                    </div>
+                    <label className="block text-[10px] sm:text-xs font-medium text-gray-600 mb-1 sm:mb-1.5">Ora</label>
+                    <select
+                      value={selectedHour}
+                      onChange={(e) => setSelectedHour(e.target.value)}
+                      className="w-full px-2 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl bg-white text-gray-900 font-medium focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-sm"
+                    >
+                      {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')).map(h => (
+                        <option key={h} value={h}>{h}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-[10px] sm:text-xs font-medium text-gray-600 mb-1 sm:mb-1.5">Minute</label>
+                    <select
+                      value={selectedMinute}
+                      onChange={(e) => setSelectedMinute(e.target.value)}
+                      className="w-full px-2 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl bg-white text-gray-900 font-medium focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-sm"
+                    >
+                      {['00', '15', '30', '45'].map(m => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 
