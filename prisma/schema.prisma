@@ -622,10 +622,24 @@ model Inscriere {
 }
 
 enum InscriereStatus {
+  // Legacy statuses (keep for backwards compatibility)
   NOU
   CONTACTAT
   CONFIRMAT
   RESPINS
+  // New CRM statuses
+  LEAD
+  FARA_RASPUNS
+  PROGRAMAT
+  PRIMA_LECTIE
+  FINALIZAT_LECTIA
+  SE_GANDESTE
+  ASTEPTAM_PLATA
+  PLATIT
+  STUDIAZA
+  PLECAT
+  LOST_LEAD
+  TEST
 }
 
 // ==================== CONTACT MESSAGES ====================
