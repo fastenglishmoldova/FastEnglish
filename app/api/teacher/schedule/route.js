@@ -21,12 +21,9 @@ export async function GET() {
         course: { select: { id: true, title: true } },
         branch: { select: { id: true, name: true } },
         teacher: { select: { id: true, name: true, email: true } },
-        _count: {
-          select: {
-            groupStudents: {
-              where: { status: { notIn: ['LEFT', 'TRANSFERRED'] } }
-            }
-          }
+        groupStudents: {
+          where: { status: { notIn: ['LEFT', 'TRANSFERRED'] } },
+          select: { id: true, status: true }
         }
       },
       orderBy: { name: 'asc' }
