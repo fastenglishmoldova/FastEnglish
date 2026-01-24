@@ -272,7 +272,7 @@ model Enrollment {
 
 model EnrollmentNote {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  enrollmentId String   @db.ObjectId
+  enrollmentId String?  @db.ObjectId
   inscriereId  String?  @db.ObjectId
   content      String
   createdAt    DateTime @default(now())
@@ -285,6 +285,20 @@ model EnrollmentNote {
 }
 
 enum EnrollmentStatus {
+  LEAD              // 🔵 Lead
+  FARA_RASPUNS      // 🔘 Fără Răspuns
+  CONTACTAT         // 🟡 Contactat
+  PROGRAMAT         // 🟠 Programat
+  PRIMA_LECTIE      // 🟢 Prima Lecție
+  FINALIZAT_LECTIA  // ⚫ Finalizat Lecția
+  SE_GANDESTE       // 🔘 Se Gândește
+  ASTEPTAM_PLATA    // 💵 Așteptăm Plata
+  PLATIT            // 💰 Plătit
+  STUDIAZA          // 🟣 Studiază
+  PLECAT            // 🔴 Plecat
+  LOST_LEAD         // ❌ Lost Lead
+  TEST              // 🧪 Test
+  // Legacy statuses for backwards compatibility
   NEW
   CONTACTED
   CONFIRMED
@@ -646,6 +660,20 @@ model ContactNote {
 }
 
 enum ContactMessageStatus {
+  LEAD              // 🔵 Lead
+  FARA_RASPUNS      // 🔘 Fără Răspuns
+  CONTACTAT         // 🟡 Contactat
+  PROGRAMAT         // 🟠 Programat
+  PRIMA_LECTIE      // 🟢 Prima Lecție
+  FINALIZAT_LECTIA  // ⚫ Finalizat Lecția
+  SE_GANDESTE       // 🔘 Se Gândește
+  ASTEPTAM_PLATA    // 💵 Așteptăm Plata
+  PLATIT            // 💰 Plătit
+  STUDIAZA          // 🟣 Studiază
+  PLECAT            // 🔴 Plecat
+  LOST_LEAD         // ❌ Lost Lead
+  TEST              // 🧪 Test
+  // Legacy statuses for backwards compatibility
   NOU
   CITIT
   RASPUNS

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import DeleteGroupButton from '@/components/admin/DeleteGroupButton'
@@ -63,6 +63,11 @@ export default function GroupsPage() {
   const [branches, setBranches] = useState([])
   const [loading, setLoading] = useState(true)
   
+  // Paginare
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  
   // Filtre
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedTeacher, setSelectedTeacher] = useState('')
@@ -80,15 +85,27 @@ export default function GroupsPage() {
 
   useEffect(() => {
     fetchData()
-  }, [])
+  }, [currentPage, searchQuery, selectedTeacher, selectedBranch, selectedDay])
 
   const fetchData = async () => {
+    setLoading(true)
     try {
-      const res = await fetch('/api/admin/groups')
+      const params = new URLSearchParams()
+      params.set('page', currentPage.toString())
+      if (searchQuery) params.set('search', searchQuery)
+      if (selectedTeacher) params.set('teacherId', selectedTeacher)
+      if (selectedBranch) params.set('branchId', selectedBranch)
+      if (selectedDay) params.set('day', selectedDay)
+
+      const res = await fetch(`/api/admin/groups?${params.toString()}`)
       const data = await res.json()
       setGroups(data.groups || [])
       setTeachers(data.teachers || [])
       setBranches(data.branches || [])
+      if (data.pagination) {
+        setTotalPages(data.pagination.totalPages)
+        setTotalCount(data.pagination.totalCount)
+      }
     } catch (error) {
       console.error('Error fetching groups:', error)
     } finally {
@@ -96,69 +113,22 @@ export default function GroupsPage() {
     }
   }
 
-  // Filtrare grupe
-  const filteredGroups = useMemo(() => {
-    return groups.filter(group => {
-      // Filtru profesor
-      if (selectedTeacher && group.teacherId !== selectedTeacher) {
+  // Filtrare locală pentru dateFilter (azi/custom)
+  const filteredGroups = groups.filter(group => {
+    if (dateFilter === 'today') {
+      const today = dayMapping[new Date().getDay()]
+      if (!group.scheduleDays || !group.scheduleDays.includes(today)) {
         return false
       }
-
-      // Filtru filială
-      if (selectedBranch) {
-        if (selectedBranch === 'none' && group.branchId) {
-          return false
-        } else if (selectedBranch !== 'none' && group.branchId !== selectedBranch) {
-          return false
-        }
-      }
-
-      // Filtru zi
-      if (selectedDay && (!group.scheduleDays || !group.scheduleDays.includes(selectedDay))) {
+    } else if (dateFilter === 'custom' && customDate) {
+      const selectedDate = new Date(customDate)
+      const dayName = dayMapping[selectedDate.getDay()]
+      if (!group.scheduleDays || !group.scheduleDays.includes(dayName)) {
         return false
       }
-
-      // Filtru dată
-      if (dateFilter === 'today') {
-        const today = dayMapping[new Date().getDay()]
-        if (!group.scheduleDays || !group.scheduleDays.includes(today)) {
-          return false
-        }
-      } else if (dateFilter === 'custom' && customDate) {
-        const selectedDate = new Date(customDate)
-        const dayName = dayMapping[selectedDate.getDay()]
-        if (!group.scheduleDays || !group.scheduleDays.includes(dayName)) {
-          return false
-        }
-      }
-
-      // Filtru search (elev, profesor, zi, nume grupă, curs, filială)
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase()
-        const teacherName = (group.teacher?.name || group.teacher?.email || '').toLowerCase()
-        const groupName = group.name.toLowerCase()
-        const courseName = (group.course?.title || '').toLowerCase()
-        const branchName = (group.branch?.name || '').toLowerCase()
-        const days = (group.scheduleDays || []).join(' ').toLowerCase()
-        
-        // Caută și în elevii grupei
-        const studentNames = (group.groupStudents || [])
-          .map(gs => gs.student?.fullName?.toLowerCase() || '')
-          .join(' ')
-
-        if (!teacherName.includes(query) && 
-            !groupName.includes(query) && 
-            !courseName.includes(query) &&
-            !branchName.includes(query) &&
-            !days.includes(query) &&
-            !studentNames.includes(query)) {
-          return false
-        }
-      }
-
-      return true
-    })
-  }, [groups, selectedTeacher, selectedBranch, selectedDay, dateFilter, customDate, searchQuery])
+    }
+    return true
+  })
 
   const resetFilters = () => {
     setSearchQuery('')
@@ -167,9 +137,47 @@ export default function GroupsPage() {
     setSelectedDay('')
     setDateFilter('all')
     setCustomDate('')
+    setCurrentPage(1)
   }
 
   const hasActiveFilters = searchQuery || selectedTeacher || selectedBranch || selectedDay || dateFilter !== 'all'
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCurrentPage(1)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  // Generare numere pagini
+  const getPageNumbers = () => {
+    const pages = []
+    const maxVisible = 5
+    
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i)
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i)
+        pages.push('...')
+        pages.push(totalPages)
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1)
+        pages.push('...')
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i)
+      } else {
+        pages.push(1)
+        pages.push('...')
+        pages.push(currentPage - 1)
+        pages.push(currentPage)
+        pages.push(currentPage + 1)
+        pages.push('...')
+        pages.push(totalPages)
+      }
+    }
+    return pages
+  }
 
   if (loading) {
     return (
@@ -408,6 +416,50 @@ export default function GroupsPage() {
           ))
         )}
       </div>
+
+      {/* Paginare */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-xl shadow-sm border border-gray-100 px-4 py-3">
+          <div className="text-sm text-gray-600">
+            Pagina {currentPage} din {totalPages} ({totalCount} grupe total)
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              ← Anterior
+            </button>
+            
+            {getPageNumbers().map((pageNum, idx) => (
+              pageNum === '...' ? (
+                <span key={`ellipsis-${idx}`} className="px-2 text-gray-400">...</span>
+              ) : (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                    currentPage === pageNum
+                      ? 'bg-indigo-600 text-white'
+                      : 'border border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              )
+            ))}
+            
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Următor →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

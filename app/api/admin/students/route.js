@@ -4,7 +4,9 @@ import { requireAdmin, getCurrentUser } from '@/lib/session'
 import { require2FAToken } from '@/lib/security/action-tokens'
 import { checkPermission } from '@/lib/permissions'
 
-export async function GET() {
+const ITEMS_PER_PAGE = 20
+
+export async function GET(request) {
   try {
     await requireAdmin()
     
@@ -13,11 +15,79 @@ export async function GET() {
     if (!canView.allowed) {
       return NextResponse.json({ error: 'Nu ai permisiunea de a vedea elevii' }, { status: 403 })
     }
+
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const search = searchParams.get('search') || ''
+    const hasGroup = searchParams.get('hasGroup') // 'yes', 'no', or empty
+    const all = searchParams.get('all') === 'true' // Pentru dropdown-uri
+
+    // Construiește where clause
+    const where = {}
     
+    if (search) {
+      where.OR = [
+        { fullName: { contains: search, mode: 'insensitive' } },
+        { parentName: { contains: search, mode: 'insensitive' } },
+        { parentPhone: { contains: search, mode: 'insensitive' } },
+        { parentEmail: { contains: search, mode: 'insensitive' } }
+      ]
+    }
+
+    // Filtru pentru elevi cu/fără grupă
+    if (hasGroup === 'yes') {
+      where.groupStudents = { some: {} }
+    } else if (hasGroup === 'no') {
+      where.groupStudents = { none: {} }
+    }
+
+    // Dacă se cere all, returnează toți elevii (pentru dropdown-uri)
+    if (all) {
+      const students = await prisma.student.findMany({
+        where,
+        orderBy: { fullName: 'asc' },
+        include: {
+          groupStudents: {
+            include: {
+              group: {
+                select: { id: true, name: true }
+              }
+            }
+          }
+        }
+      })
+      return NextResponse.json(students)
+    }
+
+    // Calculează totalul pentru paginare
+    const totalCount = await prisma.student.count({ where })
+    const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
+
     const students = await prisma.student.findMany({
-      orderBy: { createdAt: 'desc' }
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * ITEMS_PER_PAGE,
+      take: ITEMS_PER_PAGE,
+      include: {
+        groupStudents: {
+          include: {
+            group: {
+              select: { id: true, name: true }
+            }
+          }
+        }
+      }
     })
-    return NextResponse.json(students)
+
+    return NextResponse.json({
+      students,
+      pagination: {
+        page,
+        totalPages,
+        totalCount,
+        hasMore: page < totalPages
+      }
+    })
   } catch (error) {
     if (error.message === 'Unauthorized' || error.message === 'Forbidden') {
       return NextResponse.json({ error: error.message }, { status: 401 })

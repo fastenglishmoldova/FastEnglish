@@ -17,10 +17,19 @@ import toast from 'react-hot-toast'
 import { usePermissions } from '@/hooks/usePermissions'
 
 const statusOptions = [
-  { value: 'NOU', label: 'Nou', color: 'bg-blue-100 text-blue-800 border-blue-300' },
-  { value: 'CITIT', label: 'Citit', color: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
-  { value: 'RASPUNS', label: 'Răspuns', color: 'bg-green-100 text-green-800 border-green-300' },
-  { value: 'ARHIVAT', label: 'Arhivat', color: 'bg-gray-100 text-gray-800 border-gray-300' }
+  { value: 'LEAD', label: '🔵 Lead', color: 'bg-blue-100 text-blue-800 border-blue-300' },
+  { value: 'FARA_RASPUNS', label: '🔘 Fără Răspuns', color: 'bg-gray-100 text-gray-700 border-gray-300' },
+  { value: 'CONTACTAT', label: '🟡 Contactat', color: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
+  { value: 'PROGRAMAT', label: '🟠 Programat', color: 'bg-orange-100 text-orange-800 border-orange-300' },
+  { value: 'PRIMA_LECTIE', label: '🟢 Prima Lecție', color: 'bg-green-100 text-green-800 border-green-300' },
+  { value: 'FINALIZAT_LECTIA', label: '⚫ Finalizat Lecția', color: 'bg-slate-200 text-slate-800 border-slate-400' },
+  { value: 'SE_GANDESTE', label: '🔘 Se Gândește', color: 'bg-gray-100 text-gray-600 border-gray-300' },
+  { value: 'ASTEPTAM_PLATA', label: '💵 Așteptăm Plata', color: 'bg-amber-100 text-amber-800 border-amber-300' },
+  { value: 'PLATIT', label: '💰 Plătit', color: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+  { value: 'STUDIAZA', label: '🟣 Studiază', color: 'bg-purple-100 text-purple-800 border-purple-300' },
+  { value: 'PLECAT', label: '🔴 Plecat', color: 'bg-red-100 text-red-800 border-red-300' },
+  { value: 'LOST_LEAD', label: '❌ Lost Lead', color: 'bg-red-200 text-red-900 border-red-400' },
+  { value: 'TEST', label: '🧪 Test', color: 'bg-cyan-100 text-cyan-800 border-cyan-300' }
 ]
 
 export default function ContactMessageDetailClient({ message: initialMessage }) {

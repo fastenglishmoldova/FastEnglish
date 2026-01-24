@@ -16,10 +16,25 @@ import {
 import PermissionGuard from '@/components/admin/PermissionGuard'
 
 const statusConfig = {
-  NOU: { label: 'Nou', color: 'bg-blue-100 text-blue-800' },
-  CITIT: { label: 'Citit', color: 'bg-yellow-100 text-yellow-800' },
-  RASPUNS: { label: 'Răspuns', color: 'bg-green-100 text-green-800' },
-  ARHIVAT: { label: 'Arhivat', color: 'bg-gray-100 text-gray-800' }
+  // New statuses
+  LEAD: { label: '🔵 Lead', color: 'bg-blue-100 text-blue-800' },
+  FARA_RASPUNS: { label: '🔘 Fără Răspuns', color: 'bg-gray-100 text-gray-700' },
+  CONTACTAT: { label: '🟡 Contactat', color: 'bg-yellow-100 text-yellow-800' },
+  PROGRAMAT: { label: '🟠 Programat', color: 'bg-orange-100 text-orange-800' },
+  PRIMA_LECTIE: { label: '🟢 Prima Lecție', color: 'bg-green-100 text-green-800' },
+  FINALIZAT_LECTIA: { label: '⚫ Finalizat Lecția', color: 'bg-slate-200 text-slate-800' },
+  SE_GANDESTE: { label: '🔘 Se Gândește', color: 'bg-gray-100 text-gray-600' },
+  ASTEPTAM_PLATA: { label: '💵 Așteptăm Plata', color: 'bg-amber-100 text-amber-800' },
+  PLATIT: { label: '💰 Plătit', color: 'bg-emerald-100 text-emerald-800' },
+  STUDIAZA: { label: '🟣 Studiază', color: 'bg-purple-100 text-purple-800' },
+  PLECAT: { label: '🔴 Plecat', color: 'bg-red-100 text-red-800' },
+  LOST_LEAD: { label: '❌ Lost Lead', color: 'bg-red-200 text-red-900' },
+  TEST: { label: '🧪 Test', color: 'bg-cyan-100 text-cyan-800' },
+  // Legacy statuses
+  NOU: { label: '🔵 Lead', color: 'bg-blue-100 text-blue-800' },
+  CITIT: { label: '🟡 Contactat', color: 'bg-yellow-100 text-yellow-800' },
+  RASPUNS: { label: '🟢 Prima Lecție', color: 'bg-green-100 text-green-800' },
+  ARHIVAT: { label: '⚫ Finalizat Lecția', color: 'bg-slate-200 text-slate-800' }
 }
 
 export default async function ContactMessagesPage() {

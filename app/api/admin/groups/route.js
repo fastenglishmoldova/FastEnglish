@@ -5,7 +5,9 @@ import { require2FAToken } from '@/lib/security/action-tokens'
 import { checkPermission } from '@/lib/permissions'
 import { sendTeacherDirectMessage } from '@/lib/telegram'
 
-export async function GET() {
+const ITEMS_PER_PAGE = 20
+
+export async function GET(request) {
   try {
     await requireAdmin()
     
@@ -13,28 +15,76 @@ export async function GET() {
     if (!canView.allowed) {
       return NextResponse.json({ error: 'Nu ai permisiunea de a vedea grupele' }, { status: 403 })
     }
+
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const search = searchParams.get('search') || ''
+    const teacherId = searchParams.get('teacherId') || ''
+    const branchId = searchParams.get('branchId') || ''
+    const day = searchParams.get('day') || ''
+    const all = searchParams.get('all') === 'true' // Pentru a obține toate (pentru filtre)
+
+    // Build where clause
+    const where = {}
     
-    const [groups, teachers, branches] = await Promise.all([
-      prisma.group.findMany({
-        orderBy: { createdAt: 'desc' },
-        include: { 
-          course: true, 
-          teacher: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              phone: true
-            }
-          },
-          branch: true,
-          groupStudents: {
-            include: {
-              student: true
-            }
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { course: { title: { contains: search, mode: 'insensitive' } } },
+        { teacher: { name: { contains: search, mode: 'insensitive' } } },
+        { teacher: { email: { contains: search, mode: 'insensitive' } } },
+        { branch: { name: { contains: search, mode: 'insensitive' } } },
+        { groupStudents: { some: { student: { fullName: { contains: search, mode: 'insensitive' } } } } }
+      ]
+    }
+    
+    if (teacherId) {
+      where.teacherId = teacherId
+    }
+    
+    if (branchId) {
+      if (branchId === 'none') {
+        where.branchId = null
+      } else {
+        where.branchId = branchId
+      }
+    }
+    
+    if (day) {
+      where.scheduleDays = { has: day }
+    }
+
+    // Get total count for pagination
+    const totalCount = await prisma.group.count({ where })
+    const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
+
+    // Get paginated groups
+    const groups = await prisma.group.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: all ? 0 : (page - 1) * ITEMS_PER_PAGE,
+      take: all ? undefined : ITEMS_PER_PAGE,
+      include: { 
+        course: true, 
+        teacher: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true
+          }
+        },
+        branch: true,
+        groupStudents: {
+          include: {
+            student: true
           }
         }
-      }),
+      }
+    })
+
+    // Get teachers and branches for filters (always return all)
+    const [teachers, branches] = await Promise.all([
       prisma.user.findMany({
         where: { role: 'TEACHER' },
         select: { id: true, name: true, email: true },
@@ -46,7 +96,17 @@ export async function GET() {
       })
     ])
     
-    return NextResponse.json({ groups, teachers, branches })
+    return NextResponse.json({ 
+      groups, 
+      teachers, 
+      branches,
+      pagination: {
+        page,
+        totalPages,
+        totalCount,
+        hasMore: page < totalPages
+      }
+    })
   } catch (error) {
     if (error.message === 'Unauthorized' || error.message === 'Forbidden') {
       return NextResponse.json({ error: error.message }, { status: 401 })
