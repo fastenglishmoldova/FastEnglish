@@ -298,6 +298,7 @@ export default function MakeupLessonsPage() {
                         <CalendarDaysIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                         <span className="truncate">
                           {new Date(makeup.scheduledAt).toLocaleString('ro-RO', {
+                            timeZone: 'UTC',
                             weekday: 'short',
                             day: 'numeric',
                             month: 'short',
@@ -464,6 +465,7 @@ export default function MakeupLessonsPage() {
                       <CalendarDaysIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                       <span className="truncate">
                         {new Date(makeup.scheduledAt).toLocaleString('ro-RO', {
+                          timeZone: 'UTC',
                           day: 'numeric',
                           month: 'short',
                           hour: '2-digit',

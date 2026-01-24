@@ -279,6 +279,7 @@ export default function MakeupSessionPage({ params }) {
               <p className="flex items-center gap-1.5 xs:gap-2 text-xs xs:text-sm md:text-base">
                 <CalendarDaysIcon className="w-3.5 h-3.5 xs:w-4 xs:h-4 md:w-5 md:h-5" />
                 <span className="hidden xs:inline">{new Date(makeup.scheduledAt).toLocaleString('ro-RO', {
+                  timeZone: 'UTC',
                   weekday: 'long',
                   day: 'numeric',
                   month: 'long',
@@ -287,6 +288,7 @@ export default function MakeupSessionPage({ params }) {
                   minute: '2-digit'
                 })}</span>
                 <span className="xs:hidden">{new Date(makeup.scheduledAt).toLocaleString('ro-RO', {
+                  timeZone: 'UTC',
                   day: 'numeric',
                   month: 'short',
                   hour: '2-digit',
