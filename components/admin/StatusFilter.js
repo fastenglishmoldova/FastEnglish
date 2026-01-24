@@ -41,7 +41,7 @@ export default function StatusFilter({ basePath }) {
       <select
         value={currentStatus}
         onChange={handleStatusChange}
-        className="block w-full sm:w-auto px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#30919f] focus:border-[#30919f]"
+        className="block w-full sm:w-auto px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#30919f] focus:border-[#30919f]"
       >
         <option value="">Toate statusurile</option>
         {allStatuses.map((status) => (
