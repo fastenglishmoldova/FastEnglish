@@ -506,12 +506,14 @@ export default function MakeupSessionPage({ params }) {
             <div className="bg-amber-50 border border-amber-200 rounded-lg xs:rounded-xl p-2.5 xs:p-3 md:p-4 text-center">
               <p className="text-amber-700 font-medium text-[10px] xs:text-xs md:text-sm px-2">
                 ⏰ Poți finaliza după <span className="hidden xs:inline">{scheduledTime.toLocaleString('ro-RO', {
+                  timeZone: 'UTC',
                   weekday: 'long',
                   day: 'numeric',
                   month: 'long',
                   hour: '2-digit',
                   minute: '2-digit'
                 })}</span><span className="xs:hidden">{scheduledTime.toLocaleString('ro-RO', {
+                  timeZone: 'UTC',
                   day: 'numeric',
                   month: 'short',
                   hour: '2-digit',
