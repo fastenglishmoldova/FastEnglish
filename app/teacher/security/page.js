@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import toast from 'react-hot-toast'
 
 export default function TeacherSecurityPage() {
-  const { data: session } = useSession()
+  const { data: session, update: updateSession } = useSession()
   const [loading, setLoading] = useState(true)
   const [user2FAStatus, setUser2FAStatus] = useState(null)
   const [setupMode, setSetupMode] = useState(false)
@@ -84,6 +84,8 @@ export default function TeacherSecurityPage() {
       setBackupCodes(data.backupCodes || [])
       setUser2FAStatus({ ...user2FAStatus, enabled: true })
       setSetupMode(false)
+      // Actualizăm sesiunea pentru a reflecta activarea 2FA în toată aplicația
+      await updateSession()
       toast.success('2FA activat cu succes!')
     } catch (error) {
       toast.error(error.message)
@@ -110,6 +112,8 @@ export default function TeacherSecurityPage() {
       }
       
       setUser2FAStatus({ ...user2FAStatus, enabled: false })
+      // Actualizăm sesiunea pentru a reflecta dezactivarea 2FA în toată aplicația
+      await updateSession()
       toast.success('2FA dezactivat')
     } catch (error) {
       toast.error(error.message)

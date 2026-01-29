@@ -9,7 +9,7 @@ import { usePermissions } from '@/hooks/usePermissions'
 import TwoFactorModal from '@/components/admin/TwoFactorModal'
 
 export default function SecurityPage() {
-  const { data: session } = useSession()
+  const { data: session, update: updateSession } = useSession()
   const router = useRouter()
   const { hasPermission, isSuperAdmin } = usePermissions()
   
@@ -129,6 +129,8 @@ export default function SecurityPage() {
       setBackupCodes(data.backupCodes || [])
       setUser2FAStatus({ enabled: true })
       setSetupMode(false)
+      // Actualizăm sesiunea pentru a reflecta activarea 2FA în toată aplicația
+      await updateSession()
       toast.success('2FA activat cu succes!')
     } catch (error) {
       toast.error(error.message)
@@ -157,6 +159,8 @@ export default function SecurityPage() {
       }
       
       setUser2FAStatus({ enabled: false })
+      // Actualizăm sesiunea pentru a reflecta dezactivarea 2FA în toată aplicația
+      await updateSession()
       toast.success('2FA dezactivat')
     } catch (error) {
       toast.error(error.message)
