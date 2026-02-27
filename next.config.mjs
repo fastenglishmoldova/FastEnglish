@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Native packages that need to run on Node.js (not bundled)
+  serverExternalPackages: ['argon2'],
+
   // React Compiler for optimized builds
   reactCompiler: true,
   
