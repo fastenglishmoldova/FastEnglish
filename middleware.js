@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
 
 // Routes that require authentication
 const protectedRoutes = ['/admin', '/teacher']
@@ -34,10 +33,9 @@ export async function middleware(request) {
   }
 
   // Get session token from cookies (NextAuth uses different cookie names)
-  const cookieStore = await cookies()
   // In production, NextAuth uses __Secure- prefix
-  const sessionToken = cookieStore.get('__Secure-next-auth.session-token')?.value 
-    || cookieStore.get('next-auth.session-token')?.value // Development fallback
+  const sessionToken = request.cookies.get('__Secure-next-auth.session-token')?.value 
+    || request.cookies.get('next-auth.session-token')?.value // Development fallback
   
   // Check if this is an auth page
   const isAuthRoute = authRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))
