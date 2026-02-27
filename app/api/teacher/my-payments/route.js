@@ -81,53 +81,49 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Nu ai acces la acest elev' }, { status: 403 })
     }
 
-    // Create payment and update lessons in a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      // Create payment
-      const payment = await tx.payment.create({
-        data: {
-          groupStudentId,
-          amount: parseFloat(amount),
-          paymentMethod: paymentMethod || null,
-          notes: notes || null,
-          lessonsAdded: lessonsToAdd ? parseInt(lessonsToAdd) : null,
-          createdById: session.user.id
-        },
-        include: {
-          groupStudent: {
-            include: {
-              student: true,
-              group: {
-                include: {
-                  course: { select: { title: true } }
-                }
+    // Create payment and update lessons (sequential - MongoDB M0 doesn't support transactions)
+    // Create payment
+    const result = await prisma.payment.create({
+      data: {
+        groupStudentId,
+        amount: parseFloat(amount),
+        paymentMethod: paymentMethod || null,
+        notes: notes || null,
+        lessonsAdded: lessonsToAdd ? parseInt(lessonsToAdd) : null,
+        createdById: session.user.id
+      },
+      include: {
+        groupStudent: {
+          include: {
+            student: true,
+            group: {
+              include: {
+                course: { select: { title: true } }
               }
             }
           }
         }
-      })
+      }
+    })
 
-      // Update groupStudent with added lessons (always, since lessonsToAdd is required)
-      await tx.groupStudent.update({
-        where: { id: groupStudentId },
-        data: {
-          lessonsRemaining: {
-            increment: parseInt(lessonsToAdd)
-          }
+    // Update groupStudent with added lessons (always, since lessonsToAdd is required)
+    await prisma.groupStudent.update({
+      where: { id: groupStudentId },
+      data: {
+        lessonsRemaining: {
+          increment: parseInt(lessonsToAdd)
         }
-      })
+      }
+    })
 
-      // Create transaction record
-      await tx.lessonTransaction.create({
-        data: {
-          studentId: groupStudent.studentId,
-          groupId: groupStudent.groupId,
-          delta: parseInt(lessonsToAdd),
-          reason: `Plată ${amount} MDL - ${lessonsToAdd} lecții adăugate`
-        }
-      })
-
-      return payment
+    // Create transaction record
+    await prisma.lessonTransaction.create({
+      data: {
+        studentId: groupStudent.studentId,
+        groupId: groupStudent.groupId,
+        delta: parseInt(lessonsToAdd),
+        reason: `Plată ${amount} MDL - ${lessonsToAdd} lecții adăugate`
+      }
     })
 
     // Send Telegram notification - Thread 9

@@ -48,19 +48,17 @@ export async function POST(request) {
       return NextResponse.json({ error: '2FA nu este activat' }, { status: 400 })
     }
     
-    // Disable 2FA and delete backup codes
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: user.id },
-        data: {
-          twoFactorEnabled: false,
-          twoFactorSecret: null
-        }
-      }),
-      prisma.backupCode.deleteMany({
-        where: { userId: user.id }
-      })
-    ])
+    // Disable 2FA and delete backup codes (sequential - MongoDB M0 doesn't support transactions)
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        twoFactorEnabled: false,
+        twoFactorSecret: null
+      }
+    })
+    await prisma.backupCode.deleteMany({
+      where: { userId: user.id }
+    })
     
     // Audit log - critical security action
     await createAuditLog({

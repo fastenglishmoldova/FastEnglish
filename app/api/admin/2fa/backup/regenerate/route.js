@@ -36,18 +36,16 @@ export async function POST(request) {
     // Generate new backup codes
     const { plainCodes, hashedCodes } = generateBackupCodes(10)
     
-    // Replace all backup codes
-    await prisma.$transaction([
-      prisma.backupCode.deleteMany({
-        where: { userId: user.id }
-      }),
-      prisma.backupCode.createMany({
-        data: hashedCodes.map(codeHash => ({
-          userId: user.id,
-          codeHash,
-        }))
-      })
-    ])
+    // Replace all backup codes (sequential - MongoDB M0 doesn't support transactions)
+    await prisma.backupCode.deleteMany({
+      where: { userId: user.id }
+    })
+    await prisma.backupCode.createMany({
+      data: hashedCodes.map(codeHash => ({
+        userId: user.id,
+        codeHash,
+      }))
+    })
     
     // Audit
     await audit2FA({
