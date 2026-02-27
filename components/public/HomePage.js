@@ -10,7 +10,7 @@ import CTASection from './CTASection'
 
 export default function HomePage() {
   return (
-    <main className="bg-[#0a0a0a]">
+    <main className="bg-[#FFFBF5]">
       <HeroSection />
       <CoursesSection />
       <AboutSection />

@@ -66,7 +66,7 @@ export default function ReviewsSection() {
     return [...Array(5)].map((_, i) => (
       <svg
         key={i}
-        className={`w-4 h-4 ${i < rating ? 'text-amber-400' : 'text-white/10'}`}
+        className={`w-4 h-4 ${i < rating ? 'text-red-500' : 'text-gray-200'}`}
         fill="currentColor"
         viewBox="0 0 20 20"
       >
@@ -86,7 +86,7 @@ export default function ReviewsSection() {
     },
     {
       id: '2',
-      message: 'Am învățat să-mi placă matematica! Explicațiile sunt clare și exercițiile sunt interesante. Recomand tuturor colegilor mei!',
+      message: 'Am învățat să-mi placă engleza! Explicațiile sunt clare și conversațiile sunt interesante. Recomand tuturor colegilor mei!',
       authorName: 'Andrei M.',
       roleLabel: 'Elev',
       rating: 5,
@@ -94,7 +94,7 @@ export default function ReviewsSection() {
     },
     {
       id: '3',
-      message: 'Atmosfera este plăcută și profesorii au răbdare să explice de câte ori este nevoie. Nota la matematică a crescut de la 6 la 9!',
+      message: 'Atmosfera este plăcută și profesorii au răbdare să explice de câte ori este nevoie. Nota la engleză a crescut de la 6 la 9!',
       authorName: 'Elena T.',
       roleLabel: 'Părinte',
       rating: 5,
@@ -109,13 +109,13 @@ export default function ReviewsSection() {
       className={`group relative ${featured ? 'lg:col-span-2 lg:row-span-2' : ''}`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      <div className={`relative h-full p-6 ${featured ? 'lg:p-10' : 'p-6'} bg-gradient-to-br from-white/[0.08] to-white/[0.02] backdrop-blur-sm rounded-3xl border border-white/10 hover:border-amber-500/30 transition-all duration-500 overflow-hidden`}>
+      <div className={`relative h-full p-6 ${featured ? 'lg:p-10' : 'p-6'} bg-white rounded-3xl border-2 border-gray-100 shadow-xl hover:border-red-500/30 hover:shadow-2xl hover:shadow-red-500/10 transition-all duration-500 overflow-hidden`}>
         {/* Background Glow on Hover */}
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-red-600/5 via-transparent to-blue-900/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
         
         {/* Quote Icon */}
         <div className="absolute top-6 right-6 opacity-10 group-hover:opacity-20 transition-opacity">
-          <svg className={`${featured ? 'w-24 h-24' : 'w-16 h-16'} text-amber-400`} fill="currentColor" viewBox="0 0 24 24">
+          <svg className={`${featured ? 'w-24 h-24' : 'w-16 h-16'} text-red-600`} fill="currentColor" viewBox="0 0 24 24">
             <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
           </svg>
         </div>
@@ -132,13 +132,13 @@ export default function ReviewsSection() {
           </div>
 
           {/* Review Text */}
-          <p className={`text-gray-300 leading-relaxed flex-grow ${featured ? 'text-lg lg:text-xl' : 'text-sm'} ${!featured && 'line-clamp-4'}`}>
+          <p className={`text-gray-700 leading-relaxed flex-grow ${featured ? 'text-lg lg:text-xl' : 'text-sm'} ${!featured && 'line-clamp-4'}`}>
             "{review.message || review.content || review.text}"
           </p>
 
           {/* Author */}
-          <div className="flex items-center gap-4 mt-6 pt-6 border-t border-white/10">
-            <div className={`${featured ? 'w-14 h-14' : 'w-12 h-12'} rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20`}>
+          <div className="flex items-center gap-4 mt-6 pt-6 border-t border-gray-200">
+            <div className={`${featured ? 'w-14 h-14' : 'w-12 h-12'} rounded-2xl bg-gradient-to-br from-red-500 to-blue-800 flex items-center justify-center shadow-lg shadow-red-500/20`}>
               {review.avatarUrl ? (
                 <img src={review.avatarUrl} alt={review.authorName} className="w-full h-full rounded-2xl object-cover" />
               ) : (
@@ -148,13 +148,13 @@ export default function ReviewsSection() {
               )}
             </div>
             <div>
-              <p className={`text-white font-semibold ${featured ? 'text-lg' : ''}`}>{review.authorName}</p>
+              <p className={`text-gray-900 font-semibold ${featured ? 'text-lg' : ''}`}>{review.authorName}</p>
               {review.roleLabel && (
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                     review.roleLabel === 'Părinte' 
-                      ? 'bg-emerald-500/20 text-emerald-400' 
-                      : 'bg-amber-500/20 text-amber-400'
+                      ? 'bg-red-500/20 text-red-600' 
+                      : 'bg-amber-500/20 text-amber-600'
                   }`}>
                     {review.roleLabel === 'Părinte' ? (
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -177,39 +177,36 @@ export default function ReviewsSection() {
   )
 
   return (
-    <section id="recenzii" ref={sectionRef} className="relative py-24 lg:py-32 overflow-hidden">
+    <section id="recenzii" ref={sectionRef} className="relative py-24 lg:py-32 overflow-hidden bg-gradient-to-b from-white via-[#FFFBF5] to-white">
       {/* Background */}
-      <div className="absolute inset-0 bg-[#030303]">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-amber-900/10 via-transparent to-transparent" />
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-1/3 w-[600px] h-[600px] bg-gradient-to-br from-red-600/5 to-transparent rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-gradient-to-tl from-blue-900/5 to-transparent rounded-full blur-3xl" />
+        <div className="absolute inset-0 opacity-[0.02]" style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, rgb(0 0 0) 1px, transparent 0)`,
+          backgroundSize: '50px 50px'
+        }} />
       </div>
-
-      {/* Decorative Elements */}
-      <div className="absolute top-40 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-[150px]" />
-      <div className="absolute bottom-20 left-0 w-72 h-72 bg-emerald-500/5 rounded-full blur-[100px]" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full mb-6">
-            <div className="flex gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <svg key={i} className="w-3 h-3 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              ))}
-            </div>
-            <span className="text-gray-400 text-sm">Recenzii verificate</span>
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-600/10 via-white to-blue-900/10 border border-red-600/20 rounded-full mb-6 backdrop-blur-sm">
+            <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+            <span className="text-gray-900 text-sm font-semibold">Recenzii verificate</span>
           </div>
           
-          <h2 className="text-4xl lg:text-6xl font-black text-white mb-6">
+          <h2 className="text-4xl lg:text-6xl font-black text-gray-900 mb-6 leading-tight">
             Ce spun{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400">
-              familiile noastre
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-red-500 to-blue-900">
+              cursanții noștri
             </span>
           </h2>
           
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Succesul nostru se măsoară în zâmbetele elevilor și recunoștința părinților.
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Succesul nostru se măsoară în progresul elevilor și mulțumirea părinților.
           </p>
         </div>
 
@@ -217,7 +214,7 @@ export default function ReviewsSection() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white/5 rounded-3xl h-64 animate-pulse" />
+              <div key={i} className="bg-gray-100 rounded-3xl h-64 animate-pulse" />
             ))}
           </div>
         ) : (
@@ -258,8 +255,8 @@ export default function ReviewsSection() {
                     onClick={() => setActiveIndex(index)}
                     className={`transition-all duration-300 rounded-full ${
                       activeIndex === index 
-                        ? 'w-8 h-2 bg-amber-400' 
-                        : 'w-2 h-2 bg-white/20 hover:bg-white/40'
+                        ? 'w-8 h-2 bg-red-600' 
+                        : 'w-2 h-2 bg-gray-300 hover:bg-red-300'
                     }`}
                   />
                 ))}
@@ -269,25 +266,29 @@ export default function ReviewsSection() {
         )}
 
         {/* Bottom Stats */}
-        <div className={`mt-16 flex flex-wrap justify-center gap-8 lg:gap-16 transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-1 mb-2">
-              {[...Array(5)].map((_, i) => (
-                <svg key={i} className="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              ))}
+        <div className={`mt-16 transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className="flex flex-wrap justify-center gap-6 lg:gap-12 p-8 bg-gradient-to-r from-red-50 via-white to-blue-50 rounded-3xl border-2 border-red-100 shadow-xl max-w-3xl mx-auto">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-2">
+                {[...Array(5)].map((_, i) => (
+                  <svg key={i} className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+              <p className="text-3xl font-black text-gray-900">4.9/5</p>
+              <p className="text-sm text-gray-600 font-medium">Rating mediu</p>
             </div>
-            <p className="text-2xl font-bold text-white">4.9/5</p>
-            <p className="text-sm text-gray-500">Rating mediu</p>
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-white mb-1">{displayReviews.length}+</p>
-            <p className="text-sm text-gray-500">Recenzii pozitive</p>
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-white mb-1">100%</p>
-            <p className="text-sm text-gray-500">Ar recomanda</p>
+            <div className="w-px h-16 bg-gray-200 hidden lg:block" />
+            <div className="text-center">
+              <p className="text-3xl font-black text-red-600 mb-1">{displayReviews.length}+</p>
+              <p className="text-sm text-gray-600 font-medium">Recenzii pozitive</p>
+            </div>
+            <div className="w-px h-16 bg-gray-200 hidden lg:block" />
+            <div className="text-center">
+              <p className="text-3xl font-black text-blue-900 mb-1">100%</p>
+              <p className="text-sm text-gray-600 font-medium">Ar recomanda</p>
+            </div>
           </div>
         </div>
       </div>

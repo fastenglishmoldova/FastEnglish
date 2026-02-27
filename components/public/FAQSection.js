@@ -70,10 +70,10 @@ export default function FAQSection() {
 
   // Category colors for FAQ icons
   const categoryColors = {
-    general: { bg: 'bg-blue-500/20', text: 'text-blue-400', activeBg: 'bg-blue-500' },
-    cursuri: { bg: 'bg-purple-500/20', text: 'text-purple-400', activeBg: 'bg-purple-500' },
-    organizare: { bg: 'bg-amber-500/20', text: 'text-amber-400', activeBg: 'bg-amber-500' },
-    inscriere: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', activeBg: 'bg-emerald-500' },
+    general: { bg: 'bg-blue-900/10', text: 'text-blue-900', activeBg: 'bg-blue-900' },
+    cursuri: { bg: 'bg-red-500/10', text: 'text-red-600', activeBg: 'bg-red-500' },
+    organizare: { bg: 'bg-blue-600/10', text: 'text-blue-600', activeBg: 'bg-blue-600' },
+    inscriere: { bg: 'bg-red-600/10', text: 'text-red-600', activeBg: 'bg-red-600' },
   }
 
   // Category icons for FAQ items
@@ -103,18 +103,18 @@ export default function FAQSection() {
   const faqs = [
     {
       category: 'general',
-      question: 'Ce este Pi School?',
-      answer: 'Pi School este un centru educațional specializat în cursuri de matematică și programare pentru copii și adolescenți. Oferim un mediu de învățare modern, interactiv și adaptat nevoilor fiecărui elev, cu focus pe dezvoltarea gândirii logice și a abilităților practice.'
+      question: 'Ce este Fast English?',
+      answer: 'Fast English este un centru educațional specializat în cursuri de engleză pentru copii și adolescenți. Oferim un mediu de învățare modern, interactiv și adaptat nevoilor fiecărui elev, cu focus pe comunicare și vorbire fluență.'
     },
     {
       category: 'cursuri',
-      question: 'Pentru ce clase sunt destinate cursurile?',
-      answer: 'Cursurile noastre sunt structurate pe niveluri de vârstă: cursuri pentru clasele primare (I-IV), gimnaziu (V-VIII) și liceu (IX-XII). Fiecare program este adaptat curriculumului școlar și extins cu noțiuni avansate pentru cei care doresc să exceleze.'
+      question: 'Pentru ce vârste sunt destinate cursurile?',
+      answer: 'Cursurile noastre sunt structurate pe niveluri: Beginner, Intermediate și Advanced. Fiecare program este adaptat vârstei și nivelului de cunoștințe ale elevului.'
     },
     {
       category: 'inscriere',
-      question: 'Elevul trebuie să fie foarte bun la matematică ca să se înscrie?',
-      answer: 'Nu! La Pi School primim elevi de toate nivelurile. Scopul nostru este să ajutăm fiecare copil să progreseze de la nivelul său actual. Avem grupe pentru începători, nivel mediu și avansat, astfel încât fiecare elev să învețe în ritmul propriu.'
+      question: 'Elevul trebuie să știe deja engleză ca să se înscrie?',
+      answer: 'Nu! La Fast English primim elevi de toate nivelurile. Scopul nostru este să ajutăm fiecare copil să progreseze de la nivelul său actual. Avem grupe pentru începători, nivel mediu și avansat.'
     },
     {
       category: 'cursuri',
@@ -134,7 +134,7 @@ export default function FAQSection() {
     {
       category: 'cursuri',
       question: 'Ce beneficii va avea elevul după participarea la cursuri?',
-      answer: 'Elevii dezvoltă gândire logică și analitică, îmbunătățesc notele școlare, câștigă încredere în propriile abilități, învață să rezolve probleme complexe și se pregătesc pentru examene și olimpiade. Pentru programare, dobândesc abilități tehnice valoroase pentru viitor.'
+      answer: 'Elevii dezvoltă încredere în vorbirea engleză, îmbunătățesc notele școlare, câștigă abilități de comunicare internațională, și se pregătesc pentru examene Cambridge și IELTS.'
     },
     {
       category: 'organizare',
@@ -144,7 +144,7 @@ export default function FAQSection() {
     {
       category: 'general',
       question: 'Profesorii sunt calificați?',
-      answer: 'Da, toți profesorii noștri sunt specialiști cu experiență în predare și pasiune pentru educație. Mulți dintre ei sunt absolvenți de matematică, informatică sau inginerie, cu experiență în lucrul cu copiii și rezultate dovedite.'
+      answer: 'Da, toți profesorii noștri sunt specialiști cu experiență în predare și pasiune pentru educație. Mulți dintre ei vorbesc engleza nativ sau au certificate internaționale, cu experiență în lucrul cu copiii și rezultate dovedite.'
     },
     {
       category: 'general',
@@ -168,8 +168,8 @@ export default function FAQSection() {
     },
     {
       category: 'general',
-      question: 'De ce să aleg Pi School?',
-      answer: 'Pi School oferă o combinație unică de profesori dedicați, grupe mici, metodă modernă de predare și rezultate demonstrate. Avem 7 locații convenabile, flexibilitate în programare și un mediu prietenos unde copiii învață cu plăcere. Rezultatele elevilor noștri la examene și olimpiade vorbesc de la sine!'
+      question: 'De ce să aleg Fast English?',
+      answer: 'Fast English oferă o combinație unică de profesori dedicați, grupe mici, metodă modernă de predare și rezultate demonstrate. Avem locații convenabile, flexibilitate în programare și un mediu prietenos unde copiii învață cu plăcere. Rezultatele elevilor noștri la examene vorbesc de la sine!'
     }
   ]
 
@@ -184,51 +184,61 @@ export default function FAQSection() {
   return (
     <section id="faq" ref={sectionRef} className="relative py-24 lg:py-32 overflow-hidden">
       {/* Background */}
-      <div className="absolute inset-0 bg-[#030303]">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-900/10 via-transparent to-transparent" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-teal-900/5 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-white via-[#FFFBF5] to-white">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-red-500/5 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-blue-900/5 via-transparent to-transparent" />
+        {/* Subtle grid */}
+        <div className="absolute inset-0 opacity-[0.02]" style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, rgb(0 0 0) 1px, transparent 0)`,
+          backgroundSize: '50px 50px'
+        }} />
       </div>
 
       {/* Floating Elements */}
-      <div className="absolute top-40 left-10 w-20 h-20 border border-emerald-500/10 rounded-2xl rotate-12 opacity-50" />
-      <div className="absolute bottom-40 right-20 w-32 h-32 border border-white/5 rounded-full opacity-30" />
-      <div className="absolute top-1/3 right-10 w-2 h-2 bg-emerald-500/50 rounded-full animate-pulse" />
+      <div className="absolute top-40 left-10 w-20 h-20 border-2 border-red-500/10 rounded-2xl rotate-12 opacity-50" />
+      <div className="absolute bottom-40 right-20 w-32 h-32 border-2 border-blue-900/10 rounded-full opacity-30" />
+      <div className="absolute top-1/3 right-10 w-3 h-3 bg-red-500/40 rounded-full animate-pulse" />
+      <div className="absolute bottom-1/3 left-20 w-2 h-2 bg-blue-900/40 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
 
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className={`text-center mb-12 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full mb-6 backdrop-blur-sm">
-            <span className="text-lg">💡</span>
-            <span className="text-gray-400 text-sm font-medium">Întrebări frecvente</span>
+          <div className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-white border-2 border-red-500/20 rounded-full mb-6 shadow-lg shadow-red-500/5">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+              <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <span className="text-gray-900 text-sm font-bold">Întrebări frecvente</span>
           </div>
           
-          <h2 className="text-4xl lg:text-6xl font-black text-white mb-4">
+          <h2 className="text-4xl lg:text-6xl font-black text-gray-900 mb-4">
             Ai{' '}
             <span className="relative">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 animate-gradient">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-red-500 to-blue-900">
                 întrebări?
               </span>
               <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
                 <path d="M2 10C50 4 150 4 198 10" stroke="url(#faq-underline)" strokeWidth="3" strokeLinecap="round"/>
                 <defs>
                   <linearGradient id="faq-underline" x1="0" y1="0" x2="200" y2="0">
-                    <stop stopColor="#10b981" />
-                    <stop offset="1" stopColor="#14b8a6" />
+                    <stop stopColor="#dc2626" />
+                    <stop offset="1" stopColor="#1e3a8a" />
                   </linearGradient>
                 </defs>
               </svg>
             </span>
           </h2>
           
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto mt-6">
-            Găsește răspunsuri rapide la cele mai frecvente întrebări despre Pi School
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto mt-6">
+            Găsește răspunsuri rapide la cele mai frecvente întrebări despre Fast English
           </p>
         </div>
 
         {/* Search Bar */}
         <div className={`max-w-xl mx-auto mb-8 transition-all duration-700 delay-100 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="relative">
-            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -236,12 +246,12 @@ export default function FAQSection() {
               placeholder="Caută întrebări..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all"
+              className="w-full pl-12 pr-4 py-4 bg-white border-2 border-gray-200 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-red-500/50 focus:ring-2 focus:ring-red-500/20 transition-all shadow-sm"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -257,10 +267,10 @@ export default function FAQSection() {
             <button
               key={cat.id}
               onClick={() => { setActiveCategory(cat.id); setOpenIndex(-1); }}
-              className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
                 activeCategory === cat.id
-                  ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25'
-                  : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/10'
+                  ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/25'
+                  : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-2 border-gray-200 shadow-sm hover:border-red-500/30'
               }`}
             >
               {cat.icon}
@@ -280,10 +290,10 @@ export default function FAQSection() {
                 style={{ transitionDelay: `${200 + index * 30}ms` }}
               >
                 <div
-                  className={`rounded-2xl border overflow-hidden transition-all duration-300 ${
+                  className={`rounded-2xl border-2 overflow-hidden transition-all duration-300 ${
                     openIndex === index 
-                      ? 'bg-gradient-to-br from-emerald-500/10 to-teal-500/5 border-emerald-500/30 shadow-lg shadow-emerald-500/5' 
-                      : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.05] hover:border-white/20'
+                      ? 'bg-gradient-to-br from-red-50 via-white to-blue-50 border-red-500/30 shadow-xl shadow-red-500/5' 
+                      : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-red-500/20 shadow-sm'
                   }`}
                 >
                   <button
@@ -299,23 +309,23 @@ export default function FAQSection() {
                         {categoryIcons[faq.category]}
                       </div>
                       <span className={`font-medium transition-colors ${
-                        openIndex === index ? 'text-emerald-400' : 'text-white'
+                        openIndex === index ? 'text-red-600' : 'text-gray-900'
                       }`}>
                         {faq.question}
                       </span>
                     </div>
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
                       openIndex === index 
-                        ? 'bg-emerald-500/20 rotate-180' 
-                        : 'bg-white/10'
+                        ? 'bg-red-500/20 rotate-180' 
+                        : 'bg-gray-100'
                     }`}>
-                      <svg className={`w-4 h-4 transition-colors ${openIndex === index ? 'text-emerald-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className={`w-4 h-4 transition-colors ${openIndex === index ? 'text-red-500' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </div>
                   </button>
                   <div className={`overflow-hidden transition-all duration-300 ${openIndex === index ? 'max-h-96' : 'max-h-0'}`}>
-                    <div className="px-5 pb-5 pl-[4.25rem] text-gray-400 leading-relaxed text-sm">
+                    <div className="px-5 pb-5 pl-[4.25rem] text-gray-600 leading-relaxed text-sm">
                       {faq.answer}
                     </div>
                   </div>
@@ -328,15 +338,15 @@ export default function FAQSection() {
         {/* No Results */}
         {filteredFaqs.length === 0 && (
           <div className="text-center py-12">
-            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <p className="text-gray-400">Nu am găsit întrebări pentru căutarea ta.</p>
+            <p className="text-gray-500">Nu am găsit întrebări pentru căutarea ta.</p>
             <button
               onClick={() => { setSearchQuery(''); setActiveCategory('all'); }}
-              className="mt-4 text-emerald-400 hover:text-emerald-300 font-medium"
+              className="mt-4 text-red-500 hover:text-red-600 font-medium"
             >
               Resetează filtrele
             </button>
@@ -345,31 +355,30 @@ export default function FAQSection() {
 
         {/* Bottom CTA */}
         <div className={`mt-16 transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="relative p-8 rounded-3xl overflow-hidden">
+          <div className="relative p-8 lg:p-10 rounded-3xl overflow-hidden">
             {/* Gradient Background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/20 via-teal-600/10 to-emerald-600/20" />
-            <div className="absolute inset-0 backdrop-blur-xl" />
-            <div className="absolute inset-[1px] rounded-3xl bg-[#030303]/80" />
+            <div className="absolute inset-0 bg-gradient-to-r from-red-50 via-white to-blue-50" />
+            <div className="absolute inset-[1px] rounded-3xl bg-white/90" />
             
             {/* Animated Border */}
-            <div className="absolute inset-0 rounded-3xl border border-emerald-500/20" />
+            <div className="absolute inset-0 rounded-3xl border-2 border-red-500/20" />
             
             {/* Content */}
             <div className="relative flex flex-col lg:flex-row items-center justify-between gap-8">
               <div className="flex items-center gap-5">
                 <div className="relative">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center shadow-lg shadow-red-500/30">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
                   </div>
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-400 rounded-full animate-ping" />
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-400 rounded-full" />
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping" />
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full" />
                 </div>
                 <div>
-                  <h3 className="text-white text-2xl font-bold mb-1">Nu ai găsit răspunsul?</h3>
-                  <p className="text-gray-400">
-                    Echipa noastră îți răspunde în mai puțin de 24 de ore!
+                  <h3 className="text-gray-900 text-2xl font-bold mb-1">Nu ai găsit răspunsul?</h3>
+                  <p className="text-gray-600">
+                    Echipa noastră îți răspunde în mai puțin de <span className="font-semibold text-red-600">24 de ore</span>!
                   </p>
                 </div>
               </div>
@@ -377,16 +386,16 @@ export default function FAQSection() {
               <div className="flex flex-col sm:flex-row gap-3">
                 <a
                   href="tel:069113314"
-                  className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-white/10 hover:bg-white/15 text-white font-semibold rounded-xl transition-all border border-white/10"
+                  className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-white hover:bg-gray-50 text-gray-900 font-semibold rounded-xl transition-all border-2 border-gray-200 shadow-sm hover:border-blue-900/30"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                   Sună-ne
                 </a>
                 <a
                   href="#contact"
-                  className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-emerald-500/25"
+                  className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-semibold rounded-xl transition-all shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/30"
                 >
                   Scrie-ne un mesaj
                   <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">

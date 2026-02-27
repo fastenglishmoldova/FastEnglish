@@ -146,7 +146,7 @@ export default function Navbar() {
         {/* Background with blur */}
         <div className={`absolute inset-0 transition-all duration-500 ${
           isScrolled 
-            ? 'bg-[#030303]/80 backdrop-blur-2xl border-b border-white/5' 
+            ? 'bg-white/90 backdrop-blur-2xl border-b border-gray-200 shadow-sm' 
             : 'bg-transparent'
         }`} />
 
@@ -155,7 +155,7 @@ export default function Navbar() {
           <div 
             className="absolute inset-0 overflow-hidden pointer-events-none"
             style={{
-              background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(16, 185, 129, 0.03), transparent 40%)`
+              background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(200, 16, 46, 0.03), transparent 40%)`
             }}
           />
         )}
@@ -168,22 +168,22 @@ export default function Navbar() {
               className="flex items-center gap-3 group relative"
             >
               {/* Logo glow */}
-              <div className="absolute -inset-4 bg-emerald-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute -inset-4 bg-red-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
               <div className="relative w-12 h-12 lg:w-14 lg:h-14 group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src="/pi.png"
-                  alt="Pi School Logo"
+                  src="/FastEnglish-logo.png"
+                  alt="Fast English Logo"
                   fill
                   className="object-contain"
                 />
               </div>
               <div className="relative flex flex-col">
-                <span className="text-lg lg:text-xl font-bold text-white group-hover:text-emerald-400 transition-colors duration-300">
-                  Pi School
+                <span className={`text-lg lg:text-xl font-bold transition-colors duration-300 ${isScrolled ? 'text-gray-900 group-hover:text-red-600' : 'text-white group-hover:text-red-400 drop-shadow-lg'}`}>
+                  Fast English
                 </span>
-                <span className="text-[10px] text-gray-500 font-medium tracking-wider uppercase hidden sm:block">
-                  Matematică & Excelență
+                <span className={`text-[10px] font-medium tracking-wider uppercase hidden sm:block transition-colors duration-300 ${isScrolled ? 'text-gray-500' : 'text-white/80'}`}>
+                  Learn English Fast
                 </span>
               </div>
             </button>
@@ -196,7 +196,7 @@ export default function Navbar() {
             >
               {/* Sliding indicator */}
               <div 
-                className="absolute h-9 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-xl border border-emerald-500/20 transition-all duration-300 ease-out"
+                className={`absolute h-9 rounded-xl border transition-all duration-300 ease-out ${isScrolled ? 'bg-gradient-to-r from-red-500/20 to-blue-800/20 border-red-500/20' : 'bg-white/10 backdrop-blur-sm border-white/20'}`}
                 style={{
                   width: indicatorStyle.width || 0,
                   left: indicatorStyle.left || 0,
@@ -214,8 +214,8 @@ export default function Navbar() {
                   onMouseEnter={() => handleLinkHover(link.id)}
                   className={`relative px-4 py-2 text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
                     activeSection === link.id
-                      ? 'text-emerald-400'
-                      : 'text-gray-400 hover:text-white'
+                      ? isScrolled ? 'text-red-600' : 'text-red-400 drop-shadow-lg'
+                      : isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white drop-shadow-md'
                   }`}
                 >
                   <span className={`transition-transform duration-300 ${activeSection === link.id ? 'scale-110' : ''}`}>
@@ -230,7 +230,7 @@ export default function Navbar() {
             <div className="hidden lg:flex items-center gap-4">
               <Link
                 href="/inscriere"
-                className="group relative px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-sm font-semibold rounded-xl flex items-center gap-2 transition-all duration-300 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 overflow-hidden"
+                className="group relative px-5 py-2.5 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white text-sm font-semibold rounded-xl flex items-center gap-2 transition-all duration-300 shadow-lg shadow-red-500/20 hover:shadow-red-500/40 overflow-hidden"
               >
                 <span>Înscrie-te</span>
                 <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -245,7 +245,11 @@ export default function Navbar() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden relative w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all"
+              className={`lg:hidden relative w-10 h-10 flex items-center justify-center rounded-xl border transition-all ${
+                isScrolled 
+                  ? 'bg-gray-100 border-gray-200 text-gray-700 hover:text-gray-900 hover:bg-gray-200'
+                  : 'bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/30'
+              }`}
             >
               <div className="relative w-5 h-4 flex flex-col justify-between">
                 <span className={`w-full h-0.5 bg-current rounded-full transition-all duration-300 origin-center ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`} />
@@ -261,18 +265,18 @@ export default function Navbar() {
       <div className={`fixed inset-0 z-40 lg:hidden transition-all duration-500 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
         {/* Backdrop */}
         <div 
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/40 backdrop-blur-sm"
           onClick={() => setIsMobileMenuOpen(false)}
         />
         
         {/* Menu Panel */}
-        <div className={`absolute top-0 right-0 w-full max-w-sm h-full bg-[#0a0a0a] border-l border-white/10 transition-transform duration-500 ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className={`absolute top-0 right-0 w-full max-w-sm h-full bg-white border-l border-gray-200 transition-transform duration-500 ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-white/10">
-            <span className="text-white font-semibold">Meniu</span>
+          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+            <span className="text-gray-900 font-semibold">Meniu</span>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
-              className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-gray-400 hover:text-white transition-colors"
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 text-gray-600 hover:text-gray-900 transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -288,12 +292,12 @@ export default function Navbar() {
                 onClick={() => scrollToSection(link.id)}
                 className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-300 ${
                   activeSection === link.id
-                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-red-50 text-red-600 border border-red-200'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
                 style={{ transitionDelay: `${index * 50}ms` }}
               >
-                <span className={`p-2 rounded-xl ${activeSection === link.id ? 'bg-emerald-500/20' : 'bg-white/5'}`}>
+                <span className={`p-2 rounded-xl ${activeSection === link.id ? 'bg-red-100' : 'bg-gray-100'}`}>
                   {link.icon}
                 </span>
                 <span className="font-medium">{link.label}</span>
@@ -305,10 +309,10 @@ export default function Navbar() {
           </div>
           
           {/* CTA */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-[#0a0a0a]">
+          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white">
             <Link
               href="/inscriere"
-              className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold rounded-2xl"
+              className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-red-600 to-red-500 text-white font-semibold rounded-2xl"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Înscrie-te acum

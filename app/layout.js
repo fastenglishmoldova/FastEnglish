@@ -16,55 +16,55 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: {
-    default: "PI School - Cursuri pentru copii în Chișinău",
-    template: "%s | PI School"
+    default: "Fast English - Cursuri de Limba Engleză",
+    template: "%s | Fast English"
   },
-  description: "PI School oferă cursuri de calitate pentru copii în Chișinău: limba germană, engleză, franceză, matematică și multe altele. Profesori calificați, curriculum național, grupe mici.",
+  description: "Fast English - Învață engleza rapid și eficient! Cursuri de limba engleză pentru toate nivelurile și vârstele. Profesori nativi, metode moderne, rezultate garantate.",
   keywords: [
-    "cursuri copii Chișinău",
-    "after school Chișinău", 
-    "cursuri limba germană copii",
-    "cursuri limba engleză copii",
-    "cursuri matematică copii",
-    "cursuri limba franceză copii",
-    "educație copii Moldova",
-    "after school Moldova",
-    "PI School",
-    "cursuri după școală"
+    "cursuri engleza",
+    "cursuri limba engleză", 
+    "învață engleza",
+    "english courses",
+    "cursuri engleza copii",
+    "cursuri engleza adulți",
+    "conversație engleză",
+    "pregătire Cambridge",
+    "Fast English",
+    "școală de engleză"
   ],
-  authors: [{ name: "PI School" }],
-  creator: "PI School",
-  publisher: "PI School",
+  authors: [{ name: "Fast English" }],
+  creator: "Fast English",
+  publisher: "Fast English",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://pischool.md"),
+  metadataBase: new URL("https://fastenglish.md"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "PI School - Cursuri pentru copii în Chișinău",
-    description: "Cursuri de calitate pentru copii: limba germană, engleză, franceză, matematică. Profesori calificați, curriculum național, grupe mici.",
-    url: "https://pischool.md",
-    siteName: "PI School",
+    title: "Fast English - Cursuri de Limba Engleză",
+    description: "Învață engleza rapid și eficient! Cursuri pentru toate nivelurile și vârstele. Profesori calificați, metode moderne.",
+    url: "https://fastenglish.md",
+    siteName: "Fast English",
     locale: "ro_RO",
     type: "website",
     images: [
       {
-        url: "/pi.png",
+        url: "/FastEnglish-logo.png",
         width: 512,
         height: 512,
-        alt: "PI School Logo",
+        alt: "Fast English Logo",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "PI School - Cursuri pentru copii în Chișinău",
-    description: "Cursuri de calitate pentru copii: limba germană, engleză, franceză, matematică. Profesori calificați, curriculum național.",
-    images: ["/pi.png"],
+    title: "Fast English - Cursuri de Limba Engleză",
+    description: "Învață engleza rapid și eficient! Cursuri pentru toate nivelurile și vârstele. Profesori calificați, metode moderne.",
+    images: ["/FastEnglish-logo.png"],
   },
   robots: {
     index: true,

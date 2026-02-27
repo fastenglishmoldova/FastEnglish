@@ -1,45 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  /* Brand Colors */
-  --brand-primary: #30919f;
-  --brand-primary-dark: #136976;
-  --brand-accent: #f8b316;
-  --brand-text: #231f20;
+  /* Fast English Brand Colors - Union Jack inspired */
+  --brand-primary: #C8102E;       /* British Red */
+  --brand-primary-dark: #9E0A23;  /* Darker Red */
+  --brand-secondary: #012169;     /* British Navy Blue */
+  --brand-accent: #C8102E;        /* Red accent */
+  --brand-text: #1a1a2e;
   
-  /* Dark Theme (default) */
-  --background: #0c1a1d;
-  --background-secondary: #112428;
-  --foreground: #e8f5f7;
-  --primary: #30919f;
-  --primary-dark: #136976;
-  --primary-light: #4db5c4;
-  --secondary: #136976;
-  --accent: #f8b316;
-  --card-bg: #15292e;
-  --border-color: #1e3d44;
-  --text-muted: #8ba5aa;
-  --hero-bg-from: #0c1a1d;
-  --hero-bg-via: #112428;
-  --hero-bg-to: #0c1a1d;
+  /* Light Theme (default for Fast English - warm & welcoming) */
+  --background: #FFFBF5;          /* Warm cream/off-white */
+  --background-secondary: #FFFFFF;
+  --foreground: #1a1a2e;          /* Dark navy text */
+  --primary: #C8102E;             /* British Red */
+  --primary-dark: #9E0A23;
+  --primary-light: #E63950;
+  --secondary: #012169;           /* British Navy Blue */
+  --secondary-light: #1e3a8a;
+  --accent: #C8102E;
+  --card-bg: #FFFFFF;
+  --border-color: #E8E0D5;        /* Warm border */
+  --text-muted: #6B7280;
+  --hero-bg-from: #FFFBF5;
+  --hero-bg-via: #FFF8F0;
+  --hero-bg-to: #FFFBF5;
 }
 
-/* Light Theme */
-html.light {
-  --background: #f5f9fa;
-  --background-secondary: #ffffff;
-  --foreground: #231f20;
-  --primary: #30919f;
-  --primary-dark: #136976;
-  --primary-light: #4db5c4;
-  --secondary: #136976;
-  --accent: #f8b316;
-  --card-bg: #ffffff;
-  --border-color: #d4e5e8;
-  --text-muted: #5a7a7f;
-  --hero-bg-from: #f5f9fa;
-  --hero-bg-via: #ffffff;
-  --hero-bg-to: #e8f5f7;
+/* Dark Theme */
+html.dark {
+  --background: #0f172a;          /* Dark navy */
+  --background-secondary: #1e293b;
+  --foreground: #f8fafc;
+  --primary: #C8102E;
+  --primary-dark: #9E0A23;
+  --primary-light: #E63950;
+  --secondary: #3b82f6;
+  --secondary-light: #60a5fa;
+  --accent: #C8102E;
+  --card-bg: #1e293b;
+  --border-color: #334155;
+  --text-muted: #94a3b8;
+  --hero-bg-from: #0f172a;
+  --hero-bg-via: #1e293b;
+  --hero-bg-to: #0f172a;
 }
 
 @theme inline {
@@ -48,9 +51,13 @@ html.light {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   
-  /* Custom breakpoint for extra small devices (320px+) */
-  --breakpoint-xs: 475px;
+  /* Custom breakpoint for extra small devices */
+  --breakpoint-xs: 360px;
+  --breakpoint-sm: 640px;
 }
+
+/* Extra small screen utilities (320px - 359px handled as base) */
+/* xs: prefix works for screens >= 360px */
 
 body {
   background: var(--background);
