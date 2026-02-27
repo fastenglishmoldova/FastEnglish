@@ -301,7 +301,7 @@ export default function PaymentsPage() {
   <div class="container">
     <table id="main-table">
       <tr><td colspan="${colSpan}" class="title">RAPORT PLĂȚI ${year}${selectedMonths.length > 0 ? ' - ' + monthFilterText : ''}</td></tr>
-      <tr><td colspan="${colSpan}" class="subtitle">PI School | Generat: ${currentDate} | Filtre: ${monthFilterText} • ${methodFilterText} • ${branchFilterText}</td></tr>
+      <tr><td colspan="${colSpan}" class="subtitle">Fast English | Generat: ${currentDate} | Filtre: ${monthFilterText} • ${methodFilterText} • ${branchFilterText}</td></tr>
       <tr class="spacer"><td colspan="${colSpan}"></td></tr>
       
       <tr><td colspan="${colSpan}" class="section-title">TOATE PLĂȚILE</td></tr>
@@ -435,7 +435,7 @@ export default function PaymentsPage() {
 <html lang="ro">
 <head>
   <meta charset="UTF-8">
-  <title>Raport Plăți ${year} - PI School</title>
+  <title>Raport Plăți ${year} - Fast English</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { 
@@ -582,7 +582,7 @@ export default function PaymentsPage() {
   <div class="container">
     <div class="header">
       <h1><svg style="display:inline-block;vertical-align:middle;width:28px;height:28px;margin-right:8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>Raport Plăți ${year}${selectedMonths.length > 0 ? ' - ' + monthFilterText : ''}</h1>
-      <p>PI School • Generat la ${new Date().toLocaleDateString('ro-RO', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+      <p>Fast English • Generat la ${new Date().toLocaleDateString('ro-RO', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
       <p style="margin-top: 8px; font-size: 14px; opacity: 0.9;">Filtre: ${monthFilterText} • ${methodFilterText} • ${branchFilterTextHTML}</p>
     </div>
 
@@ -654,8 +654,8 @@ export default function PaymentsPage() {
     `).join('')}
 
     <div class="footer">
-      <p>Raport generat automat din sistemul PI School</p>
-      <p style="margin-top: 4px;">© ${new Date().getFullYear()} PI School. Toate drepturile rezervate.</p>
+      <p>Raport generat automat din sistemul Fast English</p>
+      <p style="margin-top: 4px;">© ${new Date().getFullYear()} Fast English. Toate drepturile rezervate.</p>
     </div>
   </div>
 </body>

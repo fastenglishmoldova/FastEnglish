@@ -1,5 +1,5 @@
 export default function sitemap() {
-  const baseUrl = "https://pischool.md"
+  const baseUrl = "https://fast-english.vercel.app"
   
   return [
     {

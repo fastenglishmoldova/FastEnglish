@@ -20,13 +20,13 @@ export default function TeacherHeader({ user }) {
           {/* Mobile logo */}
           <Link href="/teacher" className="lg:hidden flex items-center gap-2">
             <Image
-              src="/pi.png"
-              alt="PI School"
+              src="/FastEnglish-logo.png"
+              alt="Fast English"
               width={32}
               height={32}
               className="object-contain rounded-full"
             />
-            <span className="font-bold text-gray-800">PI School</span>
+            <span className="font-bold text-gray-800">Fast English</span>
           </Link>
 
           {/* Desktop - Back button */}

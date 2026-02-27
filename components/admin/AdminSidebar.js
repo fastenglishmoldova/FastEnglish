@@ -202,14 +202,14 @@ export default function AdminSidebar({ user }) {
             <Link href="/admin" className="flex items-center gap-3">
               <div className="relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-[#30919f]/30">
                 <Image
-                  src="/pi.png"
-                  alt="PI School"
+                  src="/FastEnglish-logo.png"
+                  alt="Fast English"
                   fill
                   className="object-cover"
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-lg font-bold text-gray-900">PI SCHOOL</span>
+                <span className="text-lg font-bold text-gray-900">FAST ENGLISH</span>
                 <span className="text-[9px] font-medium text-[#30919f] tracking-[0.15em] uppercase -mt-1">Admin Panel</span>
               </div>
             </Link>
@@ -312,14 +312,14 @@ export default function AdminSidebar({ user }) {
           >
             <div className="relative w-8 h-8 rounded-full overflow-hidden ring-2 ring-[#30919f]/30">
               <Image
-                src="/pi.png"
-                alt="PI School"
+                src="/FastEnglish-logo.png"
+                alt="Fast English"
                 fill
                 className="object-cover"
               />
             </div>
             <div>
-              <h1 className="text-base font-bold text-gray-900">PI SCHOOL</h1>
+              <h1 className="text-base font-bold text-gray-900">FAST ENGLISH</h1>
               <p className="text-[8px] text-[#30919f] font-medium tracking-wide uppercase -mt-0.5">Admin Panel</p>
             </div>
           </Link>

@@ -237,13 +237,13 @@ export default function InscrieriPage() {
             <Link href="/" className="flex items-center gap-3 group">
               <div className="relative w-10 h-10 bg-emerald-500/10 rounded-xl p-1">
                 <Image
-                  src="/pi.png"
-                  alt="Pi School"
+                  src="/FastEnglish-logo.png"
+                  alt="Fast English"
                   fill
                   className="object-contain"
                 />
               </div>
-              <span className="text-xl font-bold text-white group-hover:text-emerald-400 transition-colors">Pi School</span>
+              <span className="text-xl font-bold text-white group-hover:text-emerald-400 transition-colors">Fast English</span>
             </Link>
             <Link
               href="/"
@@ -263,7 +263,7 @@ export default function InscrieriPage() {
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-white mb-3 sm:mb-4">
             Începe aventura{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">
-              Pi School
+              Fast English
             </span>
           </h1>
           <p className="text-gray-400 text-sm sm:text-base max-w-xl mx-auto">
