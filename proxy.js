@@ -19,7 +19,7 @@ const publicRoutes = [
 // Auth routes that should redirect if already logged in
 const authRoutes = ['/login', '/admin/login']
 
-export async function middleware(request) {
+export async function proxy(request) {
   const { pathname } = request.nextUrl
 
   // Skip middleware for static files and API routes
