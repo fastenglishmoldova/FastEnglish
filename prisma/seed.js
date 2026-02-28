@@ -1,5 +1,5 @@
 const { PrismaClient } = require('@prisma/client')
-const bcrypt = require('bcryptjs')
+const argon2 = require('argon2')
 
 const prisma = new PrismaClient()
 
@@ -23,7 +23,7 @@ async function main() {
   console.log('🗑️  Cleared existing data')
 
   // Create Admin
-  const adminPassword = await bcrypt.hash('admin123', 10)
+  const adminPassword = await argon2.hash('admin123', { type: argon2.argon2id })
   const admin = await prisma.user.create({
     data: {
       email: 'admin@bravito.ro',
@@ -35,7 +35,7 @@ async function main() {
   console.log('👤 Created admin:', admin.email)
 
   // Create Teacher
-  const teacherPassword = await bcrypt.hash('teacher123', 10)
+  const teacherPassword = await argon2.hash('teacher123', { type: argon2.argon2id })
   const teacher = await prisma.user.create({
     data: {
       email: 'profesor@bravito.ro',
