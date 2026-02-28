@@ -27,7 +27,8 @@ export async function POST(request) {
     }
 
     // Check if BLOB token is configured
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    const blobToken = process.env.BLOB_READ_WRITE_TOKEN || process.env.fastenglish_READ_WRITE_TOKEN
+    if (!blobToken) {
       console.error('BLOB_READ_WRITE_TOKEN is not configured')
       return NextResponse.json({ error: 'Serviciul de stocare nu este configurat. Adaugă BLOB_READ_WRITE_TOKEN în variabilele de mediu.' }, { status: 500 })
     }
@@ -40,6 +41,7 @@ export async function POST(request) {
     // Upload to Vercel Blob
     const blob = await put(filename, file, {
       access: 'public',
+      token: blobToken,
     })
     
     return NextResponse.json({ url: blob.url })
