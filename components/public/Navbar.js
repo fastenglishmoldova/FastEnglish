@@ -1,10 +1,13 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 
 export default function Navbar() {
+  const pathname = usePathname()
+  const isHomePage = pathname === '/'
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [activeSection, setActiveSection] = useState('home')
@@ -14,6 +17,8 @@ export default function Navbar() {
   const navRef = useRef(null)
   const linksRef = useRef({})
 
+  // On non-homepage, always use dark navbar styling (as if scrolled)
+  const useDarkNav = isScrolled || !isHomePage
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20)
@@ -137,7 +142,7 @@ export default function Navbar() {
     <>
       <nav 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled 
+          useDarkNav 
             ? 'py-2' 
             : 'py-4'
         }`}
@@ -145,13 +150,13 @@ export default function Navbar() {
       >
         {/* Background with blur */}
         <div className={`absolute inset-0 transition-all duration-500 ${
-          isScrolled 
+          useDarkNav 
             ? 'bg-white/90 backdrop-blur-2xl border-b border-gray-200 shadow-sm' 
             : 'bg-transparent'
         }`} />
 
         {/* Spotlight effect following mouse */}
-        {isScrolled && (
+        {useDarkNav && (
           <div 
             className="absolute inset-0 overflow-hidden pointer-events-none"
             style={{
@@ -179,10 +184,10 @@ export default function Navbar() {
                 />
               </div>
               <div className="relative flex flex-col">
-                <span className={`text-lg lg:text-xl font-bold transition-colors duration-300 ${isScrolled ? 'text-gray-900 group-hover:text-red-600' : 'text-white group-hover:text-red-400 drop-shadow-lg'}`}>
+                <span className={`text-lg lg:text-xl font-bold transition-colors duration-300 ${useDarkNav ? 'text-gray-900 group-hover:text-red-600' : 'text-white group-hover:text-red-400 drop-shadow-lg'}`}>
                   Fast English
                 </span>
-                <span className={`text-[10px] font-medium tracking-wider uppercase hidden sm:block transition-colors duration-300 ${isScrolled ? 'text-gray-500' : 'text-white/80'}`}>
+                <span className={`text-[10px] font-medium tracking-wider uppercase hidden sm:block transition-colors duration-300 ${useDarkNav ? 'text-gray-500' : 'text-white/80'}`}>
                   Learn English Fast
                 </span>
               </div>
@@ -196,7 +201,7 @@ export default function Navbar() {
             >
               {/* Sliding indicator */}
               <div 
-                className={`absolute h-9 rounded-xl border transition-all duration-300 ease-out ${isScrolled ? 'bg-gradient-to-r from-red-500/20 to-blue-800/20 border-red-500/20' : 'bg-white/10 backdrop-blur-sm border-white/20'}`}
+                className={`absolute h-9 rounded-xl border transition-all duration-300 ease-out ${useDarkNav ? 'bg-gradient-to-r from-red-500/20 to-blue-800/20 border-red-500/20' : 'bg-white/10 backdrop-blur-sm border-white/20'}`}
                 style={{
                   width: indicatorStyle.width || 0,
                   left: indicatorStyle.left || 0,
@@ -214,8 +219,8 @@ export default function Navbar() {
                   onMouseEnter={() => handleLinkHover(link.id)}
                   className={`relative px-4 py-2 text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
                     activeSection === link.id
-                      ? isScrolled ? 'text-red-600' : 'text-red-400 drop-shadow-lg'
-                      : isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white drop-shadow-md'
+                      ? useDarkNav ? 'text-red-600' : 'text-red-400 drop-shadow-lg'
+                      : useDarkNav ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white drop-shadow-md'
                   }`}
                 >
                   <span className={`transition-transform duration-300 ${activeSection === link.id ? 'scale-110' : ''}`}>
@@ -246,7 +251,7 @@ export default function Navbar() {
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className={`lg:hidden relative w-10 h-10 flex items-center justify-center rounded-xl border transition-all ${
-                isScrolled 
+                useDarkNav 
                   ? 'bg-gray-100 border-gray-200 text-gray-700 hover:text-gray-900 hover:bg-gray-200'
                   : 'bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/30'
               }`}
