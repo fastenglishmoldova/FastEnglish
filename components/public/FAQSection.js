@@ -385,7 +385,7 @@ export default function FAQSection() {
               
               <div className="flex flex-col sm:flex-row gap-3">
                 <a
-                  href="tel:069113314"
+                  href="tel:+373060331177"
                   className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-white hover:bg-gray-50 text-gray-900 font-semibold rounded-xl transition-all border-2 border-gray-200 shadow-sm hover:border-blue-900/30"
                 >
                   <svg className="w-5 h-5 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">

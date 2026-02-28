@@ -320,14 +320,14 @@ export default function GDPRPage() {
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3 text-gray-600 text-sm sm:text-base">
                     <PhoneIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#E32636] flex-shrink-0" />
-                    <a href="tel:+37379711994" className="hover:text-[#E32636] transition-colors">
-                      079 711 994
+                    <a href="tel:+373060331177" className="hover:text-[#E32636] transition-colors">
+                      060 331 177
                     </a>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3 text-gray-600 text-sm sm:text-base">
                     <EnvelopeIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#E32636] flex-shrink-0" />
-                    <a href="mailto:contact@fastenglish.md" className="hover:text-[#E32636] transition-colors break-all">
-                      contact@fastenglish.md
+                    <a href="mailto:fast.english.moldova@gmail.com" className="hover:text-[#E32636] transition-colors break-all">
+                      fast.english.moldova@gmail.com
                     </a>
                   </div>
                 </div>

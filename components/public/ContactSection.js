@@ -200,7 +200,7 @@ export default function ContactSection() {
             {/* Contact Info Row */}
             <div className="grid grid-cols-2 gap-2 sm:gap-4">
               <a 
-                href="tel:+37369113314"
+                href="tel:+373060331177"
                 className="p-3 sm:p-4 bg-white hover:bg-gray-50 rounded-xl sm:rounded-2xl border border-gray-200 hover:border-red-500/30 transition-all group shadow-sm"
               >
                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-red-500/20 flex items-center justify-center mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
@@ -209,10 +209,10 @@ export default function ContactSection() {
                   </svg>
                 </div>
                 <p className="text-gray-500 text-[10px] sm:text-xs mb-0.5 sm:mb-1">Telefon</p>
-                <p className="text-gray-900 font-semibold text-xs sm:text-base">069 113 314</p>
+                <p className="text-gray-900 font-semibold text-xs sm:text-base">060 331 177</p>
               </a>
               <a 
-                href="mailto:info@fastenglish.md"
+                href="mailto:fast.english.moldova@gmail.com"
                 className="p-3 sm:p-4 bg-white hover:bg-gray-50 rounded-xl sm:rounded-2xl border border-gray-200 hover:border-red-500/30 transition-all group overflow-hidden shadow-sm"
               >
                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-red-500/20 flex items-center justify-center mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
@@ -221,7 +221,7 @@ export default function ContactSection() {
                   </svg>
                 </div>
                 <p className="text-gray-500 text-[10px] sm:text-xs mb-0.5 sm:mb-1">Email</p>
-                <p className="text-gray-900 font-semibold text-[10px] sm:text-sm truncate">info@fastenglish.md</p>
+                <p className="text-gray-900 font-semibold text-[10px] sm:text-sm truncate">fast.english.moldova@gmail.com</p>
               </a>
             </div>
           </div>
