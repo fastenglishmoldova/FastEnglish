@@ -1,270 +1,533 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 
-export default function AboutSection() {
-  const [activeIndex, setActiveIndex] = useState(0)
-  const [isVisible, setIsVisible] = useState(false)
-  const sectionRef = useRef(null)
+/* ─── SVG Icons ─────────────────────────────────────────────── */
+function IconTeacher() {
+  return (
+    <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+    </svg>
+  )
+}
+function IconBook() {
+  return (
+    <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+    </svg>
+  )
+}
+function IconTarget() {
+  return (
+    <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10"/>
+      <circle cx="12" cy="12" r="6"/>
+      <circle cx="12" cy="12" r="2"/>
+    </svg>
+  )
+}
+function IconGrad()   {
+  return (
+    <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z"/>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+    </svg>
+  )
+}
+function IconUsers()  {
+  return (
+    <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+    </svg>
+  )
+}
+function IconTrophy() {
+  return (
+    <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 9H4.5a2.5 2.5 0 010-5H6"/>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M18 9h1.5a2.5 2.5 0 000-5H18"/>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 22h16M12 17v5M8 13.5V9M16 13.5V9M6 9a6 6 0 0012 0V4H6v5z"/>
+    </svg>
+  )
+}
+function IconGlobe()  {
+  return (
+    <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10"/>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+    </svg>
+  )
+}
+function IconArrow()  {
+  return (
+    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+    </svg>
+  )
+}
+function IconHeart()  {
+  return (
+    <svg width="22" height="22" fill="#C8102E" stroke="#C8102E" strokeWidth="1.5" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+    </svg>
+  )
+}
 
-  const values = [
-    {
-      title: 'Vorbitori nativi',
-      description: 'Profesori britanici și americani cu experiență, care te ajută să vorbești natural și fără accent.',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-        </svg>
-      ),
-      color: 'red'
-    },
-    {
-      title: 'Conversații reale',
-      description: 'Nu doar gramatică! Învățăm prin discuții interactive, roleplay-uri și situații de zi cu zi.',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-        </svg>
-      ),
-      color: 'blue'
-    },
-    {
-      title: 'Grupe mici',
-      description: 'Maximum 8 cursanți per grupă pentru atenție personalizată și timp de vorbire maxim.',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      ),
-      color: 'rose'
-    },
-    {
-      title: 'Progres rapid',
-      description: 'Metodă intensivă care te face să vorbești fluent în 6 luni. Rezultate garantate!',
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-        </svg>
-      ),
-      color: 'indigo'
-    },
-  ]
+/* ─── Data ───────────────────────────────────────────────────── */
+const FEATURES = [
+  {
+    icon: <IconTeacher />,
+    title: 'Profesori pasionați',
+    desc: 'Echipă dedicată, cu experiență și drag pentru predare.',
+  },
+  {
+    icon: <IconBook />,
+    title: 'Metode moderne',
+    desc: 'Lecții interactive, materiale actualizate și tehnici eficiente.',
+  },
+  {
+    icon: <IconTarget />,
+    title: 'Rezultate reale',
+    desc: 'Progres vizibil și încredere în comunicarea de zi cu zi.',
+  },
+]
+
+const STATS = [
+  { icon: <IconGrad />,   value: '8+',   label: 'Ani de experiență',  sub: 'În educația de limba engleză' },
+  { icon: <IconUsers />,  value: '500+', label: 'Cursanți fericiți',  sub: 'Copii, adolescenți și adulți' },
+  { icon: <IconTrophy />, value: '98%',  label: 'Rată de succes',     sub: 'Progres vizibil al cursanților' },
+  { icon: <IconGlobe />,  value: '15+',  label: 'Țări',               sub: 'Din care provin cursanții noștri' },
+]
+
+/* ─── Blob clip-path (CSS) ───────────────────────────────────── */
+const BLOB_CLIP = `polygon(
+  30% 0%, 70% 2%, 95% 15%, 100% 45%,
+  90% 75%, 70% 95%, 35% 100%, 8% 88%,
+  0% 60%, 5% 25%
+)`
+
+/* ─── Animated counter ───────────────────────────────────────── */
+function Counter({ target, suffix = '' }) {
+  const [count, setCount] = useState(0)
+  const numericTarget = parseInt(target.replace(/\D/g, ''), 10)
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-        }
-      },
-      { threshold: 0.2 }
-    )
+    let start = 0
+    const duration = 1400
+    const step = Math.ceil(numericTarget / (duration / 16))
+    const timer = setInterval(() => {
+      start += step
+      if (start >= numericTarget) { setCount(numericTarget); clearInterval(timer) }
+      else setCount(start)
+    }, 16)
+    return () => clearInterval(timer)
+  }, [numericTarget])
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current)
+  return <>{count}{suffix}</>
+}
+
+/* ─── Main component ─────────────────────────────────────────── */
+export default function AboutSection() {
+  const [visible, setVisible] = useState(false)
+  const [statsVisible, setStatsVisible] = useState(false)
+  const [statCols, setStatCols] = useState(4)
+  const [aboutCols, setAboutCols] = useState(2)
+  const sectionRef = useRef(null)
+  const statsRef   = useRef(null)
+
+  /* Responsive columns (bulletproof, no CSS media-query dependency) */
+  useEffect(() => {
+    const phone  = window.matchMedia('(max-width: 600px)')
+    const tablet = window.matchMedia('(max-width: 900px)')
+    const update = () => {
+      setStatCols(phone.matches ? 1 : tablet.matches ? 2 : 4)
+      setAboutCols(tablet.matches ? 1 : 2)
     }
-
-    return () => observer.disconnect()
+    update()
+    phone.addEventListener('change', update)
+    tablet.addEventListener('change', update)
+    return () => {
+      phone.removeEventListener('change', update)
+      tablet.removeEventListener('change', update)
+    }
   }, [])
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % values.length)
-    }, 4000)
-    return () => clearInterval(interval)
-  }, [values.length])
-
-  const getColorClasses = (color) => {
-    const colors = {
-      red: { bg: 'bg-red-600/10', border: 'border-red-600/20', text: 'text-red-600', glow: 'shadow-red-500/20' },
-      blue: { bg: 'bg-blue-900/10', border: 'border-blue-900/20', text: 'text-blue-900', glow: 'shadow-blue-500/20' },
-      rose: { bg: 'bg-rose-500/10', border: 'border-rose-500/20', text: 'text-rose-600', glow: 'shadow-rose-500/20' },
-      indigo: { bg: 'bg-indigo-600/10', border: 'border-indigo-600/20', text: 'text-indigo-600', glow: 'shadow-indigo-500/20' },
-    }
-    return colors[color]
-  }
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true) }, { threshold: 0.12 })
+    const io2 = new IntersectionObserver(([e]) => { if (e.isIntersecting) setStatsVisible(true) }, { threshold: 0.15 })
+    if (sectionRef.current) io.observe(sectionRef.current)
+    if (statsRef.current)   io2.observe(statsRef.current)
+    return () => { io.disconnect(); io2.disconnect() }
+  }, [])
 
   return (
-    <section id="despre" ref={sectionRef} className="relative py-16 sm:py-24 lg:py-32 overflow-hidden bg-gradient-to-b from-[#FFFBF5] via-white to-[#FFFBF5]">
-      {/* Background Elements */}
-      <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-0 w-[600px] h-[600px] bg-gradient-to-br from-red-600/5 to-transparent rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-0 w-[500px] h-[500px] bg-gradient-to-tl from-blue-900/5 to-transparent rounded-full blur-3xl" />
-        <div className="absolute inset-0 opacity-[0.015]" style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, rgb(0 0 0) 1px, transparent 0)`,
-          backgroundSize: '50px 50px'
-        }} />
-      </div>
+    <section id="despre" style={{ background: '#FFFBF5', overflow: 'hidden', position: 'relative' }}>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-10 sm:mb-16 lg:mb-20">
-          <div className={`inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-600/10 via-white to-blue-900/10 border border-red-600/20 rounded-full mb-6 backdrop-blur-sm transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="text-gray-900 text-sm font-semibold">Despre Fast English</span>
-          </div>
-          
-          <h2 className={`text-3xl sm:text-5xl lg:text-6xl font-black text-gray-900 mb-6 leading-tight transition-all duration-700 delay-100 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            De ce Fast English este
-            <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-red-500 to-blue-900">
-              alegerea ta perfectă
+      {/* ══════════ MAIN ROW ══════════ */}
+      <div
+        ref={sectionRef}
+        style={{
+          maxWidth: 1280,
+          margin: '0 auto',
+          padding: '96px 64px 80px',
+          display: 'grid',
+          gridTemplateColumns: aboutCols === 1 ? '1fr' : '1fr 1fr',
+          gap: aboutCols === 1 ? 44 : 64,
+          alignItems: 'center',
+        }}
+        className="about-grid"
+      >
+
+        {/* ── LEFT: Content ── */}
+        <div style={{
+          opacity: visible ? 1 : 0,
+          transform: visible ? 'translateY(0)' : 'translateY(32px)',
+          transition: 'opacity 0.75s ease, transform 0.75s ease',
+        }}>
+
+          {/* Label badge */}
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            marginBottom: 24,
+          }}>
+            <div style={{ width: 32, height: 2.5, background: '#C8102E', borderRadius: 99 }} />
+            <span style={{
+              fontSize: 12, fontWeight: 800, letterSpacing: '0.18em',
+              textTransform: 'uppercase', color: '#C8102E',
+            }}>
+              Despre Noi
             </span>
-          </h2>
-          
-          <p className={`text-gray-600 text-lg lg:text-xl max-w-3xl mx-auto leading-relaxed transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            Nu suntem doar o școală de limbi străine. Suntem o comunitate pasionată care te ajută să vorbești engleza cu încredere și fluență.
-          </p>
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-2 gap-6 lg:gap-16 items-center">
-          {/* Left - Values Showcase */}
-          <div className={`space-y-3 sm:space-y-4 transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
-            {values.map((value, index) => {
-              const colors = getColorClasses(value.color)
-              const isActive = activeIndex === index
-              
-              return (
-                <button
-                  key={index}
-                  onClick={() => setActiveIndex(index)}
-                  className={`w-full text-left p-4 sm:p-6 rounded-xl sm:rounded-2xl border transition-all duration-500 ${
-                    isActive 
-                      ? `${colors.bg} ${colors.border} shadow-lg ${colors.glow}` 
-                      : 'bg-white/80 border-gray-200 hover:bg-white shadow-sm'
-                  }`}
-                >
-                  <div className="flex items-start gap-3 sm:gap-4">
-                    <div className={`p-2 sm:p-3 rounded-lg sm:rounded-xl transition-colors ${isActive ? colors.bg : 'bg-gray-100'}`}>
-                      <div className={`transition-colors ${isActive ? colors.text : 'text-gray-400'} [&>svg]:w-6 [&>svg]:h-6 sm:[&>svg]:w-8 sm:[&>svg]:h-8`}>
-                        {value.icon}
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className={`font-bold text-base sm:text-lg mb-1 transition-colors ${isActive ? 'text-gray-900' : 'text-gray-700'}`}>
-                        {value.title}
-                      </h3>
-                      <p className={`text-xs sm:text-sm transition-all duration-500 ${isActive ? 'text-gray-600 max-h-20 opacity-100' : 'text-gray-500 max-h-0 opacity-0 overflow-hidden'}`}>
-                        {value.description}
-                      </p>
-                    </div>
-                    <div className={`w-2 h-2 rounded-full flex-shrink-0 transition-all ${isActive ? `${colors.text} scale-100` : 'bg-gray-300 scale-75'}`} style={{ backgroundColor: isActive ? 'currentColor' : undefined }} />
-                  </div>
-                </button>
-              )
-            })}
           </div>
 
-          {/* Right - Visual Card */}
-          <div className={`relative transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
-            <div className="relative aspect-square max-w-lg mx-auto">
-              {/* Background Glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 via-blue-900/5 to-transparent rounded-[3rem] blur-3xl" />
-              
-              {/* Main Card */}
-              <div className="relative h-full bg-white rounded-[3rem] border-2 border-gray-100 shadow-2xl p-8 lg:p-12 overflow-hidden">
-                {/* UK Flag Colors Background */}
-                <div className="absolute -right-20 -top-20 w-80 h-80 bg-gradient-to-br from-red-600/10 to-blue-900/10 rounded-full blur-3xl" />
-                <div className="absolute -left-10 -bottom-10 text-[16rem] font-black text-gray-900/5 select-none leading-none">UK</div>
-                
-                {/* Content */}
-                <div className="relative h-full flex flex-col justify-between">
-                  <div>
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600/10 to-blue-900/10 rounded-2xl mb-6 border border-red-600/20">
-                      <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
-                      </svg>
-                      <span className="text-gray-900 text-xs font-bold uppercase tracking-wide">Misiunea noastră</span>
-                    </div>
-                    
-                    <h3 className="text-2xl lg:text-4xl font-black text-gray-900 mb-4 leading-tight">
-                      Vorbește engleza
-                      <span className="block text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-blue-900">
-                        ca un nativ
-                      </span>
-                    </h3>
-                    
-                    <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
-                      Credem că oricine poate învăța să vorbească engleza fluent. 
-                      Metoda noastră intensivă și interactivă te face să comunici natural 
-                      și cu încredere în orice situație.
-                    </p>
-                  </div>
+          {/* Heading */}
+          <h2 style={{
+            margin: '0 0 24px',
+            fontSize: 'clamp(28px, 3.5vw, 48px)',
+            fontWeight: 900,
+            lineHeight: 1.13,
+            letterSpacing: '-0.025em',
+            color: '#1a1a2e',
+          }}>
+            Mai mult decât o școală de engleză,{' '}
+            <span style={{
+              background: 'linear-gradient(120deg, #012169 0%, #1e3a8a 45%, #C8102E 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}>o comunitate care inspiră.</span>
+          </h2>
 
-                  {/* Achievement Badges */}
-                  <div className="grid grid-cols-2 gap-3 mt-8">
-                    <div className="p-4 bg-red-50 rounded-2xl border border-red-100">
-                      <div className="text-3xl font-black text-red-600 mb-1">500+</div>
-                      <div className="text-xs text-gray-600 font-medium">Studenți activi</div>
-                    </div>
-                    <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
-                      <div className="text-3xl font-black text-blue-900 mb-1">98%</div>
-                      <div className="text-xs text-gray-600 font-medium">Rată succes</div>
-                    </div>
-                  </div>
+          {/* Subtitle */}
+          <p style={{
+            margin: '0 0 40px',
+            fontSize: 16.5,
+            color: '#6B7280',
+            lineHeight: 1.75,
+            maxWidth: 480,
+          }}>
+            La Fast English, credem că fiecare persoană poate vorbi engleza cu
+            încredere. Misiunea noastră este să oferim lecții interactive, într-un
+            mediu prietenos, unde învățarea devine plăcere.
+          </p>
 
-                  {/* Features */}
-                  <div className="flex flex-wrap gap-2 mt-6">
-                    <div className="px-3 py-2 bg-gradient-to-r from-red-600 to-red-500 rounded-xl text-white text-xs font-bold shadow-lg">
-                      🇬🇧 Nativi UK/US
-                    </div>
-                    <div className="px-3 py-2 bg-gray-900 rounded-xl text-white text-xs font-bold">
-                      💬 Conversații live
-                    </div>
-                    <div className="px-3 py-2 bg-gradient-to-r from-blue-900 to-blue-800 rounded-xl text-white text-xs font-bold shadow-lg">
-                      📈 Progres rapid
-                    </div>
+          {/* Feature list */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24, marginBottom: 44 }}>
+            {FEATURES.map((f, i) => (
+              <div
+                key={i}
+                style={{
+                  display: 'flex', alignItems: 'flex-start', gap: 16,
+                  opacity: visible ? 1 : 0,
+                  transform: visible ? 'translateX(0)' : 'translateX(-20px)',
+                  transition: `opacity 0.6s ease ${0.15 + i * 0.12}s, transform 0.6s ease ${0.15 + i * 0.12}s`,
+                }}
+              >
+                {/* Icon bubble */}
+                <div style={{
+                  width: 46, height: 46, borderRadius: 13, flexShrink: 0,
+                  background: 'rgba(200,16,46,0.08)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#C8102E',
+                }}>
+                  {f.icon}
+                </div>
+                <div>
+                  <div style={{ fontSize: 15.5, fontWeight: 700, color: '#1a1a2e', marginBottom: 3 }}>
+                    {f.title}
+                  </div>
+                  <div style={{ fontSize: 14, color: '#6B7280', lineHeight: 1.6 }}>
+                    {f.desc}
                   </div>
                 </div>
+              </div>
+            ))}
+          </div>
 
-                {/* Decorative UK Elements */}
-                <div className="absolute top-6 right-6 w-16 h-16 border-2 border-red-600/20 rounded-full flex items-center justify-center">
-                  <div className="w-8 h-8 bg-gradient-to-br from-red-600 to-blue-900 rounded-full" />
+          {/* CTA */}
+          <button
+            onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+            className="about-cta"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 10,
+              padding: '13px 30px', borderRadius: 9999,
+              background: '#C8102E', color: '#ffffff',
+              fontWeight: 700, fontSize: 15,
+              border: 'none', cursor: 'pointer',
+              boxShadow: '0 6px 20px rgba(200,16,46,0.30)',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 10px 28px rgba(200,16,46,0.38)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(200,16,46,0.30)' }}
+          >
+            Află mai multe despre noi
+            <IconArrow />
+          </button>
+        </div>
+
+        {/* ── RIGHT: Image composition ── */}
+        <div
+          className="about-visual"
+          style={{
+            position: 'relative',
+            width: '100%',
+            maxWidth: aboutCols === 1 ? (statCols === 1 ? 340 : 420) : 'none',
+            margin: aboutCols === 1 ? '0 auto' : 0,
+            opacity: visible ? 1 : 0,
+            transform: visible ? 'scale(1)' : 'scale(0.96)',
+            transition: 'opacity 0.9s ease 0.1s, transform 0.9s ease 0.1s',
+          }}
+        >
+
+          {/* Decorative dots grid */}
+          <div style={{
+            position: 'absolute', top: -24, right: -16, width: 120, height: 120,
+            backgroundImage: 'radial-gradient(circle, #C8102E22 1.5px, transparent 1.5px)',
+            backgroundSize: '14px 14px',
+            zIndex: 0,
+          }} />
+          <div style={{
+            position: 'absolute', bottom: 20, left: -20, width: 80, height: 80,
+            backgroundImage: 'radial-gradient(circle, #01216922 1.5px, transparent 1.5px)',
+            backgroundSize: '12px 12px',
+            zIndex: 0,
+          }} />
+
+          {/* Soft glow behind blob */}
+          <div style={{
+            position: 'absolute', top: '10%', left: '10%',
+            width: '80%', height: '80%',
+            background: 'radial-gradient(ellipse, rgba(200,16,46,0.10) 0%, rgba(1,33,105,0.06) 60%, transparent 80%)',
+            filter: 'blur(40px)',
+            zIndex: 0,
+          }} />
+
+          {/* Blob image frame */}
+          <div style={{
+            position: 'relative',
+            zIndex: 1,
+            clipPath: BLOB_CLIP,
+            borderRadius: 40,
+            overflow: 'hidden',
+            aspectRatio: '1 / 1',
+            width: '100%',
+            boxShadow: '0 32px 80px rgba(1,33,105,0.14)',
+          }}>
+            <Image
+              src="https://images.unsplash.com/photo-1529390079861-591de354faf5?w=900&h=900&fit=crop&q=85"
+              alt="Elevi Fast English la curs"
+              fill
+              style={{ objectFit: 'cover', objectPosition: 'center top' }}
+              priority
+            />
+            {/* Subtle warm overlay */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(160deg, rgba(255,220,120,0.06) 0%, rgba(200,16,46,0.04) 100%)',
+            }} />
+          </div>
+
+          {/* Floating badge — bottom-left of blob */}
+          <div
+            className="about-badge"
+            style={{
+            position: 'absolute',
+            bottom: '10%', left: '-4%',
+            zIndex: 10,
+            width: 110, height: 110,
+            borderRadius: '50%',
+            background: '#012169',
+            boxShadow: '0 12px 36px rgba(1,33,105,0.30)',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: 6,
+          }}>
+            <IconHeart />
+            <span style={{
+              fontSize: 11, fontWeight: 700, color: '#ffffff',
+              textAlign: 'center', lineHeight: 1.35,
+              padding: '0 10px',
+            }}>
+              Învățăm<br />împreună.<br />Reușim împreună.
+            </span>
+          </div>
+
+          {/* Small red arc accent */}
+          <div style={{
+            position: 'absolute', top: '6%', right: '-6%', zIndex: 0,
+            width: 70, height: 70,
+            borderRadius: '50%',
+            border: '3px solid #C8102E33',
+          }} />
+          <div style={{
+            position: 'absolute', top: '12%', right: '-2%', zIndex: 0,
+            width: 36, height: 36,
+            borderRadius: '50%',
+            background: 'rgba(200,16,46,0.10)',
+          }} />
+        </div>
+      </div>
+
+      {/* ══════════ STATS BAR ══════════ */}
+      <div ref={statsRef} style={{ background: '#ffffff', borderTop: '1px solid #E8E0D5', marginTop: 48 }}>
+        <div style={{
+          maxWidth: 1280, margin: '0 auto',
+          display: 'grid',
+          gridTemplateColumns: `repeat(${statCols}, 1fr)`,
+          gap: statCols === 1 ? 14 : 0,
+          padding: statCols === 1 ? '40px 20px 44px' : '52px 64px',
+        }} className="stats-grid">
+          {STATS.map((s, i) => (
+            <div
+              key={i}
+              className="stat-item"
+              style={{
+                display: 'flex', alignItems: 'center',
+                gap: 18,
+                justifyContent: statCols === 1 ? 'center' : 'flex-start',
+                background: statCols === 1 ? '#FFFBF5' : 'transparent',
+                border: statCols === 1 ? '1px solid #E8E0D5' : 'none',
+                borderRadius: statCols === 1 ? 16 : 0,
+                padding: statCols === 1 ? '20px' : 0,
+                opacity: statsVisible ? 1 : 0,
+                transform: statsVisible ? 'translateY(0)' : 'translateY(20px)',
+                transition: `opacity 0.6s ease ${i * 0.1}s, transform 0.6s ease ${i * 0.1}s`,
+              }}
+            >
+              {/* Icon pill */}
+              <div className="stat-icon" style={{
+                width: 56, height: 56, borderRadius: 16, flexShrink: 0,
+                background: i % 2 === 0 ? 'rgba(200,16,46,0.08)' : 'rgba(1,33,105,0.07)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: i % 2 === 0 ? '#C8102E' : '#012169',
+              }}>
+                {s.icon}
+              </div>
+
+              <div>
+                <div className="stat-value" style={{
+                  fontSize: 28, fontWeight: 900, lineHeight: 1,
+                  color: i % 2 === 0 ? '#C8102E' : '#012169',
+                  marginBottom: 4,
+                }}>
+                  {statsVisible ? <Counter target={s.value} suffix={s.value.replace(/[0-9]/g, '')} /> : '0'}
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e', marginBottom: 2 }}>
+                  {s.label}
+                </div>
+                <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.4 }}>
+                  {s.sub}
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Bottom CTA */}
-        <div className={`mt-16 lg:mt-24 text-center transition-all duration-700 delay-600 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="inline-flex flex-col lg:flex-row items-center gap-6 p-8 bg-gradient-to-r from-red-50 via-white to-blue-50 rounded-3xl border-2 border-red-100 shadow-2xl max-w-4xl mx-auto">
-            <div className="flex -space-x-4">
-              {[0, 1, 2, 3, 4].map((i) => (
-                <div key={i} className="w-14 h-14 rounded-full bg-gradient-to-br from-red-600 to-blue-900 border-3 border-white flex items-center justify-center shadow-lg">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-              ))}
-            </div>
-            <div className="flex-1 text-center lg:text-left">
-              <p className="text-gray-900 font-black text-xl mb-1">Alătură-te celor 500+ cursanți</p>
-              <p className="text-gray-600 text-sm">care au ales Fast English pentru a învăța engleza rapid și eficient</p>
-            </div>
-            <a 
-              href="#cursuri"
-              className="group px-8 py-4 bg-gradient-to-r from-red-600 to-red-500 rounded-2xl text-white font-bold text-lg hover:shadow-xl hover:shadow-red-500/40 transition-all hover:scale-105 flex items-center gap-3"
-            >
-              <span>Începe acum</span>
-              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </a>
-          </div>
+          ))}
         </div>
       </div>
 
+      {/* ── Responsive styles ── */}
       <style jsx>{`
-        @keyframes gradient {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
+        .about-grid {
+          grid-template-columns: 1fr 1fr;
         }
-        .animate-gradient {
-          background-size: 200% auto;
-          animation: gradient 3s ease infinite;
+        .stats-grid {
+          grid-template-columns: repeat(4, 1fr);
+          padding: 52px 64px;
+        }
+
+        /* Tablet */
+        @media (max-width: 1024px) {
+          .about-grid {
+            gap: 48px !important;
+            padding: 76px 32px 60px !important;
+          }
+          .stats-grid {
+            padding: 48px 32px !important;
+          }
+        }
+
+        /* Stack: image below text */
+        @media (max-width: 900px) {
+          .about-grid {
+            grid-template-columns: 1fr !important;
+            gap: 44px !important;
+            padding: 64px 24px 52px !important;
+          }
+          .about-visual {
+            max-width: 420px;
+            width: 100%;
+            margin: 0 auto;
+          }
+          .stats-grid {
+            padding: 44px 32px !important;
+            gap: 30px 24px !important;
+          }
+        }
+
+        /* Mobile */
+        @media (max-width: 600px) {
+          .about-grid {
+            gap: 40px !important;
+            padding: 48px 20px 40px !important;
+          }
+          .about-cta {
+            width: 100% !important;
+            justify-content: center !important;
+          }
+          .about-visual {
+            max-width: 340px;
+          }
+          .about-badge {
+            width: 92px !important;
+            height: 92px !important;
+          }
+          .stats-grid {
+            padding: 56px 20px 44px !important;
+            gap: 14px !important;
+          }
+        }
+
+        /* Small phones */
+        @media (max-width: 380px) {
+          .about-visual {
+            max-width: 280px;
+          }
+          .about-badge {
+            width: 78px !important;
+            height: 78px !important;
+          }
+          .stats-grid {
+            padding: 48px 14px 38px !important;
+            gap: 12px !important;
+          }
+          .stat-icon {
+            width: 48px !important;
+            height: 48px !important;
+          }
+          .stat-value {
+            font-size: 25px !important;
+          }
         }
       `}</style>
     </section>

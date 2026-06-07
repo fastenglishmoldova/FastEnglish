@@ -2,363 +2,503 @@
 
 import { useState, useRef, useEffect } from 'react'
 
+/* ─── Icons ─────────────────────────────────────────────────── */
+const IcoPin = () => (
+  <svg width="20" height="20" fill="none" stroke="#C8102E" strokeWidth="1.8" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+  </svg>
+)
+const IcoPhone = () => (
+  <svg width="20" height="20" fill="none" stroke="#C8102E" strokeWidth="1.8" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+  </svg>
+)
+const IcoMail = () => (
+  <svg width="20" height="20" fill="none" stroke="#C8102E" strokeWidth="1.8" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+  </svg>
+)
+const IcoClock = () => (
+  <svg width="20" height="20" fill="none" stroke="#C8102E" strokeWidth="1.8" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="10"/>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2"/>
+  </svg>
+)
+const IcoSend = () => (
+  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+  </svg>
+)
+const IcoArrow = () => (
+  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+  </svg>
+)
+const IcoMap = () => (
+  <svg width="16" height="16" fill="none" stroke="#C8102E" strokeWidth="2" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+  </svg>
+)
+
+/* ─── Big Ben + Bus SVG ──────────────────────────────────────── */
+const BigBenSVG = ({ opacity = 0.09, scale = 1 }) => (
+  <svg
+    width={220 * scale} height={420 * scale}
+    viewBox="0 0 220 420"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    {/* Tower base */}
+    <rect x="75" y="290" width="70" height="130" rx="2" stroke="#012169" strokeWidth="1.5" opacity={opacity}/>
+    {/* Tower mid sections */}
+    <rect x="80" y="255" width="60" height="38" rx="1" stroke="#012169" strokeWidth="1.5" opacity={opacity}/>
+    <rect x="82" y="218" width="56" height="40" rx="1" stroke="#012169" strokeWidth="1.5" opacity={opacity}/>
+    <rect x="85" y="182" width="50" height="38" rx="1" stroke="#012169" strokeWidth="1.5" opacity={opacity}/>
+    {/* Clock section */}
+    <rect x="78" y="135" width="64" height="50" rx="2" stroke="#012169" strokeWidth="1.8" opacity={opacity}/>
+    <circle cx="110" cy="160" r="20" stroke="#012169" strokeWidth="1.8" opacity={opacity}/>
+    <line x1="110" y1="145" x2="110" y2="160" stroke="#012169" strokeWidth="1.5" opacity={opacity}/>
+    <line x1="110" y1="160" x2="122" y2="160" stroke="#012169" strokeWidth="1.5" opacity={opacity}/>
+    {/* Ornamental top */}
+    <rect x="80" y="98" width="60" height="40" rx="2" stroke="#012169" strokeWidth="1.5" opacity={opacity}/>
+    <rect x="88" y="72" width="44" height="28" rx="2" stroke="#012169" strokeWidth="1.5" opacity={opacity}/>
+    {/* Spire */}
+    <polygon points="110,12 88,72 132,72" stroke="#012169" strokeWidth="1.5" fill="none" opacity={opacity}/>
+    <line x1="110" y1="12" x2="110" y2="5" stroke="#012169" strokeWidth="1.5" opacity={opacity}/>
+    {/* Corner details */}
+    <line x1="75" y1="290" x2="55" y2="290" stroke="#012169" strokeWidth="1" opacity={opacity * 0.6}/>
+    <line x1="145" y1="290" x2="165" y2="290" stroke="#012169" strokeWidth="1" opacity={opacity * 0.6}/>
+    <line x1="55" y1="290" x2="55" y2="420" stroke="#012169" strokeWidth="1" opacity={opacity * 0.5}/>
+    <line x1="165" y1="290" x2="165" y2="420" stroke="#012169" strokeWidth="1" opacity={opacity * 0.5}/>
+    {/* Windows on tower */}
+    <rect x="95" y="310" width="12" height="18" rx="6" stroke="#012169" strokeWidth="1" opacity={opacity * 0.7}/>
+    <rect x="113" y="310" width="12" height="18" rx="6" stroke="#012169" strokeWidth="1" opacity={opacity * 0.7}/>
+    <rect x="95" y="340" width="12" height="18" rx="6" stroke="#012169" strokeWidth="1" opacity={opacity * 0.7}/>
+    <rect x="113" y="340" width="12" height="18" rx="6" stroke="#012169" strokeWidth="1" opacity={opacity * 0.7}/>
+    {/* Red double-decker bus */}
+    <rect x="20" y="365" width="85" height="42" rx="5" fill="#C8102E" opacity="0.13"/>
+    <rect x="20" y="365" width="85" height="42" rx="5" stroke="#C8102E" strokeWidth="1.5" opacity="0.25"/>
+    {/* Bus windows upper deck */}
+    <rect x="27" y="370" width="14" height="10" rx="2" stroke="#C8102E" strokeWidth="1" opacity="0.3"/>
+    <rect x="45" y="370" width="14" height="10" rx="2" stroke="#C8102E" strokeWidth="1" opacity="0.3"/>
+    <rect x="63" y="370" width="14" height="10" rx="2" stroke="#C8102E" strokeWidth="1" opacity="0.3"/>
+    <rect x="81" y="370" width="16" height="10" rx="2" stroke="#C8102E" strokeWidth="1" opacity="0.3"/>
+    {/* Bus wheels */}
+    <circle cx="38" cy="407" r="7" stroke="#C8102E" strokeWidth="1.5" opacity="0.25"/>
+    <circle cx="88" cy="407" r="7" stroke="#C8102E" strokeWidth="1.5" opacity="0.25"/>
+  </svg>
+)
+
+/* ─── Filiale ───────────────────────────────────────────────── */
+const BRANCHES = [
+  {
+    id: 'centru',
+    name: 'Centru',
+    address: 'Bd. Ștefan cel Mare 123',
+    mapSrc: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5682.9!2d28.8322701!3d47.0245117!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40c97c3628b769a1%3A0x37d1d6305749dd5b!2sCentru%2C%20Chi%C8%99in%C4%83u!5e0!3m2!1sro!2s!4v1718100000001!5m2!1sro!2s',
+  },
+  {
+    id: 'ciocana',
+    name: 'Ciocana',
+    address: 'Str. Petricani 25',
+    mapSrc: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5682.9!2d28.8892!3d47.0467!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40c97dbf67a28b59%3A0x6bb2b7fba5a7bc24!2sCiocana%2C%20Chi%C8%99in%C4%83u!5e0!3m2!1sro!2s!4v1718100000002!5m2!1sro!2s',
+  },
+  {
+    id: 'botanica',
+    name: 'Botanica',
+    address: 'Bd. Dacia 35',
+    mapSrc: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5682.9!2d28.8419!3d47.0054!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40c97c23a12d1123%3A0xb8a527f4c1c9d3c8!2sBotanica%2C%20Chi%C8%99in%C4%83u!5e0!3m2!1sro!2s!4v1718100000003!5m2!1sro!2s',
+  },
+]
+
+/* ─── Google Maps embed ──────────────────────────────────────── */
+const MiniMap = ({ src }) => (
+  <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
+    <iframe
+      title="Fast English - Locație Chișinău"
+      src={src}
+      width="100%"
+      height="100%"
+      style={{ border: 0, display: 'block' }}
+      allowFullScreen=""
+      loading="lazy"
+      referrerPolicy="no-referrer-when-downgrade"
+    />
+  </div>
+)
+
+/* ─── Info item ─────────────────────────────────────────────── */
+function InfoItem({ icon, label, lines }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+      <div style={{
+        width: 42, height: 42, borderRadius: 12, flexShrink: 0,
+        background: 'rgba(200,16,46,0.08)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {icon}
+      </div>
+      <div>
+        <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e', marginBottom: 2 }}>{label}</div>
+        {lines.map((l, i) => (
+          <div key={i} style={{ fontSize: 13.5, color: '#6B7280', lineHeight: 1.6 }}>{l}</div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ─── Input style ───────────────────────────────────────────── */
+const inputStyle = {
+  width: '100%', boxSizing: 'border-box',
+  padding: '12px 16px',
+  border: '1.5px solid #E8E0D5',
+  borderRadius: 12,
+  fontSize: 14, color: '#1a1a2e',
+  background: '#FAFAF9',
+  outline: 'none',
+  fontFamily: 'inherit',
+  transition: 'border-color 0.2s',
+}
+
+/* ─── Main component ─────────────────────────────────────────── */
 export default function ContactSection() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    message: ''
-  })
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState('')
-  const [selectedLocation, setSelectedLocation] = useState(0)
-  const [isVisible, setIsVisible] = useState(false)
+  const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' })
+  const [loading, setLoading]   = useState(false)
+  const [success, setSuccess]   = useState(false)
+  const [error, setError]       = useState('')
+  const [visible, setVisible]   = useState(false)
+  const [focused, setFocused]   = useState('')
+  const [selectedBranch, setSelectedBranch] = useState('centru')
   const sectionRef = useRef(null)
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setIsVisible(true)
-      },
-      { threshold: 0.1 }
-    )
-    if (sectionRef.current) observer.observe(sectionRef.current)
-    return () => observer.disconnect()
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true) }, { threshold: 0.08 })
+    if (sectionRef.current) io.observe(sectionRef.current)
+    return () => io.disconnect()
   }, [])
+
+  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
-    setError('')
-
+    setLoading(true); setError('')
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ name: form.name, email: form.email, phone: form.phone, message: `Subiect: ${form.subject}\n\n${form.message}` }),
       })
-
-      if (res.ok) {
-        setSuccess(true)
-        setFormData({ name: '', email: '', phone: '', message: '' })
-      } else {
-        const data = await res.json()
-        setError(data.error || 'A apărut o eroare. Vă rugăm încercați din nou.')
-      }
-    } catch (err) {
-      setError('A apărut o eroare. Vă rugăm încercați din nou.')
-    } finally {
-      setLoading(false)
-    }
+      if (res.ok) { setSuccess(true); setForm({ name: '', email: '', phone: '', subject: '', message: '' }) }
+      else { const d = await res.json(); setError(d.error || 'A apărut o eroare.') }
+    } catch { setError('A apărut o eroare. Încearcă din nou.') }
+    finally { setLoading(false) }
   }
 
-  const locations = [
-    {
-      city: 'Chișinău',
-      branches: [
-        { name: 'Centru', address: 'Nicolae Iorga 22', mapQuery: 'Nicolae+Iorga+22,+Chisinau,+Moldova' },
-        { name: 'Botanica', address: 'Decebal 23/2', mapQuery: 'Decebal+23/2,+Chisinau,+Moldova' },
-        { name: 'Ciocana', address: 'Mircea cel Bătrân 34/6', mapQuery: 'Mircea+cel+Batran+34/6,+Chisinau,+Moldova' },
-        { name: 'Buiucani', address: 'Alba Iulia 89', mapQuery: 'Alba+Iulia+89,+Chisinau,+Moldova' },
-        { name: 'Sculeanca', address: 'Calea Ieșilor 16/4', mapQuery: 'Calea+Iesilor+16/4,+Chisinau,+Moldova' },
-        { name: 'Râșcani', address: 'Studenților 10/3', mapQuery: 'Studentilor+10/3,+Chisinau,+Moldova' },
-      ]
-    },
-    {
-      city: 'Măgdăcești',
-      branches: [
-        { name: 'Centru', address: 'Str. Petre Magciu 10', mapQuery: '47.145099,28.830158' },
-      ]
-    }
-  ]
-
-  const allBranches = locations.flatMap((loc, cityIndex) => 
-    loc.branches.map((branch, branchIndex) => ({
-      ...branch,
-      city: loc.city,
-      index: cityIndex * 10 + branchIndex
-    }))
-  )
-
-  const currentBranch = allBranches[selectedLocation] || allBranches[0]
+  const focusStyle = (field) => focused === field ? { ...inputStyle, borderColor: '#C8102E', background: '#fff' } : inputStyle
 
   return (
-    <section id="contact" ref={sectionRef} className="relative py-24 lg:py-32 overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-[#FFFBF5]">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-500/10 via-transparent to-transparent" />
+    <section id="contact" ref={sectionRef} style={{ background: '#FFFBF5', position: 'relative', overflow: 'hidden' }}>
+
+      {/* ── Dot grid top-left ── */}
+      <div style={{
+        position: 'absolute', left: 40, top: 40,
+        backgroundImage: 'radial-gradient(circle, #C8102E22 1.5px, transparent 1.5px)',
+        backgroundSize: '16px 16px',
+        width: 100, height: 90, opacity: 0.6, pointerEvents: 'none', zIndex: 0,
+      }} />
+
+      {/* ── Big Ben decorative background ── */}
+      <div style={{
+        position: 'absolute', left: -20, bottom: 0, zIndex: 0, pointerEvents: 'none',
+      }}>
+        <BigBenSVG opacity={0.09} scale={1.1} />
       </div>
 
-      {/* Decorative Elements */}
-      <div className="absolute top-20 right-0 w-96 h-96 bg-red-500/5 rounded-full blur-[150px]" />
-      <div className="absolute bottom-20 left-0 w-72 h-72 bg-blue-800/5 rounded-full blur-[100px]" />
+      {/* ══════════ MAIN CONTENT ══════════ */}
+      <div style={{
+        maxWidth: 1280, margin: '0 auto', padding: '88px 64px 80px',
+        display: 'grid', gridTemplateColumns: '1fr 1.1fr',
+        gap: 64, alignItems: 'start', position: 'relative', zIndex: 1,
+      }} className="contact-grid">
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className={`text-center mb-16 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-full mb-6">
-            <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span className="text-gray-600 text-sm">Contact & Locații</span>
-          </div>
-          
-          <h2 className="text-4xl lg:text-6xl font-black text-gray-900 mb-6">
-            Găsește-ne{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-blue-900">
-              aproape de tine
+        {/* ── LEFT: Info ── */}
+        <div style={{
+          opacity: visible ? 1 : 0,
+          transform: visible ? 'translateY(0)' : 'translateY(28px)',
+          transition: 'opacity 0.7s ease, transform 0.7s ease',
+        }}>
+          {/* Badge */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
+            <div style={{ width: 32, height: 2.5, background: '#C8102E', borderRadius: 99 }} />
+            <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#C8102E' }}>
+              Contact
             </span>
+          </div>
+
+          {/* Heading */}
+          <h2 style={{
+            margin: '0 0 20px',
+            fontSize: 'clamp(28px, 3.2vw, 44px)',
+            fontWeight: 900, letterSpacing: '-0.025em', lineHeight: 1.15,
+            color: '#1a1a2e',
+          }}>
+            Hai să vorbim!<br />
+            Suntem aici{' '}
+            <span style={{
+              background: 'linear-gradient(120deg, #012169 0%, #1e3a8a 45%, #C8102E 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}>să te ajutăm.</span>
           </h2>
-          
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Locații în Chișinău și Măgdăcești. Alege cea mai convenabilă pentru tine!
+
+          {/* Subtitle */}
+          <p style={{ margin: '0 0 40px', fontSize: 16, color: '#6B7280', lineHeight: 1.75, maxWidth: 420 }}>
+            Ai o întrebare, vrei mai multe informații sau ești gata să începi
+            călătoria în limba engleză? Completează formularul și îți răspundem
+            cât mai rapid.
           </p>
+
+          {/* Info list */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+            <InfoItem icon={<IcoPin />}   label="Adresă"  lines={['Chișinău, Moldova']} />
+            <InfoItem icon={<IcoPhone />} label="Telefon" lines={['060 331 177']} />
+            <InfoItem icon={<IcoMail />}  label="Email"   lines={['fast.english.moldova@gmail.com']} />
+            <InfoItem icon={<IcoClock />} label="Program" lines={['Luni – Vineri: 09:00 – 19:00', 'Sâmbătă: 10:00 – 14:00']} />
+          </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Left - Locations & Map */}
-          <div className={`space-y-6 transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}`}>
-            {/* Location Selector */}
-            <div className="bg-white backdrop-blur-sm rounded-3xl border border-gray-200 shadow-lg p-6">
-              <h3 className="text-gray-900 font-bold text-lg mb-4 flex items-center gap-2">
-                <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-                Locațiile noastre
-              </h3>
+        {/* ── RIGHT: Form card ── */}
+        <div style={{
+          background: '#ffffff',
+          border: '1.5px solid #E8E0D5',
+          borderRadius: 24,
+          padding: '36px 36px 32px',
+          boxShadow: '0 12px 48px rgba(1,33,105,0.08)',
+          opacity: visible ? 1 : 0,
+          transform: visible ? 'translateY(0)' : 'translateY(28px)',
+          transition: 'opacity 0.7s ease 0.12s, transform 0.7s ease 0.12s',
+        }}>
+          {/* Card header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28 }}>
+            <div style={{
+              width: 54, height: 54, borderRadius: '50%',
+              background: 'rgba(200,16,46,0.09)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#C8102E', flexShrink: 0,
+            }}>
+              <IcoSend />
+            </div>
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: '#1a1a2e', marginBottom: 2 }}>
+                Trimite-ne un mesaj
+              </div>
+              <div style={{ fontSize: 13.5, color: '#6B7280' }}>
+                Îți vom răspunde în cel mai scurt timp.
+              </div>
+            </div>
+          </div>
 
-              {locations.map((location, cityIndex) => (
-                <div key={location.city} className="mb-4 last:mb-0">
-                  <p className="text-red-500 text-sm font-semibold mb-2 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-red-500"></span>
-                    {location.city}
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {location.branches.map((branch, branchIndex) => {
-                      const globalIndex = allBranches.findIndex(
-                        b => b.city === location.city && b.name === branch.name
-                      )
-                      return (
-                        <button
-                          key={branch.name}
-                          onClick={() => setSelectedLocation(globalIndex)}
-                          className={`p-3 rounded-xl text-left transition-all duration-300 ${
-                            selectedLocation === globalIndex
-                              ? 'bg-red-500/20 border-red-500/50 shadow-lg shadow-red-500/10'
-                              : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                          } border`}
-                        >
-                          <p className={`font-medium text-sm ${selectedLocation === globalIndex ? 'text-red-600' : 'text-gray-900'}`}>
-                            {branch.name}
-                          </p>
-                          <p className="text-gray-500 text-xs truncate">{branch.address}</p>
-                        </button>
-                      )
-                    })}
-                  </div>
+          {success ? (
+            <div style={{
+              padding: '32px 24px', textAlign: 'center',
+              background: 'rgba(200,16,46,0.05)', borderRadius: 16,
+              border: '1.5px solid rgba(200,16,46,0.15)',
+            }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>🎉</div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: '#1a1a2e', marginBottom: 6 }}>
+                Mesaj trimis cu succes!
+              </div>
+              <div style={{ fontSize: 14, color: '#6B7280' }}>
+                Îți vom răspunde în cel mai scurt timp. Mulțumim!
+              </div>
+              <button
+                onClick={() => setSuccess(false)}
+                style={{ marginTop: 20, fontSize: 13, color: '#C8102E', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
+              >
+                Trimite alt mesaj
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit}>
+              {/* Row 1 */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                <input
+                  type="text" placeholder="Nume complet" required
+                  value={form.name} onChange={set('name')}
+                  onFocus={() => setFocused('name')} onBlur={() => setFocused('')}
+                  style={focusStyle('name')}
+                />
+                <input
+                  type="email" placeholder="Email" required
+                  value={form.email} onChange={set('email')}
+                  onFocus={() => setFocused('email')} onBlur={() => setFocused('')}
+                  style={focusStyle('email')}
+                />
+              </div>
+              {/* Row 2 */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                <input
+                  type="tel" placeholder="Telefon"
+                  value={form.phone} onChange={set('phone')}
+                  onFocus={() => setFocused('phone')} onBlur={() => setFocused('')}
+                  style={focusStyle('phone')}
+                />
+                <input
+                  type="text" placeholder="Subiect"
+                  value={form.subject} onChange={set('subject')}
+                  onFocus={() => setFocused('subject')} onBlur={() => setFocused('')}
+                  style={focusStyle('subject')}
+                />
+              </div>
+              {/* Textarea */}
+              <textarea
+                placeholder="Mesajul tău" rows={5} required
+                value={form.message} onChange={set('message')}
+                onFocus={() => setFocused('message')} onBlur={() => setFocused('')}
+                style={{ ...focusStyle('message'), resize: 'vertical', marginBottom: 16 }}
+              />
+
+              {error && (
+                <div style={{ marginBottom: 12, padding: '10px 14px', borderRadius: 10, background: 'rgba(200,16,46,0.07)', color: '#C8102E', fontSize: 13.5, fontWeight: 500 }}>
+                  {error}
                 </div>
+              )}
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  width: '100%', padding: '14px 0',
+                  background: loading ? '#9E0A23' : 'linear-gradient(135deg,#C8102E 0%,#9E0A23 100%)',
+                  color: '#ffffff', fontWeight: 700, fontSize: 15.5,
+                  border: 'none', borderRadius: 12, cursor: loading ? 'wait' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                  boxShadow: '0 6px 20px rgba(200,16,46,0.28)',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                }}
+                onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 10px 28px rgba(200,16,46,0.38)' } }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(200,16,46,0.28)' }}
+              >
+                {loading ? 'Se trimite…' : 'Trimite mesajul'}
+                {!loading && <IcoArrow />}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+
+      {/* ══════════ LOCATION CARD ══════════ */}
+      <div style={{
+        maxWidth: 1280, margin: '0 auto', padding: '0 64px 88px',
+        position: 'relative', zIndex: 1,
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(24px)',
+        transition: 'opacity 0.7s ease 0.25s, transform 0.7s ease 0.25s',
+      }}>
+        <div style={{
+          background: '#ffffff',
+          border: '1.5px solid #E8E0D5',
+          borderRadius: 24,
+          overflow: 'hidden',
+          boxShadow: '0 8px 32px rgba(1,33,105,0.07)',
+          display: 'grid', gridTemplateColumns: '280px 1fr',
+        }} className="location-card">
+
+          {/* Left: branch selector */}
+          <div style={{
+            padding: '36px 28px',
+            borderRight: '1.5px solid #E8E0D5',
+            display: 'flex', flexDirection: 'column',
+          }}>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#1a1a2e', marginBottom: 16 }}>
+              Filialele noastre
+            </div>
+
+            {/* Branch tabs */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 24 }}>
+              {BRANCHES.map(b => (
+                <button
+                  key={b.id}
+                  onClick={() => setSelectedBranch(b.id)}
+                  style={{
+                    display: 'flex', alignItems: 'flex-start', gap: 10,
+                    padding: '10px 14px', borderRadius: 12, border: 'none', cursor: 'pointer',
+                    textAlign: 'left', width: '100%',
+                    background: selectedBranch === b.id ? 'rgba(200,16,46,0.08)' : 'transparent',
+                    transition: 'background 0.18s',
+                  }}
+                >
+                  <div style={{
+                    width: 8, height: 8, borderRadius: '50%', marginTop: 5, flexShrink: 0,
+                    background: selectedBranch === b.id ? '#C8102E' : '#D1D5DB',
+                    transition: 'background 0.18s',
+                  }} />
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: selectedBranch === b.id ? '#C8102E' : '#1a1a2e' }}>
+                      {b.name}
+                    </div>
+                    <div style={{ fontSize: 12, color: '#9CA3AF', marginTop: 2 }}>
+                      {b.address}
+                    </div>
+                  </div>
+                </button>
               ))}
             </div>
 
-            {/* Google Maps Embed */}
-            <div className="relative rounded-3xl overflow-hidden border border-gray-200 shadow-lg aspect-[4/3]">
-              <iframe
-                src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${currentBranch.mapQuery}&zoom=16`}
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen=""
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="absolute inset-0"
-              />
-              {/* Map Overlay with Address - pointer-events-none allows clicking through */}
-              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-white font-semibold">{currentBranch.city} - {currentBranch.name}</p>
-                    <p className="text-gray-400 text-sm">{currentBranch.address}</p>
-                  </div>
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${currentBranch.mapQuery}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-xl transition-colors flex items-center gap-2 pointer-events-auto"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    Deschide în Maps
-                  </a>
-                </div>
-              </div>
-            </div>
+            {/* Open in Maps */}
+            <button
+              onClick={() => {
+                const b = BRANCHES.find(x => x.id === selectedBranch)
+                window.open(`https://maps.google.com/?q=${encodeURIComponent((b?.address || '') + ', Chișinău, Moldova')}`, '_blank')
+              }}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                fontSize: 13.5, fontWeight: 700, color: '#C8102E',
+                background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+              }}
+              onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+              onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
+            >
+              <IcoMap />
+              Deschide în Google Maps
+              <IcoArrow />
+            </button>
 
-            {/* Contact Info Row */}
-            <div className="grid grid-cols-2 gap-2 sm:gap-4">
-              <a 
-                href="tel:+373060331177"
-                className="p-3 sm:p-4 bg-white hover:bg-gray-50 rounded-xl sm:rounded-2xl border border-gray-200 hover:border-red-500/30 transition-all group shadow-sm"
-              >
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-red-500/20 flex items-center justify-center mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                </div>
-                <p className="text-gray-500 text-[10px] sm:text-xs mb-0.5 sm:mb-1">Telefon</p>
-                <p className="text-gray-900 font-semibold text-xs sm:text-base">060 331 177</p>
-              </a>
-              <a 
-                href="mailto:fast.english.moldova@gmail.com"
-                className="p-3 sm:p-4 bg-white hover:bg-gray-50 rounded-xl sm:rounded-2xl border border-gray-200 hover:border-red-500/30 transition-all group overflow-hidden shadow-sm"
-              >
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-red-500/20 flex items-center justify-center mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <p className="text-gray-500 text-[10px] sm:text-xs mb-0.5 sm:mb-1">Email</p>
-                <p className="text-gray-900 font-semibold text-[10px] sm:text-sm truncate">fast.english.moldova@gmail.com</p>
-              </a>
+            {/* Illustration */}
+            <div style={{ marginTop: 'auto', paddingTop: 24, opacity: 0.85 }}>
+              <BigBenSVG opacity={0.18} scale={0.55} />
             </div>
           </div>
 
-          {/* Right - Contact Form */}
-          <div className={`transition-all duration-700 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
-            <div className="bg-white backdrop-blur-sm rounded-3xl border border-gray-200 shadow-lg p-6 lg:p-8">
-              <h3 className="text-gray-900 font-bold text-xl mb-2">Trimite-ne un mesaj</h3>
-              <p className="text-gray-500 text-sm mb-4">Îți vom răspunde în cel mai scurt timp posibil.</p>
-
-              {success ? (
-                <div className="h-full flex flex-col items-center justify-center text-center py-12">
-                  <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mb-6">
-                    <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Mesaj trimis!</h3>
-                  <p className="text-gray-500 mb-6">
-                    Mulțumim pentru mesaj. Te vom contacta în cel mai scurt timp.
-                  </p>
-                  <button
-                    onClick={() => setSuccess(false)}
-                    className="text-red-500 hover:text-red-600 font-medium"
-                  >
-                    Trimite alt mesaj
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Nume complet
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      required
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 transition-colors"
-                      placeholder="Introduceți numele"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        required
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 transition-colors"
-                        placeholder="email@exemplu.md"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Telefon
-                      </label>
-                      <input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 transition-colors"
-                        placeholder="06X XXX XXX"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Mesaj
-                    </label>
-                    <textarea
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      required
-                      rows={3}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 transition-colors resize-none"
-                      placeholder="Scrieți mesajul dvs. aici..."
-                    />
-                  </div>
-
-                  {error && (
-                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
-                      {error}
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-4 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-red-500/25"
-                  >
-                    {loading ? (
-                      <>
-                        <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                        Se trimite...
-                      </>
-                    ) : (
-                      <>
-                        Trimite mesajul
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                      </>
-                    )}
-                  </button>
-                </form>
-              )}
-            </div>
-
-            {/* Social Links */}
-            <div className="mt-6 flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
-              <span className="text-gray-500 text-sm">Urmărește-ne:</span>
-              <div className="flex gap-3">
-                <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className="p-2 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-500 hover:text-gray-900 transition-all">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                  </svg>
-                </a>
-                <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-500 hover:text-gray-900 transition-all">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-                  </svg>
-                </a>
-              </div>
-            </div>
+          {/* Right: map – full height */}
+          <div style={{ minHeight: 340, height: '100%' }}>
+            <MiniMap src={BRANCHES.find(b => b.id === selectedBranch)?.mapSrc} />
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        .contact-grid {
+          grid-template-columns: 1fr 1.1fr;
+        }
+        .location-card {
+          grid-template-columns: 280px 1fr;
+        }
+        @media (max-width: 900px) {
+          .contact-grid {
+            grid-template-columns: 1fr !important;
+            padding: 60px 24px 40px !important;
+            gap: 36px !important;
+          }
+          .location-card {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </section>
   )
 }

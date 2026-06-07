@@ -1,251 +1,286 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
+const HERO_IMAGES = [
+  {
+    src: '/390cf0b4-33db-44f7-b780-d8da1d74f038.png',
+    alt: 'Fast English - Cursuri de engleză',
+  },
+  {
+    src: '/29236329-ddb2-496c-af07-c70e446df044.png',
+    alt: 'Fast English - Elevi la cursuri',
+  },
+]
+
+const MOBILE_IMG = '/bf6d05c3-e4e2-45ee-9aac-840f2090d586.png'
+
 export default function HeroSection() {
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [scrollY, setScrollY] = useState(0)
-  const [currentPhrase, setCurrentPhrase] = useState(0)
-  const heroRef = useRef(null)
+  const [currentImage, setCurrentImage] = useState(0)
+  const [mounted, setMounted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
-  const phrases = [
-    'Learn Fast',
-    'Speak Confident', 
-    'Start Today',
-    'Join Us'
-  ]
+  useEffect(() => { setMounted(true) }, [])
 
-  // Parallax effect on scroll - disabled on mobile for performance
+  // Detect mobile via matchMedia (robust — not dependent on CSS class toggling)
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.innerWidth > 640) {
-        setScrollY(window.scrollY)
-      }
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    const mq = window.matchMedia('(max-width: 640px)')
+    const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
   }, [])
 
-  // Load animation
   useEffect(() => {
-    setIsLoaded(true)
-  }, [])
-
-  // Phrase rotation with fade effect
-  useEffect(() => {
+    if (isMobile) return
     const interval = setInterval(() => {
-      setCurrentPhrase((prev) => (prev + 1) % phrases.length)
-    }, 3500)
+      setCurrentImage((prev) => (prev + 1) % HERO_IMAGES.length)
+    }, 6000)
     return () => clearInterval(interval)
-  }, [phrases.length])
+  }, [isMobile])
 
-  return (
-    <section 
-      ref={heroRef}
-      className="relative min-h-[100svh] flex items-center justify-center overflow-hidden"
-    >
-      {/* Big Ben Background - Full Screen */}
-      <div 
-        className="absolute inset-0 z-0"
+  const goTo = (index) => setCurrentImage(index)
+
+  /* ─── Shared text content (identical copy on both layouts) ─── */
+  const TextBlock = (
+    <div className={`max-w-lg transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+      {/* Tagline */}
+      <div className="flex items-center gap-2 mb-5">
+        <span className="text-[#C8102E] font-bold text-[11px] tracking-[0.3em] uppercase">LEARN</span>
+        <span className="w-1 h-1 rounded-full bg-gray-400" />
+        <span className="text-gray-500 font-bold text-[11px] tracking-[0.3em] uppercase">GROW</span>
+        <span className="w-1 h-1 rounded-full bg-gray-400" />
+        <span className="text-gray-500 font-bold text-[11px] tracking-[0.3em] uppercase">SUCCEED</span>
+      </div>
+
+      {/* Heading */}
+      <h1
+        className="fe-hero-title font-black leading-[1.06] mb-5"
         style={{
-          transform: scrollY > 0 ? `translateY(${scrollY * 0.3}px)` : 'none',
+          backgroundImage: 'linear-gradient(120deg, #012169 0%, #1e3a8a 45%, #C8102E 100%)',
+          WebkitBackgroundClip: 'text',
+          backgroundClip: 'text',
+          color: 'transparent',
+          WebkitTextFillColor: 'transparent',
         }}
       >
+        <span className="block text-4xl sm:text-5xl lg:text-6xl">Învață Engleza.</span>
+        <span className="block text-4xl sm:text-5xl lg:text-6xl">Deschide-ți Lumea.</span>
+        <span className="block text-4xl sm:text-5xl lg:text-6xl">Modelează-ți Viitorul.</span>
+      </h1>
+
+      {/* Accent line */}
+      <div className="w-14 h-[3px] rounded-full mb-6" style={{ background: 'linear-gradient(90deg, #012169, #C8102E)' }} />
+
+      {/* Subtitle */}
+      <p className="fe-hero-sub text-gray-600 text-base sm:text-lg leading-relaxed mb-8 font-light">
+        Lecții interactive, comunicare reală și o comunitate prietenoasă ca să vorbești engleza cu încredere.
+      </p>
+
+      {/* CTA Buttons */}
+      <div className="fe-hero-btns flex flex-col xs:flex-row gap-3 mb-8">
+        <Link
+          href="#cursuri"
+          className="fe-hero-btn px-7 py-3.5 bg-[#C8102E] hover:bg-[#9E0A23] text-white font-bold text-sm tracking-widest uppercase rounded-lg transition-all duration-300 hover:shadow-xl hover:shadow-red-900/40 hover:scale-105 active:scale-95 text-center"
+        >
+          Cursurile Noastre
+        </Link>
+        <Link
+          href="/inscriere"
+          className="fe-hero-btn px-7 py-3.5 bg-transparent border-2 border-[#1a1a2e] hover:bg-[#1a1a2e] text-[#1a1a2e] hover:text-white font-bold text-sm tracking-widest uppercase rounded-lg transition-all duration-300 active:scale-95 text-center"
+        >
+          Înscrie-te Acum
+        </Link>
+      </div>
+
+      {/* Trust badge */}
+      <div className="flex items-center gap-3">
+        <div className="flex-shrink-0 w-9 h-9 rounded-full border-2 border-[#C8102E]/30 flex items-center justify-center bg-[#C8102E]/10">
+          <svg className="w-4 h-4 text-[#C8102E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <div>
+          <p className="text-[#1a1a2e] text-sm font-semibold">De încredere pentru elevi și părinți</p>
+          <p className="text-gray-500 text-xs">Alătură-te comunității noastre de engleză!</p>
+        </div>
+      </div>
+    </div>
+  )
+
+  /* ═══════════════ MOBILE LAYOUT (doar imaginea bf6d05c3) ═══════════════ */
+  if (mounted && isMobile) {
+    return (
+      <section
+        style={{
+          position: 'relative',
+          minHeight: '92svh',
+          display: 'flex',
+          alignItems: 'flex-start',
+          overflow: 'hidden',
+          background: '#FFFBF5',
+        }}
+      >
+        {/* ONLY the image the user provided */}
         <Image
-          src="https://images.unsplash.com/photo-1543832923-44667a44c804?auto=format&fit=crop&w=2560&q=95"
-          alt="Big Ben London"
+          src={MOBILE_IMG}
+          alt="Fast English - Școală de engleză"
           fill
           priority
-          className="object-cover object-center"
+          quality={100}
           sizes="100vw"
+          style={{ objectFit: 'cover', objectPosition: 'center 35%', zIndex: 0 }}
         />
-        {/* Gradient Overlays - stronger on mobile for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80 sm:from-black/60 sm:via-black/40 sm:to-black/70" />
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 via-transparent to-red-900/20" />
+
+        {/* Cream gradient: solid on top (text area), fades to reveal image bottom-half */}
+        <div
+          style={{
+            position: 'absolute', inset: 0, zIndex: 1,
+            background:
+              'linear-gradient(to bottom, #FFFBF5 0%, #FFFBF5 38%, rgba(255,251,245,0.94) 50%, rgba(255,251,245,0.5) 62%, rgba(255,251,245,0) 78%)',
+          }}
+        />
+
+        {/* Subtle red glow accent top-right */}
+        <div
+          style={{
+            position: 'absolute', top: -60, right: -60, width: 200, height: 200, zIndex: 1,
+            background: 'radial-gradient(circle, rgba(200,16,46,0.12) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* Text in the top half */}
+        <div
+          className="fe-hero-text-mobile"
+          style={{
+            position: 'relative', zIndex: 2, width: '100%',
+            padding: '34px 24px 0',
+            paddingTop: 'max(34px, env(safe-area-inset-top))',
+          }}
+        >
+          {TextBlock}
+        </div>
+
+        <style jsx>{`
+          /* Tagline */
+          .fe-hero-text-mobile :global(.flex.items-center.gap-2.mb-5) {
+            margin-bottom: 16px !important;
+          }
+          /* Title */
+          .fe-hero-text-mobile :global(.fe-hero-title) span {
+            font-size: 28px !important;
+            line-height: 1.12 !important;
+          }
+          .fe-hero-text-mobile :global(.fe-hero-title) {
+            margin-bottom: 16px !important;
+          }
+          /* Accent line */
+          .fe-hero-text-mobile :global(.w-14) {
+            margin-bottom: 18px !important;
+          }
+          /* Subtitle */
+          .fe-hero-text-mobile :global(.fe-hero-sub) {
+            font-size: 14px !important;
+            line-height: 1.6 !important;
+            margin-bottom: 24px !important;
+            max-width: 100% !important;
+          }
+          /* Buttons — side by side, compact */
+          .fe-hero-text-mobile :global(.fe-hero-btns) {
+            flex-direction: row !important;
+            gap: 10px !important;
+            margin-bottom: 24px !important;
+          }
+          .fe-hero-text-mobile :global(.fe-hero-btn) {
+            flex: 1 1 0 !important;
+            padding: 11px 12px !important;
+            font-size: 11px !important;
+            letter-spacing: 0.06em !important;
+            border-radius: 10px !important;
+            box-sizing: border-box !important;
+            white-space: nowrap !important;
+          }
+          /* Primary button gets a lifted shadow */
+          .fe-hero-text-mobile :global(.fe-hero-btn:first-child) {
+            box-shadow: 0 8px 20px rgba(200,16,46,0.28) !important;
+          }
+          /* Trust badge — compact */
+          .fe-hero-text-mobile :global(.flex.items-center.gap-3) {
+            gap: 10px !important;
+          }
+          .fe-hero-text-mobile :global(.flex.items-center.gap-3 > div:first-child) {
+            width: 34px !important;
+            height: 34px !important;
+          }
+          .fe-hero-text-mobile :global(.flex.items-center.gap-3 p:first-child) {
+            font-size: 13px !important;
+          }
+          .fe-hero-text-mobile :global(.flex.items-center.gap-3 p:last-child) {
+            font-size: 11.5px !important;
+          }
+        `}</style>
+      </section>
+    )
+  }
+
+  /* ═══════════════ DESKTOP LAYOUT (slideshow neschimbat) ═══════════════ */
+  return (
+    <section
+      style={{
+        position: 'relative',
+        minHeight: '100svh',
+        display: 'flex',
+        alignItems: 'center',
+        overflow: 'hidden',
+      }}
+    >
+      {/* ── Background crossfade slideshow ── */}
+      {HERO_IMAGES.map((img, i) => (
+        <Image
+          key={img.src}
+          src={img.src}
+          alt={img.alt}
+          fill
+          priority={i === 0}
+          quality={100}
+          sizes="100vw"
+          style={{
+            objectFit: 'cover',
+            objectPosition: 'center',
+            opacity: i === currentImage ? 1 : 0,
+            transition: 'opacity 1.2s ease-in-out',
+            zIndex: 0,
+          }}
+        />
+      ))}
+
+      {/* ── Text ── */}
+      <div className="relative w-full px-6 sm:px-10 lg:px-16 py-28" style={{ zIndex: 2 }}>
+        {TextBlock}
       </div>
 
-      {/* Animated Particles - reduced on mobile */}
-      <div className="absolute inset-0 z-10 overflow-hidden pointer-events-none hidden sm:block">
-        {[...Array(30)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full animate-float opacity-60"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              width: `${Math.random() * 6 + 2}px`,
-              height: `${Math.random() * 6 + 2}px`,
-              background: i % 3 === 0 
-                ? 'rgba(200, 16, 46, 0.6)' 
-                : i % 3 === 1 
-                  ? 'rgba(255, 255, 255, 0.8)' 
-                  : 'rgba(1, 33, 105, 0.6)',
-              animationDelay: `${Math.random() * 8}s`,
-              animationDuration: `${Math.random() * 15 + 10}s`,
-            }}
-          />
+      {/* ── Slideshow dots ── */}
+      <div className="absolute bottom-7 left-1/2 -translate-x-1/2 flex gap-2" style={{ zIndex: 2 }}>
+        {HERO_IMAGES.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goTo(index)}
+            aria-label={`Imagine ${index + 1}`}
+            className="p-1"
+          >
+            <span
+              className="block h-[3px] rounded-full transition-all duration-500 bg-white"
+              style={{
+                width: index === currentImage ? '24px' : '8px',
+                opacity: index === currentImage ? 1 : 0.4,
+              }}
+            />
+          </button>
         ))}
       </div>
-      {/* Fewer particles on mobile */}
-      <div className="absolute inset-0 z-10 overflow-hidden pointer-events-none sm:hidden">
-        {[...Array(10)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full animate-float opacity-40"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              width: `${Math.random() * 4 + 2}px`,
-              height: `${Math.random() * 4 + 2}px`,
-              background: i % 3 === 0 
-                ? 'rgba(200, 16, 46, 0.5)' 
-                : i % 3 === 1 
-                  ? 'rgba(255, 255, 255, 0.6)' 
-                  : 'rgba(1, 33, 105, 0.5)',
-              animationDelay: `${Math.random() * 8}s`,
-              animationDuration: `${Math.random() * 15 + 10}s`,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Union Jack Accent Lines */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 via-white to-blue-900 z-20" />
-      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-900 via-white to-red-600 z-20" />
-
-      {/* Main Content */}
-      <div className="relative z-20 w-full max-w-6xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 text-center py-16 sm:py-0">
-        {/* Logo */}
-        <div 
-          className={`mb-6 sm:mb-12 transition-all duration-1000 ${
-            isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-10'
-          }`}
-        >
-          <div className="inline-flex items-center gap-2 xs:gap-3 sm:gap-4 px-4 xs:px-5 sm:px-8 py-3 xs:py-4 sm:py-5 bg-white/15 backdrop-blur-xl rounded-2xl sm:rounded-3xl border border-white/20 sm:border-2 sm:border-white/30 shadow-2xl hover:bg-white/20 sm:hover:scale-105 transition-all duration-500 group">
-            {/* Logo glow effect - hidden on very small screens */}
-            <div className="absolute -inset-2 bg-gradient-to-r from-red-500/30 via-white/20 to-blue-600/30 rounded-3xl blur-2xl opacity-60 group-hover:opacity-100 transition-opacity hidden sm:block" />
-            
-            <div className="relative flex-shrink-0">
-              <Image
-                src="/FastEnglish-logo.png"
-                alt="Fast English Logo"
-                width={70}
-                height={70}
-                className="w-10 h-10 xs:w-12 xs:h-12 sm:w-[70px] sm:h-[70px] rounded-xl sm:rounded-2xl shadow-lg group-hover:rotate-3 transition-transform duration-500"
-              />
-            </div>
-            
-            <div className="relative flex flex-col min-w-0">
-              <span className="text-white font-black text-lg xs:text-xl sm:text-3xl lg:text-4xl tracking-tight drop-shadow-lg group-hover:text-red-100 transition-colors whitespace-nowrap">
-                Fast English
-              </span>
-              <span className="text-white/80 font-medium text-[10px] xs:text-xs sm:text-sm lg:text-base tracking-wider uppercase">
-                Learn English Fast
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Heading with Typewriter */}
-        <div 
-          className={`transition-all duration-1000 delay-300 ${
-            isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
-        >
-          <h1 className="text-3xl xs:text-4xl sm:text-6xl lg:text-8xl font-black text-white mb-4 sm:mb-6 leading-tight">
-            <span className="block text-white/90 text-lg xs:text-xl sm:text-4xl lg:text-5xl font-medium mb-2 sm:mb-4">
-              Welcome to
-            </span>
-            <div className="relative h-12 xs:h-14 sm:h-24 lg:h-32 overflow-hidden">
-              {phrases.map((phrase, index) => (
-                <span
-                  key={index}
-                  className={`absolute inset-0 flex items-center justify-center transition-all duration-700 ${
-                    index === currentPhrase
-                      ? 'opacity-100 translate-y-0'
-                      : index < currentPhrase
-                      ? 'opacity-0 -translate-y-full'
-                      : 'opacity-0 translate-y-full'
-                  }`}
-                >
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-white to-blue-600 drop-shadow-2xl text-[1.75rem] xs:text-3xl sm:text-5xl lg:text-7xl">
-                    {phrase}
-                  </span>
-                </span>
-              ))}
-            </div>
-          </h1>
-
-          <p className="text-sm xs:text-base sm:text-xl lg:text-2xl text-white/80 max-w-3xl mx-auto mb-6 sm:mb-10 leading-relaxed font-light px-2">
-            Cursuri de engleză pentru toate nivelurile. 
-            <span className="text-red-400 font-medium"> Învață</span>, 
-            <span className="text-white font-medium"> practică</span>, 
-            <span className="text-blue-400 font-medium"> excelează</span>.
-          </p>
-        </div>
-
-        {/* CTA Buttons */}
-        <div 
-          className={`flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-8 sm:mb-16 px-2 transition-all duration-1000 delay-500 ${
-            isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
-        >
-          <Link
-            href="/inscriere"
-            className="group relative w-full sm:w-auto px-6 xs:px-8 sm:px-10 py-3.5 xs:py-4 sm:py-5 bg-gradient-to-r from-red-600 to-red-500 text-white font-bold text-base sm:text-lg rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/40 sm:hover:scale-105 active:scale-95"
-          >
-            <span className="relative z-10 flex items-center justify-center gap-2 sm:gap-3">
-              Începe Acum
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-red-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-          </Link>
-
-          <a
-            href="#cursuri"
-            className="group w-full sm:w-auto px-6 xs:px-8 sm:px-10 py-3.5 xs:py-4 sm:py-5 bg-white/10 backdrop-blur-md text-white font-bold text-base sm:text-lg rounded-xl sm:rounded-2xl border border-white/20 sm:border-2 sm:border-white/30 hover:bg-white/20 hover:border-white/50 transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3 active:scale-95"
-          >
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-            Vezi Cursurile
-          </a>
-        </div>
-      </div>
-
-      {/* Scroll Indicator - smaller on mobile */}
-      <div 
-        className={`absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 z-20 transition-all duration-1000 delay-1000 ${
-          isLoaded ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
-        <a 
-          href="#cursuri" 
-          className="flex flex-col items-center gap-1 sm:gap-2 text-white/70 hover:text-white transition-colors group"
-        >
-          <span className="text-xs sm:text-sm font-medium hidden xs:block">Descoperă mai mult</span>
-          <div className="w-5 h-8 sm:w-6 sm:h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-1.5 sm:p-2 group-hover:border-white/60 transition-colors">
-            <div className="w-1 h-2 sm:w-1.5 sm:h-3 bg-white/70 rounded-full animate-bounce group-hover:bg-white" />
-          </div>
-        </a>
-      </div>
-
-      {/* Custom Animations */}
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
-          25% { transform: translateY(-20px) translateX(10px) rotate(5deg); }
-          50% { transform: translateY(-10px) translateX(-10px) rotate(-5deg); }
-          75% { transform: translateY(-30px) translateX(5px) rotate(3deg); }
-        }
-        .animate-float {
-          animation: float ease-in-out infinite;
-        }
-      `}</style>
     </section>
   )
 }

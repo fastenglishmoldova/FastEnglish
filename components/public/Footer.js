@@ -13,7 +13,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-[#012169] border-t border-blue-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-16">
         {/* Main Footer Content */}
         <div className="py-12 lg:py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand Column */}
@@ -49,7 +49,7 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Navigare rapidă</h3>
+            <h3 className="text-white font-semibold mb-4 keep-white" style={{ color: '#ffffff' }}>Navigare rapidă</h3>
             <ul className="space-y-3">
               <li>
                 <button onClick={() => scrollToSection('home')} className="text-blue-200 hover:text-red-400 text-sm transition-colors">
@@ -81,7 +81,7 @@ export default function Footer() {
 
           {/* Courses */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Niveluri disponibile</h3>
+            <h3 className="text-white font-semibold mb-4 keep-white" style={{ color: '#ffffff' }}>Niveluri disponibile</h3>
             <ul className="space-y-3">
               <li className="text-blue-200 text-sm">Beginner (A1-A2)</li>
               <li className="text-blue-200 text-sm">Intermediate (B1-B2)</li>
@@ -93,7 +93,7 @@ export default function Footer() {
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Contact</h3>
+            <h3 className="text-white font-semibold mb-4 keep-white" style={{ color: '#ffffff' }}>Contact</h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
                 <svg className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -160,107 +160,100 @@ export default function CourseDetailPage() {
           />
         </div>
 
-        {/* Hero Image Section */}
-        <div className="relative pt-16 sm:pt-20">
-          <div className="relative h-[35vh] sm:h-[45vh] lg:h-[55vh] overflow-hidden">
-            {images.length > 0 ? (
-              <>
-                {images.map((img, idx) => (
-                  <div
-                    key={idx}
-                    className={`absolute inset-0 transition-all duration-700 ${
-                      currentImageIndex === idx ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
-                    }`}
-                  >
-                    <Image
-                      src={img}
-                      alt={course.title}
-                      fill
-                      className="object-cover"
-                      priority={idx === 0}
-                    />
-                  </div>
-                ))}
-                {/* Gradient Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#FFFBF5] via-[#FFFBF5]/40 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#FFFBF5]/30 via-transparent to-[#FFFBF5]/30" />
-                {/* UK flag accent line at top */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-600 via-white to-blue-900 z-10" />
-              </>
-            ) : (
-              <div className={`absolute inset-0 bg-gradient-to-br ${levelConfig.gradient} opacity-20`} />
-            )}
-
-            {/* Navigation Arrows */}
-            {images.length > 1 && (
-              <>
-                <button
-                  onClick={() => { setIsAutoPlaying(false); prevImage() }}
-                  className="absolute left-2 sm:left-4 lg:left-8 top-1/2 -translate-y-1/2 p-2 sm:p-3 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full text-gray-700 shadow-lg transition-all hover:scale-110 z-10"
-                >
-                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => { setIsAutoPlaying(false); nextImage() }}
-                  className="absolute right-2 sm:right-4 lg:right-8 top-1/2 -translate-y-1/2 p-2 sm:p-3 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full text-gray-700 shadow-lg transition-all hover:scale-110 z-10"
-                >
-                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </>
-            )}
-
-            {/* Progress Dots */}
-            {images.length > 1 && (
-              <div className="absolute bottom-8 sm:bottom-12 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 z-10">
-                {images.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => { setCurrentImageIndex(idx); setIsAutoPlaying(false) }}
-                    className={`transition-all duration-300 rounded-full ${
-                      currentImageIndex === idx 
-                        ? 'w-6 sm:w-8 h-1.5 sm:h-2 bg-gradient-to-r from-red-500 to-red-600' 
-                        : 'w-1.5 sm:w-2 h-1.5 sm:h-2 bg-gray-400/50 hover:bg-gray-400/80'
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Expand Button */}
-            {images.length > 0 && (
-              <button
-                onClick={() => setIsLightboxOpen(true)}
-                className="absolute top-2 right-2 sm:top-4 sm:right-4 lg:top-8 lg:right-8 p-2 sm:p-3 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full text-gray-700 shadow-lg transition-all hover:scale-110 z-10"
-              >
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                </svg>
-              </button>
-            )}
-
-            {/* Back Button */}
-            <Link 
-              href="/#cursuri"
-              className="absolute top-2 left-2 sm:top-4 sm:left-4 lg:top-8 lg:left-8 inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full text-gray-700 shadow-lg transition-all z-10"
-            >
-              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              <span className="text-xs sm:text-sm font-medium">Înapoi</span>
-            </Link>
-          </div>
-        </div>
-
         {/* Content Section */}
-        <div className="relative max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 -mt-16 sm:-mt-24 pb-12 sm:pb-20">
+        <div className="relative max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-12 sm:pb-20">
           <div className="grid lg:grid-cols-3 gap-4 sm:gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-              {/* Title Card */}
+
+              {/* Back Button */}
+              <Link 
+                href="/#cursuri"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 rounded-full text-gray-600 shadow-sm border border-gray-100 transition-all text-sm font-medium"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Înapoi la cursuri
+              </Link>
+
+              {/* Image Card */}
+              {images.length > 0 && (
+                <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl shadow-gray-900/5 border border-gray-100 overflow-hidden">
+                  <div className="relative aspect-square">
+                    {images.map((img, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          position: 'absolute', inset: 0,
+                          opacity: currentImageIndex === idx ? 1 : 0,
+                          transition: 'opacity 0.6s ease',
+                        }}
+                      >
+                        <Image
+                          src={img}
+                          alt={course.title}
+                          fill
+                          className="object-cover"
+                          priority={idx === 0}
+                        />
+                      </div>
+                    ))}
+
+                    {/* UK flag accent */}
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-600 via-white to-blue-900 z-10" />
+
+                    {/* Arrows */}
+                    {images.length > 1 && (
+                      <>
+                        <button
+                          onClick={() => { setIsAutoPlaying(false); prevImage() }}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 p-2 sm:p-3 bg-white/85 hover:bg-white rounded-full text-gray-700 shadow-lg transition-all z-10"
+                        >
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => { setIsAutoPlaying(false); nextImage() }}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 p-2 sm:p-3 bg-white/85 hover:bg-white rounded-full text-gray-700 shadow-lg transition-all z-10"
+                        >
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </>
+                    )}
+
+                    {/* Dots */}
+                    {images.length > 1 && (
+                      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                        {images.map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => { setCurrentImageIndex(idx); setIsAutoPlaying(false) }}
+                            className={`transition-all duration-300 rounded-full ${
+                              currentImageIndex === idx
+                                ? 'w-6 h-2 bg-red-500'
+                                : 'w-2 h-2 bg-white/60 hover:bg-white/90'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Expand */}
+                    <button
+                      onClick={() => setIsLightboxOpen(true)}
+                      className="absolute top-3 right-3 p-2 bg-white/85 hover:bg-white rounded-full text-gray-700 shadow-lg transition-all z-10"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
               <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl shadow-gray-900/5 border border-gray-100 p-4 sm:p-6 lg:p-10">
                 {/* Badges */}
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-6">

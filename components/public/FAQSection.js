@@ -200,7 +200,7 @@ export default function FAQSection() {
       <div className="absolute top-1/3 right-10 w-3 h-3 bg-red-500/40 rounded-full animate-pulse" />
       <div className="absolute bottom-1/3 left-20 w-2 h-2 bg-blue-900/40 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
 
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-5xl mx-auto px-16">
         {/* Section Header */}
         <div className={`text-center mb-12 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-white border-2 border-red-500/20 rounded-full mb-6 shadow-lg shadow-red-500/5">
@@ -215,7 +215,12 @@ export default function FAQSection() {
           <h2 className="text-4xl lg:text-6xl font-black text-gray-900 mb-4">
             Ai{' '}
             <span className="relative">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-red-500 to-blue-900">
+              <span style={{
+                background: 'linear-gradient(120deg, #012169 0%, #1e3a8a 45%, #C8102E 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}>
                 întrebări?
               </span>
               <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
@@ -354,55 +359,100 @@ export default function FAQSection() {
         )}
 
         {/* Bottom CTA */}
-        <div className={`mt-16 transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="relative p-8 lg:p-10 rounded-3xl overflow-hidden">
-            {/* Gradient Background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-red-50 via-white to-blue-50" />
-            <div className="absolute inset-[1px] rounded-3xl bg-white/90" />
-            
-            {/* Animated Border */}
-            <div className="absolute inset-0 rounded-3xl border-2 border-red-500/20" />
-            
-            {/* Content */}
-            <div className="relative flex flex-col lg:flex-row items-center justify-between gap-8">
-              <div className="flex items-center gap-5">
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-600 to-red-500 flex items-center justify-center shadow-lg shadow-red-500/30">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                  </div>
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping" />
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full" />
+        <div style={{
+          marginTop: 64,
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'translateY(0)' : 'translateY(24px)',
+          transition: 'opacity 0.7s ease 0.5s, transform 0.7s ease 0.5s',
+        }}>
+          <div style={{
+            background: '#ffffff',
+            border: '1.5px solid #E8E0D5',
+            borderRadius: 24,
+            padding: '36px 40px',
+            boxShadow: '0 8px 32px rgba(1,33,105,0.07)',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 32,
+          }}>
+            {/* Left: icon + text */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <div style={{
+                  width: 60, height: 60, borderRadius: 16,
+                  background: 'linear-gradient(135deg, #C8102E 0%, #9E0A23 100%)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 8px 20px rgba(200,16,46,0.28)',
+                }}>
+                  <svg width="28" height="28" fill="none" stroke="#fff" strokeWidth="1.8" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
                 </div>
-                <div>
-                  <h3 className="text-gray-900 text-2xl font-bold mb-1">Nu ai găsit răspunsul?</h3>
-                  <p className="text-gray-600">
-                    Echipa noastră îți răspunde în mai puțin de <span className="font-semibold text-red-600">24 de ore</span>!
-                  </p>
+                {/* Ping dot */}
+                <div style={{
+                  position: 'absolute', top: -4, right: -4,
+                  width: 14, height: 14, borderRadius: '50%',
+                  background: '#C8102E',
+                  boxShadow: '0 0 0 4px rgba(200,16,46,0.2)',
+                }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: '#1a1a2e', marginBottom: 4 }}>
+                  Nu ai găsit răspunsul?
+                </div>
+                <div style={{ fontSize: 14.5, color: '#6B7280', lineHeight: 1.5 }}>
+                  Echipa noastră îți răspunde în mai puțin de{' '}
+                  <span style={{ fontWeight: 700, color: '#C8102E' }}>24 de ore</span>!
                 </div>
               </div>
-              
-              <div className="flex flex-col sm:flex-row gap-3">
-                <a
-                  href="tel:+373060331177"
-                  className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-white hover:bg-gray-50 text-gray-900 font-semibold rounded-xl transition-all border-2 border-gray-200 shadow-sm hover:border-blue-900/30"
-                >
-                  <svg className="w-5 h-5 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  Sună-ne
-                </a>
-                <a
-                  href="#contact"
-                  className="group flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-semibold rounded-xl transition-all shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/30"
-                >
-                  Scrie-ne un mesaj
-                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </a>
-              </div>
+            </div>
+
+            {/* Right: buttons */}
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <a
+                href="tel:+373060331177"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  padding: '12px 24px',
+                  background: '#ffffff',
+                  border: '1.5px solid #E8E0D5',
+                  borderRadius: 12,
+                  fontSize: 14.5, fontWeight: 700, color: '#012169',
+                  textDecoration: 'none',
+                  boxShadow: '0 2px 8px rgba(1,33,105,0.07)',
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#012169'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(1,33,105,0.15)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E0D5'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(1,33,105,0.07)' }}
+              >
+                <svg width="18" height="18" fill="none" stroke="#012169" strokeWidth="1.8" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                Sună-ne
+              </a>
+              <a
+                href="#contact"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  padding: '12px 24px',
+                  background: 'linear-gradient(135deg, #C8102E 0%, #9E0A23 100%)',
+                  border: 'none',
+                  borderRadius: 12,
+                  fontSize: 14.5, fontWeight: 700, color: '#ffffff',
+                  textDecoration: 'none',
+                  boxShadow: '0 6px 20px rgba(200,16,46,0.28)',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 10px 28px rgba(200,16,46,0.38)' }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(200,16,46,0.28)' }}
+              >
+                Scrie-ne un mesaj
+                <svg width="16" height="16" fill="none" stroke="#ffffff" strokeWidth="2.2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </a>
             </div>
           </div>
         </div>

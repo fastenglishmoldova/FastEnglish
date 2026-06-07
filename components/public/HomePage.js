@@ -6,7 +6,6 @@ import AboutSection from './AboutSection'
 import ReviewsSection from './ReviewsSection'
 import FAQSection from './FAQSection'
 import ContactSection from './ContactSection'
-import CTASection from './CTASection'
 
 export default function HomePage() {
   return (
@@ -17,7 +16,6 @@ export default function HomePage() {
       <ReviewsSection />
       <FAQSection />
       <ContactSection />
-      <CTASection />
     </main>
   )
 }

@@ -47,64 +47,168 @@ async function main() {
   console.log('👩‍🏫 Created teacher:', teacher.email)
 
   // Create Courses
+  // Unsplash 1:1 images (600×600, already whitelisted in next.config.mjs)
+  const IMG = {
+    kids1:    'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&h=600&fit=crop&q=80',
+    kids2:    'https://images.unsplash.com/photo-1560785496-3c9d27877182?w=600&h=600&fit=crop&q=80',
+    teens:    'https://images.unsplash.com/photo-1529390079861-591de354faf5?w=600&h=600&fit=crop&q=80',
+    speaking: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=600&h=600&fit=crop&q=80',
+    exam:     'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&h=600&fit=crop&q=80',
+    business: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=600&fit=crop&q=80',
+  }
+
   const course1 = await prisma.course.create({
     data: {
-      name: 'Programare pentru Copii',
-      description: 'Învață bazele programării cu Scratch și Python într-un mod distractiv și interactiv. Perfect pentru copii de 8-14 ani.',
-      price: 250,
-      duration: 60,
-      maxStudents: 12,
-      ageGroup: '8-14 ani',
-      schedule: 'Luni și Miercuri, 16:00-17:00',
-      imageUrl: '/images/programming.jpg',
-      isActive: true
+      title: 'English for Kids',
+      slug: 'english-for-kids',
+      descriptionShort: 'Lecții interactive prin povești, jocuri și cântece. Perfect pentru copii care vor să construiască o bază solidă în limba engleză.',
+      descriptionLong: 'English for Kids este cursul ideal pentru copiii între 6 și 10 ani care fac primii pași în lumea limbii engleze. Folosim metode ludice, cântece, povești și jocuri pentru a face fiecare lecție o aventură.',
+      category: 'kids',
+      level: 'Începător',
+      ageMin: 6,
+      ageMax: 10,
+      duration: '45 min',
+      lessonsCount: 8,
+      price: 180,
+      seatsTotal: 8,
+      active: true,
+      mainImageUrl: IMG.kids1,
+      images: [IMG.kids1],
     }
   })
 
   const course2 = await prisma.course.create({
     data: {
-      name: 'Limba Engleză - Nivel Începător',
-      description: 'Cursuri de engleză pentru copii, cu focus pe conversație și vocabular prin jocuri și activități interactive.',
-      price: 200,
-      duration: 45,
-      maxStudents: 10,
-      ageGroup: '6-10 ani',
-      schedule: 'Marți și Joi, 15:00-15:45',
-      imageUrl: '/images/english.jpg',
-      isActive: true
+      title: 'Little Stars',
+      slug: 'little-stars',
+      descriptionShort: 'Primii pași în lumea englezei pentru cei mai mici! Cântece, culori, animale și aventuri — totul în engleză, totul prin joc.',
+      descriptionLong: 'Little Stars este destinat copiilor de 4–6 ani care descoperă engleza pentru prima dată. Lecțiile scurte și energice combină muzică, mișcare și povestiri ilustrate pentru a face engleza naturală și distractivă de la cea mai fragedă vârstă.',
+      category: 'kids',
+      level: 'Începător',
+      ageMin: 4,
+      ageMax: 6,
+      duration: '30 min',
+      lessonsCount: 8,
+      price: 150,
+      seatsTotal: 6,
+      active: true,
+      mainImageUrl: IMG.kids2,
+      images: [IMG.kids2],
     }
   })
 
-  console.log('📚 Created courses:', course1.name, course2.name)
+  const course3 = await prisma.course.create({
+    data: {
+      title: 'English for Teens',
+      slug: 'english-for-teens',
+      descriptionShort: 'Construiești încrederea, îmbunătățești gramatica și vorbești fluent. Conversații reale pentru situații reale din viața de zi cu zi.',
+      descriptionLong: 'English for Teens este cursul de referință pentru adolescenți între 11 și 16 ani. Ne concentrăm pe comunicare autentică, gramatică funcțională și vocabular relevant pentru viața modernă.',
+      category: 'teens',
+      level: 'Intermediar',
+      ageMin: 11,
+      ageMax: 16,
+      duration: '60 min',
+      lessonsCount: 8,
+      price: 220,
+      discountPrice: 190,
+      seatsTotal: 10,
+      active: true,
+      mainImageUrl: IMG.teens,
+      images: [IMG.teens],
+    }
+  })
+
+  const course4 = await prisma.course.create({
+    data: {
+      title: 'Speaking Club',
+      slug: 'speaking-club',
+      descriptionShort: 'Exersează vorbitul într-un mediu prietenos. Discuții tematice, jocuri de rol și exprimare naturală fără teama de greșeli.',
+      descriptionLong: 'Speaking Club este singurul curs dedicat 100% vorbitului. Fără gramatică aridă, fără teste — doar conversație reală. Elevii discută subiecte captivante, participă la dezbateri și jocuri de rol.',
+      category: 'speaking',
+      level: 'Toate nivelurile',
+      ageMin: 10,
+      ageMax: 99,
+      duration: '60 min',
+      lessonsCount: 4,
+      price: 160,
+      seatsTotal: 8,
+      active: true,
+      mainImageUrl: IMG.speaking,
+      images: [IMG.speaking],
+    }
+  })
+
+  const course5 = await prisma.course.create({
+    data: {
+      title: 'Exam Preparation',
+      slug: 'exam-preparation',
+      descriptionShort: 'Pregătire completă pentru Cambridge (KET, PET, FCE) și alte examene internaționale cu strategie dovedită și practică intensivă.',
+      descriptionLong: 'Exam Preparation este programul intensiv pentru elevii care țintesc certificările Cambridge. Profesorii noștri examinatori cunosc în detaliu structura fiecărui test și predau strategii clare pentru fiecare secțiune.',
+      category: 'exam',
+      level: 'Avansat',
+      ageMin: 12,
+      ageMax: 18,
+      duration: '90 min',
+      lessonsCount: 8,
+      price: 300,
+      discountPrice: 260,
+      seatsTotal: 6,
+      active: true,
+      mainImageUrl: IMG.exam,
+      images: [IMG.exam],
+    }
+  })
+
+  const course6 = await prisma.course.create({
+    data: {
+      title: 'Business English',
+      slug: 'business-english',
+      descriptionShort: 'Engleză profesională pentru tineri și adulți care vor să exceleze la interviuri, prezentări și negocieri internaționale.',
+      descriptionLong: 'Business English pregătește studenții și profesioniștii pentru comunicarea în mediul corporativ internațional. Cursul acoperă e-mail profesional, prezentări, negocieri și vocabular specific.',
+      category: 'teens',
+      level: 'Intermediar',
+      ageMin: 16,
+      ageMax: 99,
+      duration: '60 min',
+      lessonsCount: 8,
+      price: 250,
+      seatsTotal: 10,
+      active: true,
+      mainImageUrl: IMG.business,
+      images: [IMG.business],
+    }
+  })
+
+  console.log('📚 Created courses:', course1.title, course2.title, course3.title, course4.title, course5.title, course6.title)
 
   // Create Students
   const student1 = await prisma.student.create({
     data: {
-      name: 'Andrei Popescu',
+      fullName: 'Andrei Popescu',
+      age: 9,
       parentName: 'Ion Popescu',
       parentEmail: 'ion.popescu@email.com',
       parentPhone: '0722123456',
-      birthDate: new Date('2015-03-15')
     }
   })
 
   const student2 = await prisma.student.create({
     data: {
-      name: 'Maria Dumitrescu',
+      fullName: 'Maria Dumitrescu',
+      age: 10,
       parentName: 'Elena Dumitrescu',
       parentEmail: 'elena.dumitrescu@email.com',
       parentPhone: '0733456789',
-      birthDate: new Date('2014-07-22')
     }
   })
 
   const student3 = await prisma.student.create({
     data: {
-      name: 'Alexandru Marin',
+      fullName: 'Alexandru Marin',
+      age: 8,
       parentName: 'Cristina Marin',
       parentEmail: 'cristina.marin@email.com',
       parentPhone: '0744789012',
-      birthDate: new Date('2016-01-10')
     }
   })
 
@@ -113,12 +217,13 @@ async function main() {
   // Create Group
   const group = await prisma.group.create({
     data: {
-      name: 'Programare - Grupa A',
+      name: 'English for Kids - Grupa A',
       courseId: course1.id,
       teacherId: teacher.id,
-      schedule: 'Luni și Miercuri, 16:00-17:00',
-      maxStudents: 12,
-      isActive: true
+      scheduleDays: ['Mon', 'Wed'],
+      scheduleTime: '16:00',
+      locationType: 'offline',
+      active: true
     }
   })
 
@@ -153,12 +258,12 @@ async function main() {
   // Create some enrollments (pending)
   await prisma.enrollment.create({
     data: {
-      courseId: course2.id,
+      courseId: course1.id,
       studentName: 'Sofia Ionescu',
       parentName: 'Ana Ionescu',
       parentEmail: 'ana.ionescu@email.com',
       parentPhone: '0755111222',
-      status: 'PENDING'
+      status: 'NEW'
     }
   })
 
@@ -169,25 +274,34 @@ async function main() {
     data: [
       {
         authorName: 'Elena Popa',
-        authorRole: 'Părinte',
+        roleLabel: 'Părinte',
         rating: 5,
-        message: 'Copilul meu adoră cursurile de programare! Profesorii sunt excelenți și metodele de predare sunt adaptate perfect pentru copii.',
+        message: 'Fetița mea adoră cursurile English for Kids! Profesorii sunt răbdători și metodele sunt perfecte pentru copii.',
         courseId: course1.id,
         published: true
       },
       {
         authorName: 'Mihai Vasile',
-        authorRole: 'Părinte',
+        roleLabel: 'Părinte',
         rating: 5,
-        message: 'Foarte mulțumit de calitatea cursurilor. Copilul a făcut progrese vizibile în doar câteva săptămâni.',
-        courseId: course2.id,
+        message: 'English for Teens a transformat complet modul în care fiul meu comunică. Progrese vizibile în câteva săptămâni!',
+        courseId: course3.id,
         published: true
       },
       {
         authorName: 'Alexandra Stan',
-        authorRole: 'Părinte',
-        rating: 4,
-        message: 'Atmosferă prietenoasă și profesori dedicați. Recomand cu căldură Bravito After School!',
+        roleLabel: 'Studentă',
+        rating: 5,
+        message: 'Speaking Club m-a ajutat enorm. Acum vorbesc engleza fără teama de greșeli. Atmosfera este super prietenoasă!',
+        courseId: course4.id,
+        published: true
+      },
+      {
+        authorName: 'Radu Gheorghiu',
+        roleLabel: 'Elev',
+        rating: 5,
+        message: 'Am luat FCE cu nota B datorită cursului Exam Preparation. Strategiile predate m-au ajutat enorm la examen!',
+        courseId: course5.id,
         published: true
       }
     ]
