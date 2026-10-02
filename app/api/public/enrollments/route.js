@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { notifyNewEnrollment } from '@/lib/telegram'
+import { notifyNewLead } from '@/lib/telegram'
 import { checkRateLimit, getClientIP } from '@/lib/rate-limit'
 
+// Înscriere la un curs anume, de pe site. Intră în pipeline-ul de Leads din
+// CRM, cu sursa „Formular site" și cursul în mesaj.
 export async function POST(request) {
   try {
     // Rate limiting: 2 requests per minute
@@ -13,7 +15,7 @@ export async function POST(request) {
     if (!success) {
       return NextResponse.json(
         { error: `Prea multe cereri. Încercați din nou în ${Math.ceil(resetIn / 1000)} secunde.` },
-        { 
+        {
           status: 429,
           headers: {
             'X-RateLimit-Remaining': '0',
@@ -24,7 +26,7 @@ export async function POST(request) {
     }
 
     const body = await request.json()
-    
+
     const { courseId, studentName, studentAge, parentName, parentPhone, parentEmail, city, observations } = body
 
     // Validation
@@ -38,7 +40,7 @@ export async function POST(request) {
     // Check if course exists
     const course = await prisma.course.findUnique({
       where: { id: courseId }
-    })
+    }).catch(() => null)
 
     if (!course) {
       return NextResponse.json(
@@ -47,32 +49,39 @@ export async function POST(request) {
       )
     }
 
-    // Create enrollment
-    const enrollment = await prisma.enrollment.create({
+    const age = studentAge ? parseInt(studentAge) : null
+    const message = [
+      `Curs: ${course.title}`,
+      city ? `Oraș: ${city}` : null,
+      observations?.trim() || null,
+    ].filter(Boolean).join('\n')
+
+    const lead = await prisma.lead.create({
       data: {
-        courseId,
-        studentName,
-        studentAge: studentAge ? parseInt(studentAge) : null,
-        parentName,
-        parentPhone,
-        parentEmail,
-        city: city || null,
-        observations: observations || null,
-        status: 'NEW'
+        name: parentName.trim(),
+        email: parentEmail.trim() || null,
+        phone: parentPhone.trim() || null,
+        source: 'SITE',
+        sourceDetail: `Curs: ${course.title}`,
+        message,
+        studentName: studentName.trim(),
+        studentAge: Number.isFinite(age) ? age : null,
+        children: [{
+          name: studentName.trim(),
+          age: Number.isFinite(age) ? age : null,
+          isAdult: false,
+          level: null,
+          lessonType: null,
+          locationType: null,
+        }],
+        status: 'LEAD'
       }
     })
 
-    // Trimite notificare pe Telegram
-    await notifyNewEnrollment(
-      studentName,
-      parentName,
-      parentPhone,
-      parentEmail,
-      course.title,
-      studentAge ? `Vârsta: ${studentAge} ani${city ? ` • Oraș: ${city}` : ''}${observations ? `\nObservații: ${observations}` : ''}` : (city ? `Oraș: ${city}${observations ? `\nObservații: ${observations}` : ''}` : observations || null)
-    )
+    // Trimite notificare pe Telegram cu butoane
+    await notifyNewLead(lead)
 
-    return NextResponse.json(enrollment, { status: 201 })
+    return NextResponse.json({ success: true, id: lead.id }, { status: 201 })
   } catch (error) {
     console.error('Error creating enrollment:', error)
     return NextResponse.json(

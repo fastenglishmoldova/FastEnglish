@@ -95,25 +95,27 @@ export async function POST(request) {
     // Generate backup codes
     const { plainCodes, hashedCodes } = generateBackupCodes(10)
     
-    // Enable 2FA and save backup codes (sequential - MongoDB M0 doesn't support transactions)
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        twoFactorEnabled: true,
-        twoFactorSetupAt: new Date(),
-      }
-    })
-    // Delete old backup codes
-    await prisma.backupCode.deleteMany({
-      where: { userId: user.id }
-    })
-    // Create new backup codes
-    await prisma.backupCode.createMany({
-      data: hashedCodes.map(codeHash => ({
-        userId: user.id,
-        codeHash,
-      }))
-    })
+    // Enable 2FA and save backup codes
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: user.id },
+        data: {
+          twoFactorEnabled: true,
+          twoFactorSetupAt: new Date(),
+        }
+      }),
+      // Delete old backup codes
+      prisma.backupCode.deleteMany({
+        where: { userId: user.id }
+      }),
+      // Create new backup codes
+      prisma.backupCode.createMany({
+        data: hashedCodes.map(codeHash => ({
+          userId: user.id,
+          codeHash,
+        }))
+      })
+    ])
     
     // Update session as 2FA verified
     await update2FAVerification(session.id, true)

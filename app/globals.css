@@ -478,3 +478,42 @@ html.light footer {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Safari and Chrome */
 }
+
+/* ============================================
+   Admin / Profesor — scrollbar subțire pentru sidebar și conținut
+   ============================================ */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 9999px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+.scrollbar-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+.scrollbar-sidebar::-webkit-scrollbar { width: 5px; }
+.scrollbar-sidebar::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-sidebar::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 9999px;
+}
+.scrollbar-sidebar::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* iOS: fără zoom automat când se apasă pe un câmp (PWA admin/profesor) */
+@supports (-webkit-touch-callout: none) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: max(16px, 1rem);
+  }
+}

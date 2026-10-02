@@ -52,7 +52,7 @@ async function main() {
     },
     include: {
       teacher: true,
-      group: { include: { course: { select: { title: true } } } },
+      group: true,
       students: { include: { student: { select: { fullName: true } } } }
     }
   })

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { parseSchoolDate } from '@/lib/timezone'
 import { requireAdmin, getCurrentUser } from '@/lib/session'
 import { require2FAToken } from '@/lib/security/action-tokens'
 import { checkPermission } from '@/lib/permissions'
@@ -18,7 +19,6 @@ export async function GET(request, { params }) {
     const group = await prisma.group.findUnique({
       where: { id },
       include: {
-        course: true,
         teacher: {
           select: { id: true, name: true, email: true }
         },
@@ -75,14 +75,19 @@ export async function PUT(request, { params }) {
       }, { status: 403 })
     }
 
-    const { name, courseId, teacherId, branchId, scheduleDays, scheduleTime,
-            locationType, locationDetails, startDate, active } = body
+    const { name, level, teacherId, branchId, scheduleDays, scheduleTime,
+            locationType, locationDetails, startDate, active, monthlyLessons, isTrial, trialDate, billingType, notes,
+            cooldownOverrideMin, dailyXpCapOverride,
+            cooldownDisabled, xpCapDisabled } = body
+
+    // Normalizare override-uri
+    const norm = (v) => (v === '' || v == null) ? null : (Number.isFinite(parseInt(v)) ? parseInt(v) : null)
 
     const group = await prisma.group.update({
       where: { id },
       data: {
         name,
-        courseId,
+        level: level || null,
         teacherId,
         branchId: branchId || null,
         scheduleDays,
@@ -90,7 +95,22 @@ export async function PUT(request, { params }) {
         locationType,
         locationDetails,
         startDate: startDate ? new Date(startDate) : null,
-        active
+        ...(monthlyLessons !== undefined ? { monthlyLessons: parseInt(monthlyLessons, 10) || 8 } : {}),
+        ...(notes !== undefined ? { notes: notes?.trim() || null } : {}),
+        ...(billingType !== undefined
+          ? { billingType: billingType === 'INDIVIDUAL' ? 'INDIVIDUAL' : 'MONTHLY' }
+          : {}),
+        ...(isTrial !== undefined ? { isTrial: !!isTrial } : {}),
+        ...(isTrial !== undefined
+          ? isTrial
+            ? { trialDate: parseSchoolDate(trialDate), scheduleDays: [], scheduleTime: null }
+            : { trialDate: null }
+          : {}),
+        active,
+        ...(cooldownOverrideMin !== undefined ? { cooldownOverrideMin: norm(cooldownOverrideMin) } : {}),
+        ...(dailyXpCapOverride !== undefined  ? { dailyXpCapOverride:  norm(dailyXpCapOverride) }  : {}),
+        ...(cooldownDisabled !== undefined    ? { cooldownDisabled: !!cooldownDisabled }            : {}),
+        ...(xpCapDisabled !== undefined       ? { xpCapDisabled:    !!xpCapDisabled }               : {}),
       }
     })
 
@@ -133,13 +153,74 @@ export async function DELETE(request, { params }) {
       }, { status: 403 })
     }
 
+    // Încărcăm grupa cu detaliile + groupStudents pentru snapshot plăți
+    const group = await prisma.group.findUnique({
+      where: { id },
+      include: {
+        groupStudents: {
+          include: { student: { select: { fullName: true } } }
+        }
+      }
+    })
+
+    if (!group) {
+      return NextResponse.json({ error: 'Grupa nu a fost găsită' }, { status: 404 })
+    }
+
+    const groupStudentIds = group.groupStudents.map(gs => gs.id)
+    const studentNamesByGsId = new Map(
+      group.groupStudents.map(gs => [gs.id, gs.student?.fullName || 'Elev necunoscut'])
+    )
+
+    // Sesiunile de lecție ale grupei (pentru ștergerea attendance-urilor)
+    const lessonSessions = await prisma.lessonSession.findMany({
+      where: { groupId: id },
+      select: { id: true }
+    })
+    const lessonSessionIds = lessonSessions.map(s => s.id)
+
+    // 1) Snapshot + detașare plăți (rămân în sistem cu istoricul lor)
+    if (groupStudentIds.length > 0) {
+      const payments = await prisma.payment.findMany({
+        where: { groupStudentId: { in: groupStudentIds } },
+        select: { id: true, groupStudentId: true }
+      })
+
+      // Update fiecare plată cu snapshot + detașare (groupStudentId → null)
+      await Promise.all(payments.map(p =>
+        prisma.payment.update({
+          where: { id: p.id },
+          data: {
+            studentNameSnapshot: studentNamesByGsId.get(p.groupStudentId) || null,
+            groupNameSnapshot: group.name,
+            levelSnapshot: group.level || null,
+            groupStudentId: null,
+          }
+        })
+      ))
+    }
+
+    // 2) Ștergere referințe doar pentru această grupă (elevii rămân în alte grupe)
+    //    NU folosim cascade Prisma (poate eșua pe MongoDB) — facem totul explicit
+    if (lessonSessionIds.length > 0) {
+      await prisma.attendance.deleteMany({ where: { sessionId: { in: lessonSessionIds } } })
+    }
+    await prisma.lessonTransaction.deleteMany({ where: { groupId: id } })
+    await prisma.lessonSession.deleteMany({ where: { groupId: id } })
+    await prisma.missedSession.deleteMany({ where: { groupId: id } })
+    await prisma.makeupLesson.deleteMany({ where: { groupId: id } }).catch(() => {})
+    await prisma.notification.deleteMany({ where: { groupId: id } })
+    await prisma.groupStudent.deleteMany({ where: { groupId: id } })
+
+    // 3) Ștergem grupa în sine
     await prisma.group.delete({ where: { id } })
 
     return NextResponse.json({ success: true })
   } catch (error) {
+    console.error('Error deleting group:', error)
     if (error.message === 'Unauthorized' || error.message === 'Forbidden') {
       return NextResponse.json({ error: error.message }, { status: 401 })
     }
-    return NextResponse.json({ error: 'Failed to delete group' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to delete group', details: error.message }, { status: 500 })
   }
 }

@@ -33,7 +33,6 @@ export async function GET(request, { params }) {
         },
         group: {
           include: {
-            course: true,
             groupStudents: {
               include: {
                 student: true
@@ -122,7 +121,7 @@ export async function PATCH(request, { params }) {
           select: { id: true, name: true, email: true }
         },
         group: {
-          include: { course: true }
+          include: {}
         },
         branch: {
           select: { id: true, name: true }
@@ -172,7 +171,7 @@ export async function PATCH(request, { params }) {
             select: { id: true, name: true, email: true }
           },
           group: {
-            include: { course: true }
+            include: {}
           },
           branch: {
             select: { id: true, name: true }

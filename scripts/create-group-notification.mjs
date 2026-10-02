@@ -8,7 +8,6 @@ async function main() {
     where: { name: { contains: 'Test pe mâine' } },
     include: {
       teacher: true,
-      course: true,
       groupStudents: { where: { status: 'ACTIVE' } }
     }
   })
@@ -25,7 +24,7 @@ async function main() {
     data: {
       type: 'MISSED_SESSION',
       title: `❌ Lecție neefectuată: ${group.name}`,
-      message: `Profesorul ${group.teacher.name} nu a înregistrat lecția pentru grupa "${group.name}" (${group.course?.title || 'N/A'}) programată ieri (Luni) la ora ${group.scheduleTime || 'neprecizată'}. Verificați situația.`,
+      message: `Profesorul ${group.teacher.name} nu a înregistrat lecția pentru grupa "${group.name}" (${group.level || 'N/A'}) programată ieri (Luni) la ora ${group.scheduleTime || 'neprecizată'}. Verificați situația.`,
       link: `/admin/groups/${group.id}`,
       recipientId: null,
       groupId: group.id,
@@ -33,7 +32,7 @@ async function main() {
         teacherName: group.teacher.name,
         teacherId: group.teacherId,
         groupName: group.name,
-        courseName: group.course?.title,
+        levelName: group.level,
         scheduledDay: 'Luni',
         scheduledTime: group.scheduleTime,
         studentsAffected: group.groupStudents.length

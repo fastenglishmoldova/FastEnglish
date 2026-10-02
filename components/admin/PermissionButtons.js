@@ -18,19 +18,6 @@ export function AddGroupButton() {
   )
 }
 
-export function AddCourseButton() {
-  return (
-    <PermissionGate permission="courses.create">
-      <Link
-        href="/admin/courses/new"
-        className="px-3 xs:px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm xs:text-base font-medium hover:bg-indigo-700 transition-colors text-center"
-      >
-        + Adaugă curs
-      </Link>
-    </PermissionGate>
-  )
-}
-
 export function AddTeacherButton() {
   return (
     <PermissionGate permission="teachers.create">
@@ -81,6 +68,19 @@ export function AddMakeupButton({ children, className }) {
   )
 }
 
+export function AddCourseButton() {
+  return (
+    <PermissionGate permission="courses.create">
+      <Link
+        href="/admin/courses/new"
+        className="px-3 xs:px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm xs:text-base font-medium hover:bg-indigo-700 transition-colors text-center"
+      >
+        + Adaugă curs
+      </Link>
+    </PermissionGate>
+  )
+}
+
 export function AddReviewButton() {
   return (
     <PermissionGate permission="reviews.create">
@@ -110,16 +110,16 @@ export function EditReviewLink({ reviewId, className }) {
 export function DeleteReviewButton({ reviewId, className }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  
+
   const handleDelete = async () => {
     if (!confirm('Sigur doriți să ștergeți acest review?')) return
-    
+
     setLoading(true)
     try {
       const res = await fetch(`/api/admin/reviews/${reviewId}`, {
         method: 'DELETE'
       })
-      
+
       if (res.ok) {
         router.refresh()
       } else {
@@ -131,7 +131,7 @@ export function DeleteReviewButton({ reviewId, className }) {
       setLoading(false)
     }
   }
-  
+
   return (
     <PermissionGate permission="reviews.delete">
       <button
