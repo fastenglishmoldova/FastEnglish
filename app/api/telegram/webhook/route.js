@@ -31,7 +31,7 @@ function buildKeyboard(contactId) {
   return [
     [
       { text: '✅ Contactat', callback_data: `c:CONTACTAT:${contactId}` },
-      { text: '📅 Programat', callback_data: `c:PROGRAMAT:${contactId}` },
+      { text: '📝 Programat testare', callback_data: `c:PROGRAMAT_TESTARE:${contactId}` },
     ],
     [
       { text: '🎓 Finalizat', callback_data: `c:FINALIZAT_LECTIA:${contactId}` },
