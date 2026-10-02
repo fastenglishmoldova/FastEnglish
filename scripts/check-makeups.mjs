@@ -15,7 +15,7 @@ async function main() {
   const allMakeups = await prisma.makeupLesson.findMany({
     include: {
       teacher: true,
-      group: { include: { course: true } },
+      group: { include: {} },
       students: { include: { student: true } }
     },
     orderBy: { scheduledAt: 'desc' }
@@ -56,7 +56,7 @@ async function main() {
     },
     include: {
       teacher: true,
-      group: { include: { course: true } }
+      group: { include: {} }
     }
   })
 

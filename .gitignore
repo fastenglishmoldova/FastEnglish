@@ -30,8 +30,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files — NICIODATĂ în git. Excepție: șablonul fără secrete.
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -44,3 +45,7 @@ next-env.d.ts
 /docs/
 
 /app/generated/prisma
+
+# Fișiere generate de scripturile de test
+scripts/_statistics-fixture.mjs
+scripts/_lead-children-fixture.mjs

@@ -38,7 +38,6 @@ async function main() {
     },
     include: {
       teacher: true,
-      course: { select: { title: true } },
       groupStudents: {
         where: { status: 'ACTIVE' },
         select: { id: true }

@@ -8,7 +8,7 @@ export async function POST(request) {
     
     const formData = await request.formData()
     const file = formData.get('file')
-    const folder = formData.get('folder') || 'courses'
+    const folder = formData.get('folder') || 'uploads'
     
     if (!file) {
       return NextResponse.json({ error: 'Nu a fost selectat niciun fișier' }, { status: 400 })
@@ -26,7 +26,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Fișierul este prea mare. Maxim 5MB.' }, { status: 400 })
     }
 
-    // Check if BLOB token is configured
+    // Check if BLOB token is configured (store-ul Vercel conectat cu prefixul
+    // „fastenglish" creează fastenglish_READ_WRITE_TOKEN în loc de BLOB_READ_WRITE_TOKEN)
     const blobToken = process.env.BLOB_READ_WRITE_TOKEN || process.env.fastenglish_READ_WRITE_TOKEN
     if (!blobToken) {
       console.error('BLOB_READ_WRITE_TOKEN is not configured')

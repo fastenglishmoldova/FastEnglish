@@ -12,8 +12,18 @@
     "db:push": "prisma db push",
     "db:seed": "node prisma/seed.js",
     "db:studio": "prisma studio",
+    "db:migrate-crm": "node scripts/migrate-to-crm.mjs",
     "analyze": "ANALYZE=true next build",
-    "clean": "rimraf .next node_modules/.cache"
+    "clean": "rimraf .next node_modules/.cache",
+    "env:check": "node scripts/check-env.mjs",
+    "cron:hobby": "node scripts/cron-mode.mjs hobby",
+    "cron:pro": "node scripts/cron-mode.mjs pro",
+    "telegram:topics": "node scripts/setup-telegram-topics.mjs",
+    "telegram:webhook": "node scripts/set-telegram-webhook.mjs",
+    "telegram:discover": "node scripts/discover-telegram-topics.mjs",
+    "test:stats": "node scripts/test-statistics.mjs",
+    "test:leads": "node scripts/test-lead-children.mjs",
+    "test:groups": "node scripts/test-group-filters.mjs"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

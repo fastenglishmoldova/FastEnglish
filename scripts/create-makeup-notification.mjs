@@ -10,7 +10,7 @@ async function main() {
     },
     include: {
       teacher: true,
-      group: { include: { course: true } },
+      group: { include: {} },
       students: { include: { student: true } }
     }
   })
@@ -40,7 +40,7 @@ async function main() {
         teacherName: makeup.teacher.name,
         teacherId: makeup.teacherId,
         groupName: makeup.group.name,
-        courseName: makeup.group.course?.title,
+        levelName: makeup.group.level,
         scheduledTime,
         studentNames,
         isRecuperare: true

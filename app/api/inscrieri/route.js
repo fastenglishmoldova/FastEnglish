@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { notifyNewEnrollment } from '@/lib/telegram'
+import { notifyNewLead } from '@/lib/telegram'
 import { checkRateLimit, getClientIP } from '@/lib/rate-limit'
 
+// Formularul de înscriere de pe site (/inscriere) intră direct în pipeline-ul
+// de Leads din CRM, cu sursa „Formular site".
 export async function POST(request) {
   try {
     // Rate limiting: 1 request per minute
@@ -13,7 +15,7 @@ export async function POST(request) {
     if (!success) {
       return NextResponse.json(
         { error: `Prea multe cereri. Încercați din nou în ${Math.ceil(resetIn / 1000)} secunde.` },
-        { 
+        {
           status: 429,
           headers: {
             'X-RateLimit-Remaining': '0',
@@ -52,40 +54,36 @@ export async function POST(request) {
         const curs = await prisma.course.findUnique({
           where: { id: cursId },
           select: { title: true }
-        })
-        if (curs) {
-          cursuriNume.push(curs.title)
-        } else {
-          cursuriNume.push(cursId)
-        }
+        }).catch(() => null)
+        cursuriNume.push(curs ? curs.title : cursId)
       }
     }
 
-    // Salvare în baza de date
-    const inscriere = await prisma.inscriere.create({
+    const message = [
+      cursuriNume.length ? `Cursuri: ${cursuriNume.join(', ')}` : null,
+      `Clasa: ${clasa}`,
+      mesaj?.trim() || null,
+    ].filter(Boolean).join('\n')
+
+    // Salvare ca lead în CRM
+    const lead = await prisma.lead.create({
       data: {
-        numeParinte,
-        numeCopil,
-        email,
-        telefon,
-        clasa,
-        cursuri: cursuriNume,
-        mesaj: mesaj || '',
-        status: 'NOU'
+        name: numeParinte.trim(),
+        email: email.trim() || null,
+        phone: telefon.trim() || null,
+        source: 'SITE',
+        sourceDetail: 'Formular înscriere',
+        message,
+        studentName: numeCopil.trim(),
+        children: [{ name: numeCopil.trim(), age: null, isAdult: false, level: null, lessonType: null, locationType: null }],
+        status: 'LEAD'
       }
     })
 
-    // Trimite notificare pe Telegram
-    await notifyNewEnrollment(
-      numeCopil,
-      numeParinte,
-      telefon,
-      email,
-      cursuriNume.join(', '),
-      mesaj
-    )
+    // Trimite notificare pe Telegram cu butoane
+    await notifyNewLead(lead)
 
-    return NextResponse.json({ success: true, id: inscriere.id })
+    return NextResponse.json({ success: true, id: lead.id })
   } catch (error) {
     console.error('Eroare la înscriere:', error)
     return NextResponse.json(
@@ -95,18 +93,5 @@ export async function POST(request) {
   }
 }
 
-export async function GET(request) {
-  try {
-    const inscrieri = await prisma.inscriere.findMany({
-      orderBy: { createdAt: 'desc' }
-    })
-
-    return NextResponse.json(inscrieri)
-  } catch (error) {
-    console.error('Eroare la obținerea înscrierilor:', error)
-    return NextResponse.json(
-      { error: 'A apărut o eroare' },
-      { status: 500 }
-    )
-  }
-}
+// Fără GET public: lista de lead-uri conține date personale și se citește
+// exclusiv autentificat, prin /api/admin/leads.

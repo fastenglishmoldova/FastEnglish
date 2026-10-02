@@ -88,6 +88,30 @@ export default function MissedSessionsPage() {
     }
   }
 
+  const handleDeleteAll = async () => {
+    const count = missedSessions.length
+    const filterLabel = filter === 'all' ? 'toate' : filter === 'unacknowledged' ? 'toate cele neverificate' : 'toate cele verificate'
+    if (!confirm(`Sigur vrei să ștergi ${filterLabel} (${count} înregistrări)? Această acțiune nu poate fi anulată!`)) return
+
+    try {
+      let url = '/api/admin/missed-sessions?deleteAll=true'
+      if (filter !== 'all') {
+        url += `&acknowledged=${filter === 'acknowledged'}`
+      }
+
+      const res = await fetch(url, { method: 'DELETE' })
+      if (res.ok) {
+        const data = await res.json()
+        toast.success(`${data.count} înregistrări șterse`)
+        fetchMissedSessions()
+      } else {
+        toast.error('Eroare la ștergere')
+      }
+    } catch (error) {
+      toast.error('Eroare la ștergere')
+    }
+  }
+
   const unacknowledgedCount = missedSessions.filter(s => !s.acknowledged).length
 
   return (
@@ -104,11 +128,22 @@ export default function MissedSessionsPage() {
           </p>
         </div>
         
-        {unacknowledgedCount > 0 && (
-          <div className="px-3 py-1.5 sm:px-4 sm:py-2 bg-red-100 text-red-700 rounded-lg font-medium text-sm sm:text-base self-start sm:self-auto">
-            {unacknowledgedCount} neverificate
-          </div>
-        )}
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          {unacknowledgedCount > 0 && (
+            <div className="px-3 py-1.5 sm:px-4 sm:py-2 bg-red-100 text-red-700 rounded-lg font-medium text-sm sm:text-base">
+              {unacknowledgedCount} neverificate
+            </div>
+          )}
+          {missedSessions.length > 0 && (
+            <button
+              onClick={handleDeleteAll}
+              className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm sm:text-base transition-colors"
+            >
+              <TrashIcon className="w-4 h-4" />
+              Șterge Toate ({missedSessions.length})
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Filters */}
@@ -213,7 +248,7 @@ export default function MissedSessionsPage() {
                     <AcademicCapIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-0.5 flex-shrink-0" />
                     <div className="min-w-0">
                       <p className="font-semibold text-gray-900 text-sm sm:text-base truncate">{session.group?.name}</p>
-                      <p className="text-xs text-gray-500 truncate">{session.group?.course?.title}</p>
+                      <p className="text-xs text-gray-500 truncate">{session.group?.level}</p>
                     </div>
                   </div>
                 </Link>
@@ -286,7 +321,7 @@ export default function MissedSessionsPage() {
                           <AcademicCapIcon className="w-5 h-5 text-gray-400" />
                           <div>
                             <p className="font-medium text-gray-900">{session.group?.name}</p>
-                            <p className="text-xs text-gray-500">{session.group?.course?.title}</p>
+                            <p className="text-xs text-gray-500">{session.group?.level}</p>
                           </div>
                         </div>
                       </Link>
