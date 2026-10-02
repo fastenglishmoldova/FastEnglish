@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { NOT_COMPLETED } from '@/lib/group-filters'
+import { utcToZonedParts, zonedToUtcISO } from '@/lib/timezone'
 import { notifyMissedGroupSession, notifyMissedMakeup, notifyGroupLessonsLow, notifyLowLessons, notifyTeacherDailySchedule } from '@/lib/telegram'
 
 import { cleanupExpiredSessions } from '@/lib/security/session.js'
@@ -202,8 +203,11 @@ export async function GET(request) {
         // Creează MissedSession în baza de date
         const scheduledTime = getTimeForDay(group.scheduleTime, yesterdayDayOfWeek)
         const [hours, minutes] = scheduledTime.split(':').map(Number)
-        const scheduledDate = new Date(yesterday)
-        scheduledDate.setHours(hours || 0, minutes || 0, 0, 0)
+        // Ora din orar e ora școlii (Chișinău), iar serverul rulează în UTC —
+        // cu setHours, 16:00 ar deveni 16:00 UTC, adică 19:00 la Chișinău.
+        const scheduledDate = new Date(
+          zonedToUtcISO(utcToZonedParts(yesterday.toISOString()).date, hours || 0, minutes || 0)
+        )
         
         const missedSession = await prisma.missedSession.create({
           data: {
