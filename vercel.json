@@ -1,14 +1,6 @@
 {
   "crons": [
     {
-      "path": "/api/cron/meta-leads",
-      "schedule": "0 4 * * *"
-    },
-    {
-      "path": "/api/cron/lead-followups",
-      "schedule": "0 5 * * *"
-    },
-    {
       "path": "/api/cron/notifications",
       "schedule": "0 6 * * *"
     }

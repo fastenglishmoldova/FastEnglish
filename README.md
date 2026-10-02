@@ -93,19 +93,20 @@ Configurare, o singură dată:
 
 Fără topic-uri configurate aplicația funcționează normal — toate notificările ajung în topicul „General".
 
-## Cron-uri (Vercel)
+## Cron-uri
 
-| Cron | Hobby (acum) | Pro (ca la Olla) |
-| --- | --- | --- |
-| `/api/cron/meta-leads` — conversațiile Meta devin lead-uri | zilnic, 04:00 UTC | la 15 minute |
-| `/api/cron/lead-followups` — lead-uri de recontactat | zilnic, 05:00 UTC — tot ce e de recontactat în ziua respectivă | la 10 minute |
-| `/api/cron/notifications` — orar profesori, ore rămase, lecții ratate | zilnic, 06:00 UTC | zilnic, 06:00 UTC |
+| Cron | Acum (Hobby + cron-job.org) | Doar Hobby | Pro (ca la Olla) |
+| --- | --- | --- | --- |
+| `/api/cron/lead-followups` — lead-uri de recontactat | cron-job.org, la 10 minute | zilnic, 05:00 UTC — tot ce e de recontactat în ziua respectivă | Vercel, la 10 minute |
+| `/api/cron/meta-leads` — conversațiile Meta devin lead-uri | cron-job.org, la 15 minute | zilnic, 04:00 UTC | Vercel, la 15 minute |
+| `/api/cron/notifications` — orar profesori, ore rămase, lecții ratate | Vercel, zilnic 06:00 UTC | la fel | la fel |
 
-Planul Hobby permite doar cron-uri zilnice (pornite oricând în ora respectivă). La trecerea pe Pro:
+Planul Hobby permite pe Vercel doar cron-uri zilnice, de aceea lead-urile și Meta sunt apelate din cron-job.org: `GET https://www.fastenglish.md/api/cron/...` cu header-ul `Authorization: Bearer <CRON_SECRET>` (adresa cu `www` — fără, redirecționează). Programul din `vercel.json` se schimbă cu:
 
 ```bash
-npm run cron:pro     # rescrie vercel.json cu programul Olla, apoi deploy
-npm run cron:hobby   # înapoi la programul zilnic
+npm run cron:external  # acum: doar notificările pe Vercel, restul pe cron-job.org
+npm run cron:pro       # pe Pro: tot pe Vercel, programul Olla (oprește job-urile de pe cron-job.org)
+npm run cron:hobby     # fără cron-job.org: toate o dată pe zi
 ```
 
 Codul cron-urilor recunoaște singur ritmul (header-ul `x-vercel-cron-schedule`), deci nu mai trebuie schimbat nimic altceva.
