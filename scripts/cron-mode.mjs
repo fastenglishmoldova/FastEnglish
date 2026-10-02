@@ -3,6 +3,8 @@
  *
  *   npm run cron:hobby   → toate o dată pe zi (singurul ritm permis pe Hobby)
  *   npm run cron:pro     → lead-uri la 10 min, Meta la 15 min (ca la Olla)
+ *   npm run cron:external → doar notificările pe Vercel; lead-uri și Meta
+ *                          vin de pe cron-job.org (merge pe Hobby)
  *
  * După schimbare: deploy. Codul cron-urilor se adaptează singur la ritm
  * (vezi lib/cron.js), deci nu mai trebuie modificat nimic altceva.
@@ -31,11 +33,17 @@ const MODES = {
     { path: '/api/cron/lead-followups', schedule: '*/10 * * * *' },
     { path: '/api/cron/meta-leads', schedule: '*/15 * * * *' },
   ],
+  // Hobby + cron-job.org: lead-followups (10 min) și meta-leads (15 min) sunt
+  // apelate din afară, cu header-ul `Authorization: Bearer <CRON_SECRET>`.
+  // Pe Vercel rămâne doar cron-ul zilnic.
+  external: [
+    { path: '/api/cron/notifications', schedule: '0 6 * * *' },
+  ],
 }
 
 const mode = process.argv[2]
 if (!MODES[mode]) {
-  console.error('Folosire: node scripts/cron-mode.mjs hobby|pro')
+  console.error('Folosire: node scripts/cron-mode.mjs hobby|pro|external')
   process.exit(1)
 }
 
